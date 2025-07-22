@@ -21,10 +21,13 @@ export interface TranscriptMessage {
 }
 
 export class DesktopAudioCapture {
-  private mediaRecorder: MediaRecorder | null = null;
-  private audioStream: MediaStream | null = null;
+  private micRecorder: MediaRecorder | null = null;
+  private systemRecorder: MediaRecorder | null = null;
+  private micStream: MediaStream | null = null;
+  private systemStream: MediaStream | null = null;
   private isRecording = false;
-  private audioChunks: Blob[] = [];
+  private micChunks: Blob[] = [];
+  private systemChunks: Blob[] = [];
   private lastTranscriptionTime = 0;
   private chunkCount = 0;
   private config: AudioCaptureConfig;
@@ -36,7 +39,7 @@ export class DesktopAudioCapture {
   }
 
   /**
-   * Initialize audio capture with microphone permission
+   * Initialize dual audio capture (microphone + system audio)
    */
   async initialize(): Promise<boolean> {
     try {
@@ -49,8 +52,8 @@ export class DesktopAudioCapture {
         }
       }
 
-      // Get user media (microphone)
-      this.audioStream = await navigator.mediaDevices.getUserMedia({
+      // Get microphone stream (Host)
+      this.micStream = await navigator.mediaDevices.getUserMedia({
         audio: {
           echoCancellation: true,
           noiseSuppression: true,
@@ -58,6 +61,22 @@ export class DesktopAudioCapture {
         },
         video: false
       });
+
+      // Get system audio stream (Visitor)
+      try {
+        this.systemStream = await navigator.mediaDevices.getDisplayMedia({
+          video: false,
+          audio: {
+            echoCancellation: false, // We want to capture the raw system audio
+            noiseSuppression: false,
+            autoGainControl: false,
+          }
+        });
+        console.log('🔊 System audio capture initialized');
+      } catch (systemError) {
+        console.warn('⚠️ System audio capture failed - continuing with microphone only:', systemError);
+        // Continue with mic-only mode if system audio fails
+      }
 
       console.log('🎤 Audio capture initialized successfully');
       return true;
@@ -70,10 +89,10 @@ export class DesktopAudioCapture {
   }
 
   /**
-   * Start recording audio
+   * Start recording audio from both microphone and system
    */
   async startRecording(): Promise<boolean> {
-    if (!this.audioStream) {
+    if (!this.micStream) {
       this.handleError('Audio not initialized. Call initialize() first.');
       return false;
     }
@@ -84,35 +103,63 @@ export class DesktopAudioCapture {
     }
 
     try {
-      // Create MediaRecorder for audio chunks
-      this.mediaRecorder = new MediaRecorder(this.audioStream, {
+      // Create MediaRecorder for microphone (Host)
+      this.micRecorder = new MediaRecorder(this.micStream, {
         mimeType: 'audio/webm;codecs=opus'
       });
 
-      // Set up event handlers
-      this.mediaRecorder.ondataavailable = (event) => {
+      this.micRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
-          this.audioChunks.push(event.data);
+          this.micChunks.push(event.data);
         }
       };
 
-      this.mediaRecorder.onstop = () => {
-        this.processAudioChunks();
+      this.micRecorder.onstop = () => {
+        this.processAudioChunks('Host');
       };
 
-      this.mediaRecorder.onerror = (event) => {
-        console.error('❌ MediaRecorder error:', event.error);
-        this.handleError(`Recording error: ${event.error?.message || 'Unknown error'}`);
+      // Create MediaRecorder for system audio (Visitor) if available
+      if (this.systemStream) {
+        this.systemRecorder = new MediaRecorder(this.systemStream, {
+          mimeType: 'audio/webm;codecs=opus'
+        });
+
+        this.systemRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            this.systemChunks.push(event.data);
+          }
+        };
+
+        this.systemRecorder.onstop = () => {
+          this.processAudioChunks('Visitor');
+        };
+      }
+
+      // Set up error handlers
+      this.micRecorder.onerror = (event) => {
+        console.error('❌ Microphone MediaRecorder error:', event.error);
+        this.handleError(`Mic recording error: ${event.error?.message || 'Unknown error'}`);
       };
 
-      // Start recording
-      this.mediaRecorder.start();
+      if (this.systemRecorder) {
+        this.systemRecorder.onerror = (event) => {
+          console.error('❌ System MediaRecorder error:', event.error);
+          this.handleError(`System recording error: ${event.error?.message || 'Unknown error'}`);
+        };
+      }
+
+      // Start recording both streams
+      this.micRecorder.start();
+      if (this.systemRecorder) {
+        this.systemRecorder.start();
+      }
+      
       this.isRecording = true;
 
       // Set up chunk processing interval
       this.scheduleNextChunk();
 
-      console.log('🎤 Started recording');
+      console.log('🎤 Started dual audio recording');
       return true;
 
     } catch (error) {
@@ -126,18 +173,32 @@ export class DesktopAudioCapture {
    * Stop recording audio
    */
   stopRecording(): void {
-    if (!this.isRecording || !this.mediaRecorder) {
+    if (!this.isRecording) {
       return;
     }
 
     try {
-      this.mediaRecorder.stop();
+      // Stop microphone recorder
+      if (this.micRecorder && this.micRecorder.state === 'recording') {
+        this.micRecorder.stop();
+      }
+      
+      // Stop system audio recorder
+      if (this.systemRecorder && this.systemRecorder.state === 'recording') {
+        this.systemRecorder.stop();
+      }
+      
       this.isRecording = false;
-      console.log('🛑 Stopped recording');
+      console.log('🛑 Stopped dual audio recording');
 
-      // Clean up
-      if (this.audioStream) {
-        this.audioStream.getTracks().forEach(track => track.stop());
+      // Clean up microphone stream
+      if (this.micStream) {
+        this.micStream.getTracks().forEach(track => track.stop());
+      }
+      
+      // Clean up system audio stream
+      if (this.systemStream) {
+        this.systemStream.getTracks().forEach(track => track.stop());
       }
 
     } catch (error) {
@@ -166,31 +227,46 @@ export class DesktopAudioCapture {
     if (!this.isRecording) return;
 
     setTimeout(() => {
-      if (this.mediaRecorder?.state === 'recording') {
-        this.mediaRecorder.stop();
-        
-        // Restart recording for continuous capture
-        setTimeout(() => {
-          if (this.isRecording && this.mediaRecorder) {
-            this.mediaRecorder.start();
-            this.scheduleNextChunk();
-          }
-        }, 100);
+      // Stop both recorders if they're recording
+      if (this.micRecorder?.state === 'recording') {
+        this.micRecorder.stop();
       }
+      
+      if (this.systemRecorder?.state === 'recording') {
+        this.systemRecorder.stop();
+      }
+        
+      // Restart recording for continuous capture
+      setTimeout(() => {
+        if (this.isRecording) {
+          if (this.micRecorder && this.micRecorder.state !== 'recording') {
+            this.micRecorder.start();
+          }
+          
+          if (this.systemRecorder && this.systemRecorder.state !== 'recording') {
+            this.systemRecorder.start();
+          }
+          
+          this.scheduleNextChunk();
+        }
+      }, 100);
     }, this.config.chunkDuration);
   }
 
   /**
    * Process collected audio chunks and send for transcription
    */
-  private async processAudioChunks(): Promise<void> {
-    if (this.audioChunks.length === 0) return;
+  private async processAudioChunks(speaker: 'Host' | 'Visitor'): Promise<void> {
+    // Get the appropriate chunk array based on speaker
+    const chunks = speaker === 'Host' ? this.micChunks : this.systemChunks;
+    
+    if (chunks.length === 0) return;
 
     // Rate limiting check
     const now = Date.now();
     if (now - this.lastTranscriptionTime < this.config.minInterval) {
-      console.log('⏱️ Rate limiting transcription');
-      this.audioChunks = []; // Clear chunks
+      console.log(`⏱️ Rate limiting transcription for ${speaker}`);
+      chunks.length = 0; // Clear chunks
       return;
     }
 
@@ -199,34 +275,34 @@ export class DesktopAudioCapture {
     if (this.chunkCount > this.config.maxChunksPerMinute) {
       console.warn('⚠️ Rate limit exceeded');
       this.handleError('Rate limit exceeded. Please wait before continuing.');
-      this.audioChunks = [];
+      chunks.length = 0;
       return;
     }
 
     try {
       // Combine audio chunks into single blob
-      const audioBlob = new Blob(this.audioChunks, { 
+      const audioBlob = new Blob(chunks, { 
         type: 'audio/webm;codecs=opus' 
       });
       
       // Skip if audio is too small (likely silence)
       if (audioBlob.size < 1000) {
-        console.log('🔇 Skipping small audio chunk');
-        this.audioChunks = [];
+        console.log(`🔇 Skipping small ${speaker} audio chunk`);
+        chunks.length = 0;
         return;
       }
 
       this.lastTranscriptionTime = now;
       
-      // Send to transcription API
-      const transcript = await this.sendToTranscriptionAPI(audioBlob);
+      // Send to transcription API with speaker label
+      const transcript = await this.sendToTranscriptionAPI(audioBlob, speaker);
       
       if (transcript && this.isValidTranscript(transcript)) {
-        // Create transcript message
+        // Create transcript message with proper speaker label
         const message: TranscriptMessage = {
-          id: `transcript_${Date.now()}`,
+          id: `transcript_${Date.now()}_${speaker}`,
           timestamp: new Date(),
-          speaker: 'You',
+          speaker: speaker,
           text: transcript,
         };
 
@@ -235,27 +311,29 @@ export class DesktopAudioCapture {
           this.onTranscriptCallback(message);
         }
         
-        console.log('✅ Transcribed:', transcript);
+        console.log(`✅ Transcribed (${speaker}):`, transcript);
       }
 
       // Clear processed chunks
-      this.audioChunks = [];
+      chunks.length = 0;
 
     } catch (error) {
       console.error('❌ Transcription failed:', error);
       this.handleError(`Transcription failed: ${error instanceof Error ? error.message : String(error)}`);
-      this.audioChunks = [];
+      // Clear the appropriate chunks array
+      const chunks = speaker === 'Host' ? this.micChunks : this.systemChunks;
+      chunks.length = 0;
     }
   }
 
   /**
    * Send audio blob to transcription API
    */
-  private async sendToTranscriptionAPI(audioBlob: Blob): Promise<string> {
+  private async sendToTranscriptionAPI(audioBlob: Blob, speaker: 'Host' | 'Visitor'): Promise<string> {
     const formData = new FormData();
-    formData.append('audio', audioBlob, `audio_${Date.now()}.webm`);
+    formData.append('audio', audioBlob, `audio_${Date.now()}_${speaker}.webm`);
     formData.append('model', this.config.transcriptionModel);
-    formData.append('speaker', 'User');
+    formData.append('speaker', speaker);
 
     const response = await fetch(this.config.transcriptionApiUrl, {
       method: 'POST',
@@ -330,6 +408,41 @@ export class DesktopAudioCapture {
    */
   resetChunkCount(): void {
     this.chunkCount = 0;
+  }
+
+  /**
+   * Complete cleanup and destroy the audio capture instance
+   */
+  destroy(): void {
+    // Stop recording if active
+    if (this.isRecording) {
+      this.stopRecording();
+    }
+
+    // Clean up recorders
+    this.micRecorder = null;
+    this.systemRecorder = null;
+
+    // Clean up streams
+    if (this.micStream) {
+      this.micStream.getTracks().forEach(track => track.stop());
+      this.micStream = null;
+    }
+    
+    if (this.systemStream) {
+      this.systemStream.getTracks().forEach(track => track.stop());
+      this.systemStream = null;
+    }
+
+    // Clear chunks
+    this.micChunks = [];
+    this.systemChunks = [];
+
+    // Clear callbacks
+    this.onTranscriptCallback = undefined;
+    this.onErrorCallback = undefined;
+
+    console.log('🧹 Audio capture destroyed');
   }
 }
 
