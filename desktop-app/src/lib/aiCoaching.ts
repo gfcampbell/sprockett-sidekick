@@ -10,66 +10,66 @@ import { TranscriptMessage } from './audioCapture';
 // USE CASE DEFINITIONS (from Sprockett)
 // =============================================
 
-export const USE_CASES = {
-  'sales': {
-    title: 'Close More Deals',
-    description: 'Sales calls with real-time coaching on buyer signals and objection handling',
-    systemContext: `You are an expert sales coach. Focus on:
-    - Identifying buyer signals and interest levels
-    - Coaching on objection handling techniques
-    - Timing for closing questions and next steps
-    - Reading prospect engagement and emotional state
-    - Suggesting strategic questions to uncover needs`
+export const CONVERSATION_TYPES = {
+  'persuade': {
+    title: 'Persuade/Convince',
+    description: 'Change minds and win people over to your viewpoint',
+    systemContext: `You are an expert persuasion coach using STATE method principles. Track progress from skepticism to agreement. Focus on:
+    - Objections raised → addressed with facts and empathy
+    - Skepticism → interest signals and consideration
+    - "No/But" language → "Yes/And" language shifts  
+    - Questions showing genuine consideration
+    - Share facts, Tell story tentatively, Ask for others' paths`
   },
-  'interview': {
-    title: 'Nail Every Interview',
-    description: 'Job interviews with coaching on answers and follow-up questions',
-    systemContext: `You are an expert interview coach. Focus on:
-    - Strengthening answers to show relevant experience
-    - Suggesting thoughtful follow-up questions
-    - Reading interviewer engagement and interest
-    - Coaching on storytelling and examples
-    - Timing for questions about role and company`
+  'connect': {
+    title: 'Build Connection',
+    description: 'Create rapport and strengthen personal relationships',
+    systemContext: `You are an expert relationship coach using STATE method principles. Track connection depth building. Focus on:
+    - Personal information exchanged and reciprocated
+    - Shared experiences discovered and explored
+    - Future plans mentioned together
+    - Comfort indicators (humor, informal language, openness)
+    - Encourage testing and Talk tentatively about personal matters`
   },
-  'negotiation': {
-    title: 'Win Every Negotiation',
-    description: 'Business negotiations with real-time strategy and concession timing',
-    systemContext: `You are an expert negotiation strategist. Focus on:
-    - Identifying the other party's pain points and motivations
-    - Strategic timing for concessions and proposals
-    - Reading emotional state and pressure points
-    - Coaching on value articulation and positioning
-    - Suggesting creative win-win solutions`
+  'resolve': {
+    title: 'Resolve Conflict',
+    description: 'Navigate disagreements and find common ground',
+    systemContext: `You are an expert conflict resolution coach using STATE method principles. Track movement from conflict to resolution. Focus on:
+    - Problem acknowledged by both sides
+    - Emotions de-escalated through empathy
+    - Common ground and shared purposes identified
+    - Solutions proposed and accepted by both parties
+    - Ask for others' paths and Encourage testing of solutions`
   },
-  'support': {
-    title: 'Delight Every Customer',
-    description: 'Customer support with problem diagnosis and de-escalation techniques',
-    systemContext: `You are an expert customer success coach. Focus on:
-    - Quick problem diagnosis and solution identification
-    - De-escalation techniques for frustrated customers
-    - Reading customer emotions and satisfaction levels
-    - Suggesting proactive value-add opportunities
-    - Coaching on empathy and relationship building`
+  'information': {
+    title: 'Gain Information',
+    description: 'Learn what you need to know through strategic questioning',
+    systemContext: `You are an expert information gathering coach using STATE method principles. Track information acquisition progress. Focus on:
+    - Questions asked → answered with useful details
+    - Topic depth explored through follow-up questions
+    - Clarifications received and understood
+    - Key insights captured and confirmed
+    - Ask for others' paths and Share facts to encourage reciprocity`
   },
-  'difficult': {
-    title: 'Navigate Tough Conversations',
-    description: 'Difficult conversations with emotional intelligence and solution finding',
-    systemContext: `You are an expert communication coach. Focus on:
-    - Reading emotional state and defensiveness
-    - De-escalation and empathy techniques
-    - Finding common ground and shared interests
-    - Coaching on active listening and validation
-    - Suggesting constructive solution-focused approaches`
+  'impression': {
+    title: 'Make Good Impression',
+    description: 'Present yourself positively and build credibility',
+    systemContext: `You are an expert impression management coach using STATE method principles. Track positive response indicators. Focus on:
+    - Positive responses and engaged reactions
+    - Follow-up questions showing interest in you
+    - Interest in future contact or collaboration
+    - Compliments, validation, or positive acknowledgments
+    - Tell story tentatively and Talk tentatively to avoid appearing arrogant`
   },
-  'general': {
-    title: 'General Conversation Coaching',
-    description: 'All-purpose conversation coaching and communication support',
-    systemContext: `You are a general conversation coach. Focus on:
-    - Active listening and engagement techniques
-    - Clear communication and articulation
-    - Reading conversation flow and timing
-    - Suggesting thoughtful questions and responses
-    - Building rapport and connection`
+  'agreement': {
+    title: 'Reach Agreement',
+    description: 'Find mutually acceptable solutions and commitments',
+    systemContext: `You are an expert agreement facilitation coach using STATE method principles. Track progress toward mutual commitment. Focus on:
+    - Positions stated → understood by both parties
+    - Trade-offs and compromises discussed openly
+    - Terms clarified and confirmed by both sides
+    - Commitment language and next steps established
+    - Encourage testing of agreements and Ask for others' paths to consensus`
   }
 };
 
@@ -88,7 +88,7 @@ const COACHING_CONFIG = {
 // =============================================
 
 export interface CallConfig {
-  useCase: keyof typeof USE_CASES;
+  conversationType: keyof typeof CONVERSATION_TYPES;
   goal: string;
   context: string;
 }
@@ -115,6 +115,11 @@ export interface ConversationAnalytics {
   agreeability: {
     level: number; // 1-5 scale (1=disagreeable, 5=very agreeable)
     trend: 'improving' | 'declining' | 'stable';
+    indicators: string[];
+  };
+  goalProgress: {
+    percentage: number; // 0-100% progress toward stated goal
+    trend: 'advancing' | 'stalling' | 'regressing';
     indicators: string[];
   };
 }
@@ -325,8 +330,8 @@ IMPORTANT: You are coaching the HOST. Keep responses under 8 words.`;
 
     // Add use case specific context if selected
     let useCaseContext = '';
-    if (this.callConfig.useCase && USE_CASES[this.callConfig.useCase]) {
-      useCaseContext = `\n\nSITUATION CONTEXT:\n${USE_CASES[this.callConfig.useCase].systemContext}`;
+    if (this.callConfig.conversationType && CONVERSATION_TYPES[this.callConfig.conversationType]) {
+      useCaseContext = `\n\nSITUATION CONTEXT:\n${CONVERSATION_TYPES[this.callConfig.conversationType].systemContext}`;
     }
 
     // Add user's specific goal
@@ -549,7 +554,17 @@ export const loadCallConfig = (): CallConfig => {
   try {
     const stored = localStorage.getItem('sprockett_call_config');
     if (stored) {
-      return JSON.parse(stored);
+      const parsed = JSON.parse(stored);
+      // Migrate old useCase to conversationType
+      if (parsed.useCase && !parsed.conversationType) {
+        parsed.conversationType = 'connect'; // Default migration
+        delete parsed.useCase;
+      }
+      // Ensure conversationType exists and is valid
+      if (!parsed.conversationType || !CONVERSATION_TYPES[parsed.conversationType]) {
+        parsed.conversationType = 'connect';
+      }
+      return parsed;
     }
   } catch (error) {
     console.error('Error loading call config:', error);
@@ -557,7 +572,7 @@ export const loadCallConfig = (): CallConfig => {
   
   // Return default configuration
   return {
-    useCase: 'general',
+    conversationType: 'connect',
     goal: '',
     context: ''
   };

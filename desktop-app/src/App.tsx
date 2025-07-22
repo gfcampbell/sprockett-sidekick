@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { DesktopAudioCapture, TranscriptMessage } from '@/lib/audioCapture'
-import { DesktopAICoaching, CallConfig, CoachingSuggestion, ConversationTemperature, ConversationAnalytics, USE_CASES, loadCallConfig, saveCallConfig } from '@/lib/aiCoaching'
+import { DesktopAICoaching, CallConfig, CoachingSuggestion, ConversationTemperature, ConversationAnalytics, CONVERSATION_TYPES, loadCallConfig, saveCallConfig } from '@/lib/aiCoaching'
 import { transcriptionConfig, coachingConfig } from '@/lib/config'
 import { ConfigPanel } from '@/components/ConfigPanel'
 
@@ -130,7 +130,7 @@ function App() {
         // Start AI coaching
         aiCoachingRef.current.start()
         setIsListening(true)
-        setStatus(`Listening - ${USE_CASES[callConfig.useCase].title}`)
+        setStatus(`Listening - ${CONVERSATION_TYPES[callConfig.conversationType].title}`)
       } else {
         setStatus('Error - Could not start recording')
       }
@@ -157,12 +157,12 @@ function App() {
         
         <div className="quick-config">
           <select 
-            value={callConfig.useCase} 
-            onChange={(e) => handleConfigChange({ ...callConfig, useCase: e.target.value as keyof typeof USE_CASES })}
+            value={callConfig.conversationType} 
+            onChange={(e) => handleConfigChange({ ...callConfig, conversationType: e.target.value as keyof typeof CONVERSATION_TYPES })}
             className="use-case-quick-select"
           >
-            {Object.entries(USE_CASES).map(([key, useCase]) => (
-              <option key={key} value={key}>{useCase.title}</option>
+            {Object.entries(CONVERSATION_TYPES).map(([key, conversationType]) => (
+              <option key={key} value={key}>{conversationType.title}</option>
             ))}
           </select>
           
@@ -319,8 +319,8 @@ function App() {
                     <h3>Ready to provide AI coaching</h3>
                     <p>Configure your goal above, then press Start to begin receiving real-time suggestions</p>
                     <div className="use-case-preview">
-                      <strong>{USE_CASES[callConfig.useCase].title}</strong>
-                      <span>{USE_CASES[callConfig.useCase].description}</span>
+                      <strong>{CONVERSATION_TYPES[callConfig.conversationType].title}</strong>
+                      <span>{CONVERSATION_TYPES[callConfig.conversationType].description}</span>
                     </div>
                   </div>
                 )}

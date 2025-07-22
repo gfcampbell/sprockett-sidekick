@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { USE_CASES, CallConfig } from '@/lib/aiCoaching';
+import { CONVERSATION_TYPES, CallConfig } from '@/lib/aiCoaching';
 
 interface ConfigPanelProps {
   config: CallConfig;
@@ -24,7 +24,7 @@ export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleColla
           ⚙️ Configure
         </button>
         <div className="config-summary">
-          <span className="use-case-badge">{USE_CASES[config.useCase].title}</span>
+          <span className="use-case-badge">{CONVERSATION_TYPES[config.conversationType].title}</span>
           {config.goal && <span className="goal-preview">"{config.goal.substring(0, 30)}..."</span>}
         </div>
       </div>
@@ -39,17 +39,17 @@ export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleColla
       </div>
 
       <div className="config-section">
-        <label>Use Case</label>
+        <label>Conversation Type</label>
         <select 
-          value={config.useCase} 
-          onChange={(e) => handleConfigUpdate({ useCase: e.target.value as keyof typeof USE_CASES })}
+          value={config.conversationType} 
+          onChange={(e) => handleConfigUpdate({ conversationType: e.target.value as keyof typeof CONVERSATION_TYPES })}
           className="use-case-select"
         >
-          {Object.entries(USE_CASES).map(([key, useCase]) => (
-            <option key={key} value={key}>{useCase.title}</option>
+          {Object.entries(CONVERSATION_TYPES).map(([key, conversationType]) => (
+            <option key={key} value={key}>{conversationType.title}</option>
           ))}
         </select>
-        <p className="use-case-description">{USE_CASES[config.useCase].description}</p>
+        <p className="use-case-description">{CONVERSATION_TYPES[config.conversationType].description}</p>
       </div>
 
       <div className="config-section">
