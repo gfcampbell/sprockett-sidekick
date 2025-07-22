@@ -1,4 +1,9 @@
 import { useState, useRef, useEffect } from 'react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
+import { Progress } from '@/components/ui/progress'
+import { Badge } from '@/components/ui/badge'
 
 interface VoiceEnrollmentProps {
   onComplete: (voiceProfile: VoiceProfile) => void
@@ -259,86 +264,76 @@ export function VoiceEnrollment({ onComplete, onSkip }: VoiceEnrollmentProps) {
   console.log('🎨 VoiceEnrollment rendering with inline styles for debugging')
   
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: 'rgba(0, 0, 0, 0.8)',
-      zIndex: 99999,
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center'
-    }}>
-      <div style={{
-        backgroundColor: 'white',
-        borderRadius: '24px',
-        boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-        padding: '40px',
-        maxWidth: '500px',
-        width: '90%'
-      }}>
-        {/* Progress indicator */}
-        <div className="flex justify-center mb-6">
-          <div className="flex space-x-2">
-            {ENROLLMENT_STEPS.map((_, index) => (
-              <div
-                key={index}
-                className={`w-3 h-3 rounded-full transition-colors ${
-                  index <= currentStep ? 'bg-blue-500' : 'bg-gray-200'
-                }`}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Step content */}
-        <div className="text-center mb-10">
-          <h2 className="text-3xl font-bold text-gray-900 mb-6">
+    <Dialog open={true} onOpenChange={() => {}}>
+      <DialogContent className="max-w-md mx-auto">
+        <DialogHeader>
+          <DialogTitle className="text-center text-xl font-semibold">
             {step.title}
-          </h2>
-          <p className="text-lg text-gray-600 mb-6 leading-relaxed">
-            {step.instruction}
-          </p>
-          
-          {step.prompt && (
-            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 mb-8">
-              <p className="text-blue-900 font-semibold text-lg leading-relaxed">
-                {step.prompt}
-              </p>
-            </div>
-          )}
-        </div>
-
-        {/* Recording controls */}
-        {isRecordingStep && (
-          <div className="text-center mb-10">
-            {isRecording ? (
-              <div>
-                <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-                  <div className="w-6 h-6 bg-white rounded-sm"></div>
-                </div>
-                
-                <div className="w-full bg-gray-200 rounded-full h-2 mb-2">
-                  <div 
-                    className="bg-red-500 h-2 rounded-full transition-all duration-100"
-                    style={{ width: `${recordingProgress}%` }}
-                  />
-                </div>
-                
-                <p className="text-sm text-gray-600">
-                  Recording... {Math.round(recordingProgress)}%
-                </p>
-                
-                <button
-                  onClick={stopRecording}
-                  className="mt-4 px-4 py-2 text-red-600 hover:text-red-800 transition-colors"
-                >
-                  Stop Early
-                </button>
+          </DialogTitle>
+        </DialogHeader>
+        
+        <Card className="border-0 shadow-none">
+          <CardContent className="space-y-6">
+            {/* Progress indicator */}
+            <div className="space-y-2">
+              <div className="flex justify-center space-x-2">
+                {ENROLLMENT_STEPS.map((_, index) => (
+                  <Badge 
+                    key={index}
+                    variant={index <= currentStep ? "default" : "secondary"}
+                    className={`w-8 h-8 rounded-full p-0 flex items-center justify-center ${
+                      index <= currentStep ? 'bg-blue-500' : 'bg-gray-200'
+                    }`}
+                  >
+                    {index + 1}
+                  </Badge>
+                ))}
               </div>
-            ) : (
+              <Progress value={(currentStep / (ENROLLMENT_STEPS.length - 1)) * 100} className="w-full" />
+            </div>
+
+            {/* Step content */}
+            <div className="text-center space-y-4">
+              <p className="text-base text-muted-foreground leading-relaxed">
+                {step.instruction}
+              </p>
+              
+              {step.prompt && (
+                <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+                  <CardContent className="p-4">
+                    <p className="text-blue-900 font-semibold leading-relaxed">
+                      {step.prompt}
+                    </p>
+                  </CardContent>
+                </Card>
+              )}
+            </div>
+
+            {/* Recording controls */}
+            {isRecordingStep && (
+              <div className="text-center space-y-4">
+                {isRecording ? (
+                  <div className="space-y-4">
+                    <div className="w-20 h-20 bg-red-500 rounded-full flex items-center justify-center mx-auto animate-pulse">
+                      <div className="w-6 h-6 bg-white rounded-sm"></div>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Progress value={recordingProgress} className="w-full" />
+                      <p className="text-sm text-muted-foreground">
+                        Recording... {Math.round(recordingProgress)}%
+                      </p>
+                    </div>
+                    
+                    <Button
+                      variant="ghost"
+                      onClick={stopRecording}
+                      className="text-red-600 hover:text-red-800"
+                    >
+                      Stop Early
+                    </Button>
+                  </div>
+                ) : (
               <div>
                 {samples.length > currentStep - 1 ? (
                   <div className="text-center">
@@ -350,7 +345,7 @@ export function VoiceEnrollment({ onComplete, onSkip }: VoiceEnrollmentProps) {
                     <p className="text-green-600 font-medium">Recording complete!</p>
                   </div>
                 ) : (
-                  <button
+                  <Button
                     onClick={() => {
                       console.log('🔘 Record button clicked, canRecord:', canRecord)
                       if (canRecord) {
@@ -360,46 +355,41 @@ export function VoiceEnrollment({ onComplete, onSkip }: VoiceEnrollmentProps) {
                       }
                     }}
                     disabled={!canRecord}
-                    className="w-24 h-24 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 rounded-full flex items-center justify-center mx-auto mb-6 transition-all duration-200 hover:scale-105 shadow-lg"
+                    size="lg"
+                    className="w-24 h-24 rounded-full text-2xl hover:scale-105 transition-all duration-200"
                   >
-                    <div style={{ 
-                      width: '40px', 
-                      height: '40px', 
-                      fontSize: '24px',
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'center'
-                    }}>
-                      🎤
-                    </div>
-                  </button>
+                    🎤
+                  </Button>
                 )}
               </div>
             )}
-          </div>
-        )}
+              </div>
+            )}
 
-        {/* Navigation */}
-        <div className="flex justify-between items-center pt-4">
-          <button
-            onClick={currentStep === 0 ? onSkip : handleBack}
-            className="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium transition-colors"
-          >
-            {currentStep === 0 ? 'Skip Setup' : '← Back'}
-          </button>
-          
-          <button
-            onClick={() => {
-              console.log('🔘 Next button clicked, canNext:', canNext)
-              handleNext()
-            }}
-            disabled={!canNext}
-            className="px-8 py-3 bg-blue-500 hover:bg-blue-600 disabled:bg-gray-300 text-white rounded-xl font-semibold transition-all duration-200 hover:scale-105 shadow-lg"
-          >
-            {currentStep === ENROLLMENT_STEPS.length - 1 ? 'Start Using Sprockett' : 'Next →'}
-          </button>
-        </div>
-      </div>
-    </div>
+            {/* Navigation */}
+            <div className="flex justify-between items-center pt-6">
+              <Button
+                variant="ghost"
+                onClick={currentStep === 0 ? onSkip : handleBack}
+                className="text-muted-foreground"
+              >
+                {currentStep === 0 ? 'Skip Setup' : '← Back'}
+              </Button>
+              
+              <Button
+                onClick={() => {
+                  console.log('🔘 Next button clicked, canNext:', canNext)
+                  handleNext()
+                }}
+                disabled={!canNext}
+                className="hover:scale-105 transition-all duration-200"
+              >
+                {currentStep === ENROLLMENT_STEPS.length - 1 ? 'Start Using Sprockett' : 'Next →'}
+              </Button>
+            </div>
+        </CardContent>
+        </Card>
+      </DialogContent>
+    </Dialog>
   )
 }
