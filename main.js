@@ -29,7 +29,8 @@ function createWindow() {
       contextIsolation: true,
       preload: path.join(__dirname, 'preload.js')
     },
-    titleBarStyle: 'hiddenInset',
+    titleBarStyle: 'hiddenInset', // Keeps traffic lights visible on macOS
+    trafficLightPosition: { x: 20, y: 20 }, // Position traffic lights
     vibrancy: 'under-window',
     visualEffectState: 'active'
   });
