@@ -1,23 +1,26 @@
 {
-  "name": "oblivn",
+  "name": "sprockett-sidekick",
   "version": "1.0.0",
-  "description": "Anonymous peer-to-peer video chat application using WebRTC",
+  "description": "Sprockett voice print system for personalized AI coaching",
   "main": "main.js",
   "scripts": {
     "start": "node server/server.js",
     "dev": "nodemon server/server.js",
     "electron-dev": "NODE_ENV=development electron .",
     "electron-build": "cd desktop-app && npm run build && cd .. && electron .",
-    "build": "cd desktop-app && npm run build"
+    "build": "cd desktop-app && npm run build",
+    "server:dev": "NODE_ENV=development nodemon server/server.js",
+    "deploy": "vercel --prod"
   },
   "engines": {
     "node": ">=14.0.0"
   },
   "keywords": [
+    "ai",
+    "coaching",
+    "voice",
     "webrtc",
-    "video-chat",
-    "p2p",
-    "anonymous"
+    "react"
   ],
   "author": "",
   "license": "MIT",
@@ -27,12 +30,15 @@
     "express": "^4.18.2",
     "express-rate-limit": "^7.5.0",
     "form-data": "^4.0.0",
+    "formdata-node": "^6.0.3",
     "helmet": "^8.1.0",
     "multer": "^1.4.5-lts.1",
     "node-fetch": "^2.7.0",
     "socket.io": "^4.7.2"
   },
   "devDependencies": {
+    "@vercel/node": "^3.0.0",
+    "concurrently": "^8.2.2",
     "electron": "^37.2.3",
     "nodemon": "^3.0.1"
   }

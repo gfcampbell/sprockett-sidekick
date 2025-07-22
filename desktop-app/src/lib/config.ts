@@ -3,9 +3,15 @@
  * Adapted from original Sprockett config.js
  */
 
+// Determine if we're in development or production
+const isDevelopment = typeof window !== 'undefined' ? 
+  window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' :
+  false;
+const baseUrl = isDevelopment ? 'http://localhost:3002' : '';
+
 export const transcriptionConfig = {
-  // Server proxy endpoint (running on localhost:3002)
-  transcriptionApiUrl: 'http://localhost:3002/api/transcribe',
+  // Server proxy endpoint
+  transcriptionApiUrl: `${baseUrl}/api/transcribe`,
   transcriptionModel: 'whisper-1',
   chunkDuration: 8000, // 8 seconds per audio chunk (longer to avoid cutting sentences)
   minInterval: 1000, // Minimum 1 second between transcriptions
@@ -16,14 +22,14 @@ export const transcriptionConfig = {
 
 export const coachingConfig = {
   // Server proxy endpoint for AI coaching
-  COACHING_API_URL: 'http://localhost:3002/api/coach',
+  COACHING_API_URL: `${baseUrl}/api/coach`,
   COACHING_INTERVAL: 15000, // 15 seconds between coaching suggestions
   CONTEXT_WINDOW_DURATION: 60000, // 60 seconds of context
   MAX_TRANSCRIPT_ENTRIES: 100, // Keep last 100 transcript entries
 };
 
 export const appConfig = {
-  SERVER_URL: 'http://localhost:3002',
+  SERVER_URL: baseUrl,
   DEFAULT_USE_CASE: 'general_conversation',
   AUTO_SCROLL_TRANSCRIPT: true,
   MAX_SUGGESTIONS: 5,

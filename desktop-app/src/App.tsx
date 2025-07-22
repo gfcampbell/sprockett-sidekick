@@ -3,8 +3,16 @@ import { DesktopAudioCapture, TranscriptMessage } from '@/lib/audioCapture'
 import { DesktopAICoaching, CallConfig, CoachingSuggestion, ConversationTemperature, ConversationAnalytics, CONVERSATION_TYPES, loadCallConfig, saveCallConfig } from '@/lib/aiCoaching'
 import { transcriptionConfig, coachingConfig } from '@/lib/config'
 import { ConfigPanel } from '@/components/ConfigPanel'
+import { VoiceEnrollment, VoiceProfile } from '@/components/VoiceEnrollment'
+import { hasVoiceProfile, saveVoiceProfile, loadVoiceProfile, getSpeakerDisplayName, getSpeakerRole } from '@/lib/voiceProfile'
 
 function App() {
+  // Voice enrollment state - force show for testing
+  const [showVoiceEnrollment, setShowVoiceEnrollment] = useState(!hasVoiceProfile())
+  const [userVoiceProfile, setUserVoiceProfile] = useState<VoiceProfile | null>(loadVoiceProfile())
+  
+  console.log('🎭 App render - showVoiceEnrollment:', showVoiceEnrollment, 'hasVoiceProfile:', hasVoiceProfile())
+  
   // Core state
   const [isListening, setIsListening] = useState(false)
   const [transcriptMessages, setTranscriptMessages] = useState<TranscriptMessage[]>([])
@@ -18,7 +26,7 @@ function App() {
   })
   const [energyHistory, setEnergyHistory] = useState<number[]>([])
   const [agreeabilityHistory, setAgreeabilityHistory] = useState<number[]>([])
-  const [goalProgressHistory, setGoalProgressHistory] = useState<number[]>([])
+  // const [goalProgressHistory, setGoalProgressHistory] = useState<number[]>([]); // Reserved for future use
   const [status, setStatus] = useState('Ready to start')
   const [error, setError] = useState<string | null>(null)
   
@@ -31,6 +39,19 @@ function App() {
   const audioCaptureRef = useRef<DesktopAudioCapture | null>(null)
   const aiCoachingRef = useRef<DesktopAICoaching | null>(null)
 
+  // Voice enrollment handlers
+  const handleVoiceEnrollmentComplete = (profile: VoiceProfile) => {
+    saveVoiceProfile(profile)
+    setUserVoiceProfile(profile)
+    setShowVoiceEnrollment(false)
+    console.log(`🎤 Voice profile created for ${profile.name}`)
+  }
+
+  const handleVoiceEnrollmentSkip = () => {
+    setShowVoiceEnrollment(false)
+    console.log('⏭️ Voice enrollment skipped')
+  }
+
   // Initialize audio capture and AI coaching systems
   useEffect(() => {
     // Initialize audio capture
@@ -39,7 +60,14 @@ function App() {
     // Set up transcript callback
     audioCapture.onTranscript((message: TranscriptMessage) => {
       setTranscriptMessages(prev => {
-        const updated = [...prev.slice(-50), message]; // Keep last 50 messages
+        // Enhance message with voice profile information
+        const enhancedMessage = {
+          ...message,
+          displayName: getSpeakerDisplayName(message.speaker, undefined), // TODO: Add profile matching
+          speakerRole: getSpeakerRole(message.speaker, undefined)
+        }
+        
+        const updated = [...prev.slice(-50), enhancedMessage]; // Keep last 50 messages
         // Make transcript available to AI coaching system
         (window as any).__transcriptMessages = updated;
         return updated;
@@ -87,7 +115,7 @@ function App() {
       // Add to history for sparklines (keep last 20 readings)
       setEnergyHistory(prev => [...prev.slice(-19), analyticsData.energy.level])
       setAgreeabilityHistory(prev => [...prev.slice(-19), analyticsData.agreeability.level])
-      setGoalProgressHistory(prev => [...prev.slice(-19), analyticsData.goalProgress.percentage])
+      // setGoalProgressHistory(prev => [...prev.slice(-19), analyticsData.goalProgress.percentage]) // Reserved for future use
     })
     
     aiCoachingRef.current = aiCoaching
@@ -121,7 +149,7 @@ function App() {
       setTempHistory([]) // Clear temperature history for new session
       setEnergyHistory([]) // Clear energy history for new session
       setAgreeabilityHistory([]) // Clear agreeability history for new session
-      setGoalProgressHistory([]) // Clear goal progress history for new session
+      // setGoalProgressHistory([]) // Clear goal progress history for new session // Reserved for future use
       
       const initialized = await audioCaptureRef.current.initialize()
       if (!initialized) {
@@ -152,6 +180,7 @@ function App() {
   }
 
   return (
+    <>
     <div className="app">
       {/* Compact Top Control Bar */}
       <div className="top-bar">
@@ -185,6 +214,29 @@ function App() {
             className={`config-btn ${isConfigPanelOpen ? 'active' : ''}`}
           >
             ⚙️
+          </button>
+          
+          {/* Dev: Reset voice profile button - always show for now */}
+          <button 
+            onClick={() => {
+              console.log('🔄 Resetting voice profile...')
+              localStorage.removeItem('sprockett_voice_profile')
+              setUserVoiceProfile(null)
+              setShowVoiceEnrollment(true)
+              console.log('✅ Voice profile reset, modal should appear')
+            }}
+            style={{ 
+              padding: '8px 12px', 
+              background: 'orange', 
+              color: 'white', 
+              borderRadius: '6px', 
+              border: 'none', 
+              fontSize: '12px',
+              marginLeft: '8px',
+              cursor: 'pointer'
+            }}
+          >
+            🔄 Reset Voice
           </button>
           
           <button 
@@ -368,13 +420,21 @@ function App() {
         <div className="transcript-panel">
           <div className="transcript-content">
             {transcriptMessages.length > 0 ? (
-              transcriptMessages.slice(-10).map((message) => (
-                <div key={message.id} className="transcript-message">
-                  <span className="transcript-speaker">{message.speaker}:</span>
-                  <span className="transcript-text">{message.text}</span>
-                  <span className="transcript-time">{message.timestamp.toLocaleTimeString()}</span>
-                </div>
-              ))
+              transcriptMessages.slice(-10).map((message) => {
+                const displayName = (message as any).displayName || getSpeakerDisplayName(message.speaker)
+                const speakerRole = (message as any).speakerRole || getSpeakerRole(message.speaker)
+                const isUser = userVoiceProfile && speakerRole === 'You'
+                
+                return (
+                  <div key={message.id} className={`transcript-message ${isUser ? 'user-message' : ''}`}>
+                    <span className={`transcript-speaker ${isUser ? 'user-speaker' : ''}`}>
+                      {displayName}:
+                    </span>
+                    <span className="transcript-text">{message.text}</span>
+                    <span className="transcript-time">{message.timestamp.toLocaleTimeString()}</span>
+                  </div>
+                )
+              })
             ) : (
               <div className="transcript-empty">
                 {isListening ? 'Listening for speech...' : 'Transcript will appear here when you start listening'}
@@ -392,6 +452,22 @@ function App() {
         </div>
       )}
     </div>
+    {/* Voice Enrollment Modal - Outside main container for true overlay */}
+    {console.log('🔍 Debug: showVoiceEnrollment =', showVoiceEnrollment, 'hasVoiceProfile =', hasVoiceProfile())}
+    {showVoiceEnrollment ? (
+      <>
+        {console.log('✅ Rendering VoiceEnrollment component')}
+        <VoiceEnrollment
+          onComplete={handleVoiceEnrollmentComplete}
+          onSkip={handleVoiceEnrollmentSkip}
+        />
+      </>
+    ) : (
+      <>
+        {console.log('❌ NOT rendering VoiceEnrollment - showVoiceEnrollment is false')}
+      </>
+    )}
+    </>
   )
 }
 

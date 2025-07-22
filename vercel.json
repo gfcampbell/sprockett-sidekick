@@ -1,0 +1,31 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "desktop-app/dist/**/*",
+      "use": "@vercel/static"
+    },
+    {
+      "src": "api/**/*.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/(.*)",
+      "dest": "/api/$1"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/desktop-app/dist/$1"
+    }
+  ],
+  "functions": {
+    "api/transcribe.js": {
+      "maxDuration": 30
+    },
+    "api/coach.js": {
+      "maxDuration": 30
+    }
+  }
+}

@@ -510,12 +510,24 @@ body {
   margin-bottom: 8px;
   font-size: 14px;
   line-height: 1.4;
+  padding: 8px;
+  border-radius: 6px;
+  transition: all 0.2s ease;
+}
+
+.transcript-message.user-message {
+  background: rgba(59, 130, 246, 0.1);
+  border-left: 3px solid #059669;
 }
 
 .transcript-speaker {
   font-weight: 600;
   color: #4c51bf;
   min-width: 50px;
+}
+
+.transcript-speaker.user-speaker {
+  color: #059669;
 }
 
 .transcript-text {

@@ -129,9 +129,9 @@ export interface ConversationAnalytics {
 // =============================================
 
 export class DesktopAICoaching {
-  private coachingInterval: NodeJS.Timeout | null = null;
+  private coachingInterval: number | null = null;
   private isActive = false;
-  private lastCoachingRequest = 0;
+  // private lastCoachingRequest = 0; // Reserved for rate limiting
   private callConfig: CallConfig;
   private apiUrl: string;
   private onSuggestionCallback?: (suggestion: CoachingSuggestion) => void;
@@ -154,9 +154,9 @@ export class DesktopAICoaching {
     console.log('🤖 AI Coaching started - requesting suggestions every', COACHING_CONFIG.INTERVAL_MS / 1000, 'seconds');
     
     // Start periodic coaching requests
-    this.coachingInterval = setInterval(async () => {
+    this.coachingInterval = window.setInterval(async () => {
       await this.requestCoachingSuggestion();
-    }, COACHING_CONFIG.INTERVAL_MS);
+    }, COACHING_CONFIG.INTERVAL_MS) as number;
     
     // Send initial request after a short delay to let conversation start
     setTimeout(async () => {
@@ -235,7 +235,7 @@ export class DesktopAICoaching {
       // Send to coaching API
       await this.sendToCoachAPI(promptPayload);
       
-      this.lastCoachingRequest = Date.now();
+      // this.lastCoachingRequest = Date.now(); // Reserved for rate limiting
       
     } catch (error) {
       console.error('❌ Error requesting coaching suggestion:', error);
@@ -573,7 +573,7 @@ export const loadCallConfig = (): CallConfig => {
         delete parsed.useCase;
       }
       // Ensure conversationType exists and is valid
-      if (!parsed.conversationType || !CONVERSATION_TYPES[parsed.conversationType]) {
+      if (!parsed.conversationType || !CONVERSATION_TYPES[parsed.conversationType as keyof typeof CONVERSATION_TYPES]) {
         parsed.conversationType = 'connect';
       }
       return parsed;

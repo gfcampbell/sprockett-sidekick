@@ -37,7 +37,7 @@ function createWindow() {
 
   // In development, load from Vite dev server
   if (process.env.NODE_ENV === 'development') {
-    mainWindow.loadURL('http://localhost:5173');
+    mainWindow.loadURL('http://localhost:5174');
     mainWindow.webContents.openDevTools();
   } else {
     // In production, load built files
@@ -85,22 +85,4 @@ ipcMain.handle('request-media-access', async () => {
   return true;
 });
 
-// Handle desktop audio sources
-ipcMain.handle('get-desktop-sources', async () => {
-  const { desktopCapturer } = require('electron');
-  try {
-    const sources = await desktopCapturer.getSources({ 
-      types: ['window', 'screen'],
-      fetchWindowIcons: true 
-    });
-    
-    return sources.map(source => ({
-      id: source.id,
-      name: source.name,
-      thumbnail: source.thumbnail.toDataURL()
-    }));
-  } catch (error) {
-    console.error('Error getting desktop sources:', error);
-    return [];
-  }
-});
+// Desktop capture removed - using voice print detection instead

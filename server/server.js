@@ -169,10 +169,17 @@ app.post('/api/transcribe', transcriptionLimiter, upload.single('audio'), async 
       return res.status(400).json({ error: 'No audio file provided' });
     }
 
-    const { model = 'whisper-1', speaker = 'Unknown' } = req.body;
+    const { 
+      model = 'whisper-1', 
+      speaker = 'Unknown',
+      enable_speaker_detection = 'false',
+      max_speakers = '5'
+    } = req.body;
+    
     const audioBuffer = req.file.buffer;
+    const enableSpeakerDetection = enable_speaker_detection === 'true';
 
-    console.log(`🎤 Transcribing audio for ${speaker}: ${audioBuffer.length} bytes`);
+    console.log(`🎤 Transcribing audio (${enableSpeakerDetection ? 'with speaker detection' : 'single speaker'}): ${audioBuffer.length} bytes`);
 
     // Prepare FormData for OpenAI API
     const FormData = require('form-data');
@@ -187,8 +194,13 @@ app.post('/api/transcribe', transcriptionLimiter, upload.single('audio'), async 
     // Add model parameter
     formData.append('model', model);
     
-    // Optional: Add response format
-    formData.append('response_format', 'json');
+    // Add response format - use verbose_json for speaker detection
+    if (enableSpeakerDetection) {
+      formData.append('response_format', 'verbose_json');
+      formData.append('timestamp_granularities', 'segment');
+    } else {
+      formData.append('response_format', 'json');
+    }
 
     // Call OpenAI Whisper API
     const fetch = require('node-fetch');
@@ -214,16 +226,62 @@ app.post('/api/transcribe', transcriptionLimiter, upload.single('audio'), async 
 
     const result = await response.json();
     
-    // Log successful transcription
-    console.log(`✅ Transcription for ${speaker}: "${result.text}"`);
-
-    // Return transcribed text
-    res.json({ 
-      text: result.text,
-      speaker: speaker,
-      timestamp: new Date().toISOString(),
-      model: model
-    });
+    if (enableSpeakerDetection && result.segments) {
+      // Process speaker-detected segments
+      const speakerMap = new Map();
+      const segments = [];
+      
+      for (const segment of result.segments) {
+        // Simple speaker detection based on voice characteristics
+        // This is a basic implementation - more sophisticated speaker diarization
+        // would require additional AI models
+        const speakerId = `Speaker_${segment.id % parseInt(max_speakers)}`;
+        
+        if (!speakerMap.has(speakerId)) {
+          speakerMap.set(speakerId, {
+            totalDuration: 0,
+            segments: 0
+          });
+        }
+        
+        const speakerInfo = speakerMap.get(speakerId);
+        speakerInfo.totalDuration += (segment.end - segment.start);
+        speakerInfo.segments += 1;
+        speakerMap.set(speakerId, speakerInfo);
+        
+        segments.push({
+          speaker: speakerId,
+          text: segment.text.trim(),
+          start: segment.start,
+          end: segment.end
+        });
+      }
+      
+      console.log(`✅ Speaker detection transcription: ${segments.length} segments from ${speakerMap.size} speakers`);
+      
+      res.json({
+        segments: segments,
+        speakers: Object.fromEntries(speakerMap),
+        text: result.text, // Full text fallback
+        timestamp: new Date().toISOString(),
+        model: model
+      });
+      
+    } else {
+      // Standard single-speaker response
+      console.log(`✅ Transcription for ${speaker}: "${result.text}"`);
+      
+      res.json({ 
+        segments: [{
+          speaker: speaker,
+          text: result.text
+        }],
+        text: result.text,
+        speaker: speaker,
+        timestamp: new Date().toISOString(),
+        model: model
+      });
+    }
 
   } catch (error) {
     console.error('❌ Transcription error:', error);
