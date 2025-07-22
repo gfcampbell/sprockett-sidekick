@@ -2,10 +2,13 @@
   "name": "oblivn",
   "version": "1.0.0",
   "description": "Anonymous peer-to-peer video chat application using WebRTC",
-  "main": "server/server.js",
+  "main": "main.js",
   "scripts": {
     "start": "node server/server.js",
-    "dev": "nodemon server/server.js"
+    "dev": "nodemon server/server.js",
+    "electron-dev": "NODE_ENV=development electron .",
+    "electron-build": "cd desktop-app && npm run build && cd .. && electron .",
+    "build": "cd desktop-app && npm run build"
   },
   "engines": {
     "node": ">=14.0.0"
@@ -30,6 +33,7 @@
     "socket.io": "^4.7.2"
   },
   "devDependencies": {
+    "electron": "^37.2.3",
     "nodemon": "^3.0.1"
   }
 }

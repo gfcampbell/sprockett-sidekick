@@ -100,6 +100,20 @@ const transcriptionLimiter = rateLimit({
 // Apply general rate limiting to all routes (but with generous limits)
 app.use(limiter);
 
+// Add CORS headers for desktop app
+app.use((req, res, next) => {
+  res.header('Access-Control-Allow-Origin', '*');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  
+  // Handle preflight requests
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
 // Serve static files from client directory
 app.use(express.static(path.join(__dirname, '../client')));
 
@@ -228,7 +242,7 @@ app.post('/api/transcribe', transcriptionLimiter, upload.single('audio'), async 
 /**
  * AI Coaching endpoint - sends conversation context to OpenAI for coaching suggestions
  */
-app.post('/api/coach', transcriptionLimiter, async (req, res) => {
+app.post('/api/coach', async (req, res) => {
   try {
     // Check if OpenAI API key is configured
     if (!OPENAI_API_KEY) {
