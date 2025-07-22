@@ -84,3 +84,23 @@ ipcMain.handle('request-media-access', async () => {
   }
   return true;
 });
+
+// Handle desktop audio sources
+ipcMain.handle('get-desktop-sources', async () => {
+  const { desktopCapturer } = require('electron');
+  try {
+    const sources = await desktopCapturer.getSources({ 
+      types: ['window', 'screen'],
+      fetchWindowIcons: true 
+    });
+    
+    return sources.map(source => ({
+      id: source.id,
+      name: source.name,
+      thumbnail: source.thumbnail.toDataURL()
+    }));
+  } catch (error) {
+    console.error('Error getting desktop sources:', error);
+    return [];
+  }
+});

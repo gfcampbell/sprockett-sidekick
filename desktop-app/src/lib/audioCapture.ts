@@ -33,6 +33,11 @@ export class DesktopAudioCapture {
   private config: AudioCaptureConfig;
   private onTranscriptCallback?: (message: TranscriptMessage) => void;
   private onErrorCallback?: (error: string) => void;
+  
+  // Echo detection properties
+  private recentMicActivity: number = 0;
+  private recentSystemActivity: number = 0;
+  private echoDetectionWindow: number = 2000; // 2 seconds
 
   constructor(config: AudioCaptureConfig) {
     this.config = config;
@@ -64,17 +69,99 @@ export class DesktopAudioCapture {
 
       // Get system audio stream (Visitor)
       try {
-        this.systemStream = await navigator.mediaDevices.getDisplayMedia({
-          video: false,
-          audio: {
-            echoCancellation: false, // We want to capture the raw system audio
-            noiseSuppression: false,
-            autoGainControl: false,
+        console.log('🎯 Requesting system audio capture...');
+        
+        // Check if we're in Electron and can use desktop capturer
+        if (window.electronAPI?.getDesktopSources) {
+          console.log('🖥️ Using Electron desktop capturer...');
+          const sources = await window.electronAPI.getDesktopSources();
+          
+          if (sources.length > 0) {
+            // For now, use the first screen source
+            const source = sources.find(s => s.name.includes('Screen')) || sources[0];
+            console.log('📺 Selected source:', source.name);
+            
+            // Use the source ID with getUserMedia
+            this.systemStream = await navigator.mediaDevices.getUserMedia({
+              audio: {
+                mandatory: {
+                  chromeMediaSource: 'desktop',
+                  chromeMediaSourceId: source.id
+                }
+              },
+              video: false
+            } as any);
+          } else {
+            throw new Error('No desktop sources available');
           }
+        } else {
+          // Fallback to getDisplayMedia for non-Electron environments
+          try {
+            this.systemStream = await navigator.mediaDevices.getDisplayMedia({
+              video: false,
+              audio: {
+                echoCancellation: false,
+                noiseSuppression: false,
+                autoGainControl: false,
+              }
+            });
+          } catch (audioOnlyError) {
+            console.log('⚠️ Audio-only capture not supported, trying with video...');
+            
+            // Second try: Request screen with audio, then remove video track
+            const streamWithVideo = await navigator.mediaDevices.getDisplayMedia({
+              video: true,
+              audio: {
+                echoCancellation: false,
+                noiseSuppression: false,
+                autoGainControl: false,
+              }
+            });
+            
+            // Remove video tracks to save resources
+            streamWithVideo.getVideoTracks().forEach(track => {
+              track.stop();
+              streamWithVideo.removeTrack(track);
+            });
+            
+            this.systemStream = streamWithVideo;
+            console.log('✅ Using screen capture with audio (video removed)');
+          }
+        }
+        
+        // Check if we actually got audio tracks
+        const audioTracks = this.systemStream.getAudioTracks();
+        console.log('🔊 System audio tracks received:', audioTracks.length);
+        
+        if (audioTracks.length === 0) {
+          console.error('❌ No audio tracks in system stream - user may not have selected audio');
+          throw new Error('No audio tracks in system stream');
+        }
+        
+        // Log track details
+        audioTracks.forEach((track, index) => {
+          console.log(`🎵 Audio track ${index}:`, {
+            label: track.label,
+            kind: track.kind,
+            enabled: track.enabled,
+            muted: track.muted,
+            readyState: track.readyState
+          });
         });
-        console.log('🔊 System audio capture initialized');
+        
+        console.log('✅ System audio capture initialized successfully');
       } catch (systemError) {
         console.warn('⚠️ System audio capture failed - continuing with microphone only:', systemError);
+        console.warn('💡 TIP: When the screen picker appears:');
+        console.warn('   1. Select a screen or window to share');
+        console.warn('   2. CHECK the "Share system audio" checkbox');
+        console.warn('   3. Click "Share" to enable Visitor audio capture');
+        
+        // Alert user if we're in a browser/Electron context
+        if (typeof window !== 'undefined' && this.onErrorCallback) {
+          this.onErrorCallback('System audio not captured. To hear other participants: Select screen/window and check "Share system audio" in the picker.');
+        }
+        
         // Continue with mic-only mode if system audio fails
       }
 
@@ -115,11 +202,13 @@ export class DesktopAudioCapture {
       };
 
       this.micRecorder.onstop = () => {
+        console.log('🎤 Mic recorder stopped, chunks:', this.micChunks.length);
         this.processAudioChunks('Host');
       };
 
       // Create MediaRecorder for system audio (Visitor) if available
       if (this.systemStream) {
+        console.log('🔊 Creating system audio recorder');
         this.systemRecorder = new MediaRecorder(this.systemStream, {
           mimeType: 'audio/webm;codecs=opus'
         });
@@ -127,12 +216,16 @@ export class DesktopAudioCapture {
         this.systemRecorder.ondataavailable = (event) => {
           if (event.data.size > 0) {
             this.systemChunks.push(event.data);
+            console.log('🔊 System chunk received, size:', event.data.size, 'Total chunks:', this.systemChunks.length);
           }
         };
 
         this.systemRecorder.onstop = () => {
+          console.log('🔊 System recorder stopped, chunks:', this.systemChunks.length);
           this.processAudioChunks('Visitor');
         };
+      } else {
+        console.warn('⚠️ No system stream available - mic only mode');
       }
 
       // Set up error handlers
@@ -260,13 +353,44 @@ export class DesktopAudioCapture {
     // Get the appropriate chunk array based on speaker
     const chunks = speaker === 'Host' ? this.micChunks : this.systemChunks;
     
-    if (chunks.length === 0) return;
+    console.log(`📊 Processing ${speaker} chunks:`, chunks.length);
+    
+    if (chunks.length === 0) {
+      console.log(`⚠️ No chunks to process for ${speaker}`);
+      return;
+    }
+
+    const now = Date.now();
+    
+    // Update activity timestamps
+    if (speaker === 'Host') {
+      this.recentMicActivity = now;
+    } else {
+      this.recentSystemActivity = now;
+    }
+
+    // Echo detection: Check if both streams are active simultaneously
+    const timeSinceOtherActivity = speaker === 'Host' 
+      ? now - this.recentSystemActivity 
+      : now - this.recentMicActivity;
+    
+    const isLikelyEcho = timeSinceOtherActivity < this.echoDetectionWindow;
+    
+    // Suppression logic: For Visitor audio, skip if likely echo
+    if (speaker === 'Visitor' && isLikelyEcho) {
+      console.log('🔇 Suppressing likely echo from Visitor stream');
+      this.systemChunks.length = 0;
+      return;
+    }
 
     // Rate limiting check
-    const now = Date.now();
     if (now - this.lastTranscriptionTime < this.config.minInterval) {
       console.log(`⏱️ Rate limiting transcription for ${speaker}`);
-      chunks.length = 0; // Clear chunks
+      if (speaker === 'Host') {
+        this.micChunks.length = 0;
+      } else {
+        this.systemChunks.length = 0;
+      }
       return;
     }
 
@@ -275,7 +399,11 @@ export class DesktopAudioCapture {
     if (this.chunkCount > this.config.maxChunksPerMinute) {
       console.warn('⚠️ Rate limit exceeded');
       this.handleError('Rate limit exceeded. Please wait before continuing.');
-      chunks.length = 0;
+      if (speaker === 'Host') {
+        this.micChunks.length = 0;
+      } else {
+        this.systemChunks.length = 0;
+      }
       return;
     }
 
@@ -288,7 +416,11 @@ export class DesktopAudioCapture {
       // Skip if audio is too small (likely silence)
       if (audioBlob.size < 1000) {
         console.log(`🔇 Skipping small ${speaker} audio chunk`);
-        chunks.length = 0;
+        if (speaker === 'Host') {
+          this.micChunks.length = 0;
+        } else {
+          this.systemChunks.length = 0;
+        }
         return;
       }
 
@@ -315,14 +447,21 @@ export class DesktopAudioCapture {
       }
 
       // Clear processed chunks
-      chunks.length = 0;
+      if (speaker === 'Host') {
+        this.micChunks.length = 0;
+      } else {
+        this.systemChunks.length = 0;
+      }
 
     } catch (error) {
       console.error('❌ Transcription failed:', error);
       this.handleError(`Transcription failed: ${error instanceof Error ? error.message : String(error)}`);
       // Clear the appropriate chunks array
-      const chunks = speaker === 'Host' ? this.micChunks : this.systemChunks;
-      chunks.length = 0;
+      if (speaker === 'Host') {
+        this.micChunks.length = 0;
+      } else {
+        this.systemChunks.length = 0;
+      }
     }
   }
 
@@ -451,6 +590,7 @@ declare global {
   interface Window {
     electronAPI?: {
       requestMediaAccess(): Promise<boolean>;
+      getDesktopSources(): Promise<Array<{id: string, name: string, thumbnail: string}>>;
       startAudioCapture(): Promise<void>;
       stopAudioCapture(): Promise<void>;
       transcribeAudio(audioData: any): Promise<any>;
