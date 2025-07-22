@@ -290,13 +290,16 @@ export class DesktopAICoaching {
     const userMessage = `CURRENT CONVERSATION:
 ${transcript}
 
+USER'S GOAL: ${this.callConfig.goal}
+
 ANALYSIS REQUEST:
 1. Rate conversation warmth (1-5): 1=cold/hostile, 3=neutral, 5=warm/positive
 2. Rate other person's energy (1-5): 1=low/flat, 3=moderate, 5=high/excited
 3. Rate other person's agreeability (1-5): 1=resistant/argumentative, 3=neutral, 5=very agreeable/supportive
-4. Provide 1 ULTRA-SHORT coaching tip (5-8 words max)
+4. Rate goal progress (0-100): How close is user to achieving their stated goal?
+5. Provide 1 ULTRA-SHORT coaching tip (5-8 words max)
 
-Format: "TEMP:3 ENERGY:4 AGREE:2 🤖 [5-8 words]"`;
+Format: "TEMP:3 ENERGY:4 AGREE:2 GOAL:45 🤖 [5-8 words]"`;
 
     return {
       model: 'gpt-4-turbo-preview',
@@ -406,13 +409,17 @@ IMPORTANT: You are coaching the HOST. Keep responses under 8 words.`;
                 const tempMatch = suggestion.match(/TEMP:(\d)/);
                 const energyMatch = suggestion.match(/ENERGY:(\d)/);
                 const agreeMatch = suggestion.match(/AGREE:(\d)/);
+                const goalMatch = suggestion.match(/GOAL:(\d+)/);
                 
                 const tempLevel = tempMatch ? parseInt(tempMatch[1]) : 3;
                 const energyLevel = energyMatch ? parseInt(energyMatch[1]) : 3;
                 const agreeLevel = agreeMatch ? parseInt(agreeMatch[1]) : 3;
+                const goalProgress = goalMatch ? parseInt(goalMatch[1]) : 50;
                 
                 // Extract coaching tip (remove all metric tags)
-                const coachingTip = suggestion.replace(/TEMP:\d+\s*ENERGY:\d+\s*AGREE:\d+\s*/, '');
+                let coachingTip = suggestion.replace(/TEMP:\d+\s*/g, '').replace(/ENERGY:\d+\s*/g, '').replace(/AGREE:\d+\s*/g, '').replace(/GOAL:\d+\s*/g, '');
+                // Also remove any remaining patterns like "🤖 " at start
+                coachingTip = coachingTip.replace(/^[^a-zA-Z]*/, '').trim();
                 
                 // Update temperature
                 if (this.onTemperatureCallback) {
@@ -434,6 +441,11 @@ IMPORTANT: You are coaching the HOST. Keep responses under 8 words.`;
                     agreeability: {
                       level: agreeLevel,
                       trend: 'stable', // TODO: compare with previous
+                      indicators: []
+                    },
+                    goalProgress: {
+                      percentage: goalProgress,
+                      trend: 'advancing', // TODO: compare with previous
                       indicators: []
                     }
                   });

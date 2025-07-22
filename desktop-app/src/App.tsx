@@ -13,10 +13,12 @@ function App() {
   const [tempHistory, setTempHistory] = useState<number[]>([])
   const [analytics, setAnalytics] = useState<ConversationAnalytics>({
     energy: { level: 3, trend: 'stable', indicators: [] },
-    agreeability: { level: 3, trend: 'stable', indicators: [] }
+    agreeability: { level: 3, trend: 'stable', indicators: [] },
+    goalProgress: { percentage: 0, trend: 'advancing', indicators: [] }
   })
   const [energyHistory, setEnergyHistory] = useState<number[]>([])
   const [agreeabilityHistory, setAgreeabilityHistory] = useState<number[]>([])
+  const [goalProgressHistory, setGoalProgressHistory] = useState<number[]>([])
   const [status, setStatus] = useState('Ready to start')
   const [error, setError] = useState<string | null>(null)
   
@@ -85,6 +87,7 @@ function App() {
       // Add to history for sparklines (keep last 20 readings)
       setEnergyHistory(prev => [...prev.slice(-19), analyticsData.energy.level])
       setAgreeabilityHistory(prev => [...prev.slice(-19), analyticsData.agreeability.level])
+      setGoalProgressHistory(prev => [...prev.slice(-19), analyticsData.goalProgress.percentage])
     })
     
     aiCoachingRef.current = aiCoaching
@@ -118,6 +121,7 @@ function App() {
       setTempHistory([]) // Clear temperature history for new session
       setEnergyHistory([]) // Clear energy history for new session
       setAgreeabilityHistory([]) // Clear agreeability history for new session
+      setGoalProgressHistory([]) // Clear goal progress history for new session
       
       const initialized = await audioCaptureRef.current.initialize()
       if (!initialized) {
@@ -290,6 +294,17 @@ function App() {
                   )}
                 </svg>
                 <span className="metric-label">Agreement</span>
+              </div>
+
+              {/* Goal Progress Thermometer */}
+              <div className="thermometer-container">
+                <div className="thermometer">
+                  <div 
+                    className="thermometer-fill" 
+                    style={{ height: `${analytics.goalProgress.percentage}%` }}
+                  />
+                </div>
+                <span className="metric-label">Goal Progress</span>
               </div>
             </div>
           </div>

@@ -311,6 +311,40 @@ body {
   white-space: nowrap;
 }
 
+.thermometer-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.thermometer {
+  width: 20px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  position: relative;
+  overflow: hidden;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+.thermometer-fill {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: linear-gradient(to top, #e53e3e 0%, #d69e2e 50%, #38a169 100%);
+  border-radius: 8px;
+  transition: height 0.8s ease-in-out;
+}
+
+
+.progress-percentage {
+  font-size: 12px;
+  font-weight: 700;
+  color: #2d3748;
+}
+
 .suggestions-content {
   flex: 1;
   padding: 30px;
