@@ -1,0 +1,17 @@
+# Dependency directories
+node_modules/
+
+# Test directories
+tests/
+
+# Environment variables
+.env
+
+# Coverage directory
+coverage/
+
+# OS specific files
+.DS_Store
+
+# NPM lock file
+package-lock.json

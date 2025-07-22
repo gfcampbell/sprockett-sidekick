@@ -1,0 +1,7 @@
+services:
+  - type: web
+    name: oblivn
+    env: node
+    buildCommand: npm install
+    startCommand: npm start
+    websocket: true
