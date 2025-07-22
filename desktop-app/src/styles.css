@@ -281,29 +281,34 @@ body {
   gap: 12px;
 }
 
-.temp-gauge {
+.analytics-dashboard {
   display: flex;
   align-items: center;
-  gap: 4px;
-  padding: 8px 12px;
+  gap: 16px;
+  padding: 8px 16px;
   background: rgba(255, 255, 255, 0.8);
   border-radius: 20px;
 }
 
-.temp-gauge .hot {
-  animation: flicker 1s ease-in-out infinite alternate;
+.analytics-metric {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
 }
 
-.temp-label {
-  margin-left: 8px;
-  font-size: 12px;
+.sparkline {
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: 4px;
+  padding: 2px;
+}
+
+.metric-label {
+  font-size: 10px;
   font-weight: 600;
   color: #4a5568;
-}
-
-@keyframes flicker {
-  0% { opacity: 0.8; }
-  100% { opacity: 1; }
+  text-align: center;
+  white-space: nowrap;
 }
 
 .suggestions-content {

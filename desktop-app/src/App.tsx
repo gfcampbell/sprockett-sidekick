@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { DesktopAudioCapture, TranscriptMessage } from '@/lib/audioCapture'
-import { DesktopAICoaching, CallConfig, CoachingSuggestion, ConversationTemperature, USE_CASES, loadCallConfig, saveCallConfig } from '@/lib/aiCoaching'
+import { DesktopAICoaching, CallConfig, CoachingSuggestion, ConversationTemperature, ConversationAnalytics, USE_CASES, loadCallConfig, saveCallConfig } from '@/lib/aiCoaching'
 import { transcriptionConfig, coachingConfig } from '@/lib/config'
 import { ConfigPanel } from '@/components/ConfigPanel'
 
@@ -10,6 +10,13 @@ function App() {
   const [transcriptMessages, setTranscriptMessages] = useState<TranscriptMessage[]>([])
   const [coachingSuggestions, setCoachingSuggestions] = useState<CoachingSuggestion[]>([])
   const [conversationTemp, setConversationTemp] = useState<ConversationTemperature>({ level: 3, trend: 'stable', indicators: [] })
+  const [tempHistory, setTempHistory] = useState<number[]>([])
+  const [analytics, setAnalytics] = useState<ConversationAnalytics>({
+    energy: { level: 3, trend: 'stable', indicators: [] },
+    agreeability: { level: 3, trend: 'stable', indicators: [] }
+  })
+  const [energyHistory, setEnergyHistory] = useState<number[]>([])
+  const [agreeabilityHistory, setAgreeabilityHistory] = useState<number[]>([])
   const [status, setStatus] = useState('Ready to start')
   const [error, setError] = useState<string | null>(null)
   
@@ -68,6 +75,16 @@ function App() {
     // Set up temperature callback
     aiCoaching.onTemperature((temp: ConversationTemperature) => {
       setConversationTemp(temp)
+      // Add to temperature history (keep last 20 readings for sparkline)
+      setTempHistory(prev => [...prev.slice(-19), temp.level])
+    })
+
+    // Set up analytics callback
+    aiCoaching.onAnalytics((analyticsData: ConversationAnalytics) => {
+      setAnalytics(analyticsData)
+      // Add to history for sparklines (keep last 20 readings)
+      setEnergyHistory(prev => [...prev.slice(-19), analyticsData.energy.level])
+      setAgreeabilityHistory(prev => [...prev.slice(-19), analyticsData.agreeability.level])
     })
     
     aiCoachingRef.current = aiCoaching
@@ -98,6 +115,9 @@ function App() {
       setError(null)
       setStatus('Initializing...')
       setCoachingSuggestions([]) // Clear previous suggestions
+      setTempHistory([]) // Clear temperature history for new session
+      setEnergyHistory([]) // Clear energy history for new session
+      setAgreeabilityHistory([]) // Clear agreeability history for new session
       
       const initialized = await audioCaptureRef.current.initialize()
       if (!initialized) {
@@ -190,15 +210,87 @@ function App() {
               💡 AI Coaching Suggestions
               {isListening && <div className="pulse-blue" />}
             </h2>
-            <div className="temp-gauge">
-              {Array.from({length: 5}, (_, i) => (
-                <span key={i} className={i < conversationTemp.level ? 'hot' : 'cold'}>
-                  {i < conversationTemp.level ? '🔥' : '⚪'}
-                </span>
-              ))}
-              <span className="temp-label">
-                {conversationTemp.level >= 4 ? 'HOT' : conversationTemp.level >= 3 ? 'WARM' : 'COLD'}
-              </span>
+            <div className="analytics-dashboard">
+              {/* Temperature Sparkline */}
+              <div className="analytics-metric">
+                <svg width="100" height="25" className="sparkline">
+                  {tempHistory.length > 1 && (
+                    <polyline
+                      points={tempHistory.map((temp, i) => 
+                        `${(i / Math.max(tempHistory.length - 1, 1)) * 100},${25 - (temp / 5) * 20}`
+                      ).join(' ')}
+                      fill="none"
+                      stroke={conversationTemp.level >= 4 ? '#e53e3e' : conversationTemp.level >= 3 ? '#d69e2e' : '#3182ce'}
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  )}
+                  {tempHistory.length > 0 && (
+                    <circle
+                      cx="100"
+                      cy={25 - (conversationTemp.level / 5) * 20}
+                      r="2"
+                      fill={conversationTemp.level >= 4 ? '#e53e3e' : conversationTemp.level >= 3 ? '#d69e2e' : '#3182ce'}
+                    />
+                  )}
+                </svg>
+                <span className="metric-label">Warmth</span>
+              </div>
+
+              {/* Energy Sparkline */}
+              <div className="analytics-metric">
+                <svg width="100" height="25" className="sparkline">
+                  {energyHistory.length > 1 && (
+                    <polyline
+                      points={energyHistory.map((energy, i) => 
+                        `${(i / Math.max(energyHistory.length - 1, 1)) * 100},${25 - (energy / 5) * 20}`
+                      ).join(' ')}
+                      fill="none"
+                      stroke={analytics.energy.level >= 4 ? '#38a169' : analytics.energy.level >= 3 ? '#d69e2e' : '#718096'}
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  )}
+                  {energyHistory.length > 0 && (
+                    <circle
+                      cx="100"
+                      cy={25 - (analytics.energy.level / 5) * 20}
+                      r="2"
+                      fill={analytics.energy.level >= 4 ? '#38a169' : analytics.energy.level >= 3 ? '#d69e2e' : '#718096'}
+                    />
+                  )}
+                </svg>
+                <span className="metric-label">Energy</span>
+              </div>
+
+              {/* Agreeability Sparkline */}
+              <div className="analytics-metric">
+                <svg width="100" height="25" className="sparkline">
+                  {agreeabilityHistory.length > 1 && (
+                    <polyline
+                      points={agreeabilityHistory.map((agree, i) => 
+                        `${(i / Math.max(agreeabilityHistory.length - 1, 1)) * 100},${25 - (agree / 5) * 20}`
+                      ).join(' ')}
+                      fill="none"
+                      stroke={analytics.agreeability.level >= 4 ? '#9f7aea' : analytics.agreeability.level >= 3 ? '#d69e2e' : '#e53e3e'}
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  )}
+                  {agreeabilityHistory.length > 0 && (
+                    <circle
+                      cx="100"
+                      cy={25 - (analytics.agreeability.level / 5) * 20}
+                      r="2"
+                      fill={analytics.agreeability.level >= 4 ? '#9f7aea' : analytics.agreeability.level >= 3 ? '#d69e2e' : '#e53e3e'}
+                    />
+                  )}
+                </svg>
+                <span className="metric-label">Agreement</span>
+              </div>
             </div>
           </div>
           

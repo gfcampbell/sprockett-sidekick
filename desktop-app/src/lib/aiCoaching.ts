@@ -106,6 +106,19 @@ export interface ConversationTemperature {
   indicators: string[];
 }
 
+export interface ConversationAnalytics {
+  energy: {
+    level: number; // 1-5 scale (1=low, 5=high)
+    trend: 'rising' | 'falling' | 'stable';
+    indicators: string[];
+  };
+  agreeability: {
+    level: number; // 1-5 scale (1=disagreeable, 5=very agreeable)
+    trend: 'improving' | 'declining' | 'stable';
+    indicators: string[];
+  };
+}
+
 // =============================================
 // AI COACHING CLASS
 // =============================================
@@ -119,6 +132,7 @@ export class DesktopAICoaching {
   private onSuggestionCallback?: (suggestion: CoachingSuggestion) => void;
   private onErrorCallback?: (error: string) => void;
   private onTemperatureCallback?: (temp: ConversationTemperature) => void;
+  private onAnalyticsCallback?: (analytics: ConversationAnalytics) => void;
 
   constructor(callConfig: CallConfig, apiUrl: string) {
     this.callConfig = callConfig;
@@ -187,6 +201,13 @@ export class DesktopAICoaching {
    */
   onTemperature(callback: (temp: ConversationTemperature) => void): void {
     this.onTemperatureCallback = callback;
+  }
+
+  /**
+   * Set callback for conversation analytics
+   */
+  onAnalytics(callback: (analytics: ConversationAnalytics) => void): void {
+    this.onAnalyticsCallback = callback;
   }
 
   /**
@@ -264,11 +285,13 @@ export class DesktopAICoaching {
     const userMessage = `CURRENT CONVERSATION:
 ${transcript}
 
-COACHING REQUEST:
+ANALYSIS REQUEST:
 1. Rate conversation warmth (1-5): 1=cold/hostile, 3=neutral, 5=warm/positive
-2. Provide 1 ULTRA-SHORT coaching tip (5-8 words max)
+2. Rate other person's energy (1-5): 1=low/flat, 3=moderate, 5=high/excited
+3. Rate other person's agreeability (1-5): 1=resistant/argumentative, 3=neutral, 5=very agreeable/supportive
+4. Provide 1 ULTRA-SHORT coaching tip (5-8 words max)
 
-Format: "TEMP:3 🤖 [5-8 words]"`;
+Format: "TEMP:3 ENERGY:4 AGREE:2 🤖 [5-8 words]"`;
 
     return {
       model: 'gpt-4-turbo-preview',
@@ -374,12 +397,17 @@ IMPORTANT: You are coaching the HOST. Keep responses under 8 words.`;
               if (content) {
                 suggestion += content;
                 
-                // Parse temperature and suggestion
+                // Parse all metrics from AI response
                 const tempMatch = suggestion.match(/TEMP:(\d)/);
-                const tempLevel = tempMatch ? parseInt(tempMatch[1]) : 3;
+                const energyMatch = suggestion.match(/ENERGY:(\d)/);
+                const agreeMatch = suggestion.match(/AGREE:(\d)/);
                 
-                // Extract coaching tip
-                const coachingTip = suggestion.replace(/TEMP:\d+\s*/, '');
+                const tempLevel = tempMatch ? parseInt(tempMatch[1]) : 3;
+                const energyLevel = energyMatch ? parseInt(energyMatch[1]) : 3;
+                const agreeLevel = agreeMatch ? parseInt(agreeMatch[1]) : 3;
+                
+                // Extract coaching tip (remove all metric tags)
+                const coachingTip = suggestion.replace(/TEMP:\d+\s*ENERGY:\d+\s*AGREE:\d+\s*/, '');
                 
                 // Update temperature
                 if (this.onTemperatureCallback) {
@@ -387,6 +415,22 @@ IMPORTANT: You are coaching the HOST. Keep responses under 8 words.`;
                     level: tempLevel,
                     trend: 'stable', // TODO: compare with previous
                     indicators: []
+                  });
+                }
+                
+                // Update analytics
+                if (this.onAnalyticsCallback) {
+                  this.onAnalyticsCallback({
+                    energy: {
+                      level: energyLevel,
+                      trend: 'stable', // TODO: compare with previous
+                      indicators: []
+                    },
+                    agreeability: {
+                      level: agreeLevel,
+                      trend: 'stable', // TODO: compare with previous
+                      indicators: []
+                    }
                   });
                 }
                 
