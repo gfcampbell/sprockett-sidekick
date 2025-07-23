@@ -9,6 +9,7 @@
  */
 
 import { surgicalFlags } from './config';
+import { SourceComparison, PendingTranscript } from './sourceComparison';
 
 export interface DualAudioConfig {
   chunkDuration: number;
@@ -42,6 +43,9 @@ export class DualAudioCapture {
   private onTranscriptCallback?: (message: TranscriptMessage) => void;
   private onErrorCallback?: (error: string) => void;
   private config: DualAudioConfig;
+  
+  // 🎯 SOURCE COMPARISON: The physics solution
+  private sourceComparison = new SourceComparison();
 
   constructor(config: DualAudioConfig) {
     this.config = config;
@@ -306,7 +310,7 @@ export class DualAudioCapture {
   }
 
   /**
-   * 🎯 Transcribe audio with guaranteed speaker identification
+   * 🎯 Transcribe audio and perform source comparison
    */
   private async transcribeAudio(
     audioBlob: Blob, 
@@ -339,20 +343,33 @@ export class DualAudioCapture {
       if (result.segments && result.segments.length > 0) {
         for (const segment of result.segments) {
           if (segment.text && segment.text.trim()) {
-            const message: TranscriptMessage = {
-              id: `${speaker}_${Date.now()}_${Math.random()}`,
-              timestamp: new Date(),
-              speaker: speaker, // 🎯 PHYSICS-BASED TRUTH
+            // 🎯 SOURCE COMPARISON: Add to pending transcripts
+            const pending: PendingTranscript = {
+              speaker: speaker,
               text: segment.text.trim(),
+              timestamp: new Date(),
               audioSource: audioSource
             };
 
-            if (this.onTranscriptCallback) {
-              this.onTranscriptCallback(message);
-            }
+            const resolvedTranscripts = this.sourceComparison.addTranscript(pending);
+            
+            // Process resolved transcripts
+            for (const resolved of resolvedTranscripts) {
+              const message: TranscriptMessage = {
+                id: `${resolved.speaker}_${Date.now()}_${Math.random()}`,
+                timestamp: resolved.timestamp,
+                speaker: resolved.speaker, // 🎯 SOURCE COMPARISON TRUTH
+                text: resolved.text,
+                audioSource: resolved.audioSource
+              };
 
-            if (surgicalFlags.ENABLE_AUDIO_DEBUG_LOGS) {
-              console.log(`📝 ${speaker} (${audioSource}): "${segment.text.substring(0, 50)}${segment.text.length > 50 ? '...' : ''}"`);
+              if (this.onTranscriptCallback) {
+                this.onTranscriptCallback(message);
+              }
+
+              if (surgicalFlags.ENABLE_AUDIO_DEBUG_LOGS) {
+                console.log(`📝 ${resolved.speaker} (${resolved.audioSource}): "${resolved.text.substring(0, 50)}${resolved.text.length > 50 ? '...' : ''}"`);
+              }
             }
           }
         }
