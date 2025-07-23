@@ -166,7 +166,7 @@ function App() {
         // Start AI coaching
         aiCoachingRef.current.start()
         setIsListening(true)
-        setStatus(`Listening - ${CONVERSATION_TYPES[callConfig.conversationType].title}`)
+        setStatus(`Listening - ${callConfig.conversationType ? CONVERSATION_TYPES[callConfig.conversationType].title : 'General Conversation'}`)
       } else {
         setStatus('Error - Could not start recording')
       }
@@ -202,7 +202,7 @@ function App() {
               onClick={toggleListening}
               className={`btn ${isListening ? 'btn-danger' : 'btn-primary'}`}
             >
-              {isListening ? 'Stop' : 'Start'}
+              {isListening ? 'Stop' : 'Go Live'}
             </button>
             <button
               onClick={() => setIsConfigPanelOpen(!isConfigPanelOpen)}
@@ -252,9 +252,10 @@ function App() {
                     <div className="controls-left">
                       <select
                         value={callConfig.conversationType}
-                        onChange={(e) => handleConfigChange({ ...callConfig, conversationType: e.target.value as keyof typeof CONVERSATION_TYPES })}
+                        onChange={(e) => handleConfigChange({ ...callConfig, conversationType: e.target.value as CallConfig['conversationType'] })}
                         className="use-case-quick-select"
                       >
+                        <option value="">Select conversation type</option>
                         {Object.entries(CONVERSATION_TYPES).map(([key, conversationType]) => (
                           <option key={key} value={key}>{conversationType.title}</option>
                         ))}
@@ -273,7 +274,7 @@ function App() {
                       <div className="conversation-metrics">
                         {/* Conversation Tone - FLAT PANCAKE */}
                         <div className="analytics-metric">
-                          <span className="metric-label">Conversation Tone</span>
+                          <span className="metric-label">Trust</span>
                           <div className={`metric-current ${conversationTemp.level >= 4 ? 'good' : conversationTemp.level >= 3 ? 'okay' : 'poor'}`}>
                             {conversationTemp.level}/5
                           </div>
@@ -299,7 +300,7 @@ function App() {
 
                         {/* Engagement Level */}
                         <div className="analytics-metric">
-                          <span className="metric-label">Engagement</span>
+                          <span className="metric-label">Energy</span>
                           <div className={`metric-current ${analytics.energy.level >= 4 ? 'good' : analytics.energy.level >= 3 ? 'okay' : 'poor'}`}>
                             {analytics.energy.level}/5
                           </div>
@@ -325,7 +326,7 @@ function App() {
 
                         {/* Alignment */}
                         <div className="analytics-metric">
-                          <span className="metric-label">Alignment</span>
+                          <span className="metric-label">Vibe</span>
                           <div className={`metric-current ${analytics.agreeability.level >= 4 ? 'good' : analytics.agreeability.level >= 3 ? 'okay' : 'poor'}`}>
                             {analytics.agreeability.level}/5
                           </div>
@@ -391,11 +392,13 @@ function App() {
                   ) : (
                     <div className="ready-state">
                       <h3>Ready to provide AI coaching</h3>
-                      <p>Configure your goal above, then press Start to begin receiving real-time suggestions</p>
-                      <div className="use-case-preview">
-                        <strong>{CONVERSATION_TYPES[callConfig.conversationType].title}</strong>
-                        <span>{CONVERSATION_TYPES[callConfig.conversationType].description}</span>
-                      </div>
+                      <p>Configure your goal above, then press Go Live to begin receiving real-time suggestions</p>
+                      {callConfig.conversationType && (
+                        <div className="use-case-preview">
+                          <strong>{CONVERSATION_TYPES[callConfig.conversationType].title}</strong>
+                          <span>{CONVERSATION_TYPES[callConfig.conversationType].description}</span>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

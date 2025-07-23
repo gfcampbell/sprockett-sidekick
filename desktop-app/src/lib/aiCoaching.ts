@@ -88,7 +88,7 @@ const COACHING_CONFIG = {
 // =============================================
 
 export interface CallConfig {
-  conversationType: keyof typeof CONVERSATION_TYPES;
+  conversationType: keyof typeof CONVERSATION_TYPES | '';
   goal: string;
   context: string;
 }
@@ -313,7 +313,7 @@ Format: "TEMP:3 ENERGY:4 AGREE:2 GOAL:45 🤖 [5-8 words]"`;
           content: userMessage
         }
       ],
-      max_tokens: 20,
+      max_tokens: 40,
       temperature: 0.7,
       stream: true
     };
@@ -471,11 +471,15 @@ IMPORTANT: You are coaching the HOST. Keep responses under 8 words.`;
         }
       }
       
-      // Show final complete suggestion
+      // Show final complete suggestion (clean metrics first)
       if (suggestion.trim() && this.onSuggestionCallback) {
+        // Clean the final suggestion same as during streaming
+        let finalCoachingTip = suggestion.replace(/TEMP:\d+\s*/g, '').replace(/ENERGY:\d+\s*/g, '').replace(/AGREE:\d+\s*/g, '').replace(/GOAL:\d+\s*/g, '');
+        finalCoachingTip = finalCoachingTip.replace(/^[^a-zA-Z]*/, '').trim();
+        
         this.onSuggestionCallback({
           id: suggestionId,
-          content: suggestion.trim(),
+          content: finalCoachingTip,
           timestamp: new Date(),
           isStreaming: false
         });
@@ -584,7 +588,7 @@ export const loadCallConfig = (): CallConfig => {
   
   // Return default configuration
   return {
-    conversationType: 'connect',
+    conversationType: '',
     goal: '',
     context: ''
   };

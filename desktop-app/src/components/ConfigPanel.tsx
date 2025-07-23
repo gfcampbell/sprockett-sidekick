@@ -50,7 +50,7 @@ export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleColla
             <option key={key} value={key}>{conversationType.title}</option>
           ))}
         </select>
-        <p className="use-case-description">{CONVERSATION_TYPES[config.conversationType].description}</p>
+        <p className="use-case-description">{config.conversationType ? CONVERSATION_TYPES[config.conversationType].description : 'Choose a conversation type to see details'}</p>
       </div>
 
       <div className="config-section">
