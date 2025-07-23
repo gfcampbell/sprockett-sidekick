@@ -1,18 +1,15 @@
 import { useState, useEffect, useRef } from 'react'
 import { DesktopAudioCapture, TranscriptMessage } from '@/lib/audioCapture'
+import { DualAudioCapture, TranscriptMessage as DualTranscriptMessage, DualAudioConfig } from '@/lib/dualAudioCapture'
 import { DesktopAICoaching, CallConfig, CoachingSuggestion, ConversationTemperature, ConversationAnalytics, CONVERSATION_TYPES, loadCallConfig, saveCallConfig } from '@/lib/aiCoaching'
-import { transcriptionConfig, coachingConfig } from '@/lib/config'
+import { transcriptionConfig, coachingConfig, surgicalFlags } from '@/lib/config'
 import { ConfigPanel } from '@/components/ConfigPanel'
-import { VoiceEnrollment, VoiceProfile } from '@/components/VoiceEnrollment'
-import { hasVoiceProfile, saveVoiceProfile, loadVoiceProfile, getSpeakerDisplayName, getSpeakerRole } from '@/lib/voiceProfile'
-import sprockettLogo from '@/assets/sprockett_logo.png'
+// 🏥 SURGICAL: Voice enrollment theater removed
+// 🏥 SURGICAL: Logo import temporarily removed for compilation
+// import sprockettLogo from '@/assets/sprockett_logo.png'
 
 function App() {
-  // Voice enrollment state - force show for testing
-  const [showVoiceEnrollment, setShowVoiceEnrollment] = useState(!hasVoiceProfile())
-  const [userVoiceProfile, setUserVoiceProfile] = useState<VoiceProfile | null>(loadVoiceProfile())
-
-  console.log('🎭 App render - showVoiceEnrollment:', showVoiceEnrollment, 'hasVoiceProfile:', hasVoiceProfile())
+  // 🏥 SURGICAL: Voice enrollment state removed - now using physics-based audio routing
 
   // Core state
   const [isListening, setIsListening] = useState(false)
@@ -37,52 +34,85 @@ function App() {
   const [showTranscript, setShowTranscript] = useState(false)
   const [showControls, setShowControls] = useState(true)
 
-  // Refs
+  // Refs - Updated for dual audio system
   const audioCaptureRef = useRef<DesktopAudioCapture | null>(null)
+  const dualAudioCaptureRef = useRef<DualAudioCapture | null>(null)
   const aiCoachingRef = useRef<DesktopAICoaching | null>(null)
 
-  // Voice enrollment handlers
-  const handleVoiceEnrollmentComplete = (profile: VoiceProfile) => {
-    saveVoiceProfile(profile)
-    setUserVoiceProfile(profile)
-    setShowVoiceEnrollment(false)
-    console.log(`🎤 Voice profile created for ${profile.name}`)
-  }
-
-  const handleVoiceEnrollmentSkip = () => {
-    setShowVoiceEnrollment(false)
-    console.log('⏭️ Voice enrollment skipped')
-  }
+  // 🏥 SURGICAL: Voice enrollment handlers removed
 
   // Initialize audio capture and AI coaching systems
   useEffect(() => {
-    // Initialize audio capture
-    const audioCapture = new DesktopAudioCapture(transcriptionConfig)
+    // 🫀 HEART TRANSPLANT: Choose audio system based on surgical flag
+    if (surgicalFlags.USE_DUAL_AUDIO_CAPTURE) {
+      console.log('🫀 HEART TRANSPLANT: Initializing DualAudioCapture (physics-based)');
+      
+      // Create dual audio config
+      const dualConfig: DualAudioConfig = {
+        chunkDuration: transcriptionConfig.chunkDuration,
+        minInterval: transcriptionConfig.minInterval,
+        transcriptionApiUrl: transcriptionConfig.transcriptionApiUrl,
+        transcriptionModel: transcriptionConfig.transcriptionModel
+      };
+      
+      const dualAudioCapture = new DualAudioCapture(dualConfig);
+      
+      // Set up transcript callback for dual system
+      dualAudioCapture.onTranscript((message: DualTranscriptMessage) => {
+        setTranscriptMessages(prev => {
+          // 🎯 PHYSICS-BASED TRUTH: Speaker is guaranteed accurate
+          const enhancedMessage = {
+            ...message,
+            displayName: message.speaker === 'Host' ? 'You' : 'Guest',
+            speakerRole: message.speaker === 'Host' ? 'You' : 'Guest'
+          }
 
-    // Set up transcript callback
-    audioCapture.onTranscript((message: TranscriptMessage) => {
-      setTranscriptMessages(prev => {
-        // Enhance message with voice profile information
-        const enhancedMessage = {
-          ...message,
-          displayName: getSpeakerDisplayName(message.speaker, undefined), // TODO: Add profile matching
-          speakerRole: getSpeakerRole(message.speaker, undefined)
-        }
-
-        const updated = [...prev.slice(-50), enhancedMessage]; // Keep last 50 messages
-        // Make transcript available to AI coaching system
-        (window as any).__transcriptMessages = updated;
-        return updated;
+          const updated = [...prev.slice(-50), enhancedMessage]; // Keep last 50 messages
+          // Make transcript available to AI coaching system
+          (window as any).__transcriptMessages = updated;
+          return updated;
+        })
       })
-    })
 
-    // Set up error callback
-    audioCapture.onError((errorMessage: string) => {
-      setError(errorMessage)
-      setStatus('Error')
-    })
+      // Set up error callback for dual system
+      dualAudioCapture.onError((errorMessage: string) => {
+        setError(errorMessage)
+        setStatus('Error')
+      })
 
-    audioCaptureRef.current = audioCapture
+      dualAudioCaptureRef.current = dualAudioCapture;
+      
+    } else {
+      console.log('🔄 FALLBACK: Using legacy DesktopAudioCapture (single stream)');
+      
+      // Legacy single-stream system
+      const audioCapture = new DesktopAudioCapture(transcriptionConfig)
+
+      // Set up transcript callback
+      audioCapture.onTranscript((message: TranscriptMessage) => {
+        setTranscriptMessages(prev => {
+          // 🏥 SURGICAL: No more fake voice enhancement - speaker is now guaranteed accurate
+          const enhancedMessage = {
+            ...message,
+            displayName: message.speaker === 'Host' ? 'You' : 'Guest',
+            speakerRole: message.speaker === 'Host' ? 'You' : 'Guest'
+          }
+
+          const updated = [...prev.slice(-50), enhancedMessage]; // Keep last 50 messages
+          // Make transcript available to AI coaching system
+          (window as any).__transcriptMessages = updated;
+          return updated;
+        })
+      })
+
+      // Set up error callback
+      audioCapture.onError((errorMessage: string) => {
+        setError(errorMessage)
+        setStatus('Error')
+      })
+
+      audioCaptureRef.current = audioCapture;
+    }
 
     // Initialize AI coaching
     const aiCoaching = new DesktopAICoaching(callConfig, coachingConfig.COACHING_API_URL)
@@ -123,7 +153,10 @@ function App() {
     aiCoachingRef.current = aiCoaching
 
     return () => {
-      if (audioCaptureRef.current) {
+      // 🫀 HEART TRANSPLANT: Cleanup both audio systems
+      if (surgicalFlags.USE_DUAL_AUDIO_CAPTURE && dualAudioCaptureRef.current) {
+        dualAudioCaptureRef.current.cleanup()
+      } else if (audioCaptureRef.current) {
         audioCaptureRef.current.stopRecording()
       }
       if (aiCoachingRef.current) {
@@ -143,7 +176,10 @@ function App() {
   // Removed settings dropdown click-outside handler - no longer needed
 
   const toggleListening = async () => {
-    if (!audioCaptureRef.current || !aiCoachingRef.current) return
+    // 🫀 HEART TRANSPLANT: Handle both audio systems
+    const activeAudioCapture = surgicalFlags.USE_DUAL_AUDIO_CAPTURE ? dualAudioCaptureRef.current : audioCaptureRef.current;
+    
+    if (!activeAudioCapture || !aiCoachingRef.current) return
 
     if (!isListening) {
       // Start listening and coaching
@@ -155,24 +191,36 @@ function App() {
       setAgreeabilityHistory([]) // Clear agreeability history for new session
       // setGoalProgressHistory([]) // Clear goal progress history for new session // Reserved for future use
 
-      const initialized = await audioCaptureRef.current.initialize()
+      const initialized = await activeAudioCapture.initialize()
       if (!initialized) {
-        setStatus('Error - Check microphone permissions')
+        setStatus('Error - Check audio permissions')
         return
       }
 
-      const started = await audioCaptureRef.current.startRecording()
+      const started = await activeAudioCapture.startRecording()
       if (started) {
         // Start AI coaching
         aiCoachingRef.current.start()
         setIsListening(true)
-        setStatus(`Listening - ${callConfig.conversationType ? CONVERSATION_TYPES[callConfig.conversationType].title : 'General Conversation'}`)
+        
+        // Enhanced status for dual audio system
+        if (surgicalFlags.USE_DUAL_AUDIO_CAPTURE && dualAudioCaptureRef.current) {
+          const status = dualAudioCaptureRef.current.getStatus();
+          const mode = status.hasSystemAudio ? 'Dual Audio (Mic + System)' : 'Single Audio (Mic Only)';
+          setStatus(`🎯 ${mode} - ${callConfig.conversationType ? CONVERSATION_TYPES[callConfig.conversationType].title : 'General Conversation'}`)
+        } else {
+          setStatus(`Listening - ${callConfig.conversationType ? CONVERSATION_TYPES[callConfig.conversationType].title : 'General Conversation'}`)
+        }
       } else {
         setStatus('Error - Could not start recording')
       }
     } else {
       // Stop listening and coaching
-      audioCaptureRef.current.stopRecording()
+      if (surgicalFlags.USE_DUAL_AUDIO_CAPTURE && dualAudioCaptureRef.current) {
+        dualAudioCaptureRef.current.stopRecording()
+      } else if (audioCaptureRef.current) {
+        audioCaptureRef.current.stopRecording()
+      }
       aiCoachingRef.current.stop()
       setIsListening(false)
       setStatus('Ready to start')
@@ -190,7 +238,7 @@ function App() {
         <div className="title-bar">
           <div className="brand-section">
             <img
-              src={sprockettLogo}
+              src="/src/assets/sprockett_logo.png"
               alt="Sprockett"
               className="brand-logo"
             />
@@ -224,13 +272,6 @@ function App() {
               onConfigChange={handleConfigChange}
               isCollapsed={false}
               onToggleCollapse={() => setIsConfigPanelOpen(false)}
-              onResetVoice={() => {
-                console.log('BUTTON CLICKED - Resetting voice profile...')
-                localStorage.removeItem('sprockett_voice_profile')
-                setUserVoiceProfile(null)
-                setShowVoiceEnrollment(true)
-                console.log('Voice profile reset, modal should appear')
-              }}
             />
           )}
 
@@ -321,7 +362,7 @@ function App() {
                             )}
                           </svg>
                           <div className="metric-trend">
-                            <span>{analytics.energy.trend === 'increasing' ? '↗' : analytics.energy.trend === 'decreasing' ? '↘' : '→'}</span>
+                            <span>{analytics.energy.trend === 'rising' ? '↗' : analytics.energy.trend === 'falling' ? '↘' : '→'}</span>
                             <span>{analytics.energy.trend}</span>
                           </div>
                         </div>
@@ -347,7 +388,7 @@ function App() {
                             )}
                           </svg>
                           <div className="metric-trend">
-                            <span>{analytics.agreeability.trend === 'increasing' ? '↗' : analytics.agreeability.trend === 'decreasing' ? '↘' : '→'}</span>
+                            <span>{analytics.agreeability.trend === 'improving' ? '↗' : analytics.agreeability.trend === 'declining' ? '↘' : '→'}</span>
                             <span>{analytics.agreeability.trend}</span>
                           </div>
                         </div>
@@ -433,9 +474,9 @@ function App() {
             <div className="transcript-content">
               {transcriptMessages.length > 0 ? (
                 transcriptMessages.slice(-10).map((message) => {
-                  const displayName = (message as any).displayName || getSpeakerDisplayName(message.speaker)
-                  const speakerRole = (message as any).speakerRole || getSpeakerRole(message.speaker)
-                  const isUser = userVoiceProfile && speakerRole === 'You'
+                  // 🏥 SURGICAL: Physics-based speaker identification - no more fake profiles
+                  const displayName = (message as any).displayName || message.speaker
+                  const isUser = message.speaker === 'Host'
 
                   return (
                     <div key={message.id} className={`transcript-message ${isUser ? 'user-message' : ''}`}>
@@ -464,21 +505,7 @@ function App() {
           </div>
         )}
       </div>
-      {/* Voice Enrollment Modal - Outside main container for true overlay */}
-      {console.log('🔍 Debug: showVoiceEnrollment =', showVoiceEnrollment, 'hasVoiceProfile =', hasVoiceProfile())}
-      {showVoiceEnrollment ? (
-        <>
-          {console.log('✅ Rendering VoiceEnrollment component')}
-          <VoiceEnrollment
-            onComplete={handleVoiceEnrollmentComplete}
-            onSkip={handleVoiceEnrollmentSkip}
-          />
-        </>
-      ) : (
-        <>
-          {console.log('❌ NOT rendering VoiceEnrollment - showVoiceEnrollment is false')}
-        </>
-      )}
+      {/* 🏥 SURGICAL: Voice enrollment modal completely removed - physics-based audio routing doesn't need fake enrollment */}
     </>
   )
 }

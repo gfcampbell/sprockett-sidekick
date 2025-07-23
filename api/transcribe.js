@@ -94,6 +94,7 @@ export default async function handler(req, res) {
     let maxSpeakers = '5';
     let model = 'whisper-1';
     let speaker = 'Unknown';
+    let audioSource = 'unknown'; // 🏥 SURGICAL: Track audio source
 
     for (const part of parts) {
       if (part.includes('name="enable_speaker_detection"')) {
@@ -112,9 +113,13 @@ export default async function handler(req, res) {
         const valueMatch = part.match(/\r\n\r\n([^\r\n]+)/);
         if (valueMatch) speaker = valueMatch[1];
       }
+      if (part.includes('name="audioSource"')) {
+        const valueMatch = part.match(/\r\n\r\n([^\r\n]+)/);
+        if (valueMatch) audioSource = valueMatch[1];
+      }
     }
 
-    console.log(`🎤 Transcribing audio (${enableSpeakerDetection ? 'with speaker detection' : 'single speaker'}): ${audioBuffer.length} bytes`);
+    console.log(`🎤 Transcribing audio for ${speaker} (${audioSource}): ${audioBuffer.length} bytes`);
 
     // Prepare FormData for OpenAI API
     const formData = new FormData();
@@ -181,7 +186,8 @@ export default async function handler(req, res) {
           speaker: speakerId,
           text: segment.text.trim(),
           start: segment.start,
-          end: segment.end
+          end: segment.end,
+          audioSource: audioSource // 🏥 SURGICAL: Include audio source for all segments
         });
       }
       
@@ -191,6 +197,7 @@ export default async function handler(req, res) {
         segments: segments,
         speakers: Object.fromEntries(speakerMap),
         text: result.text, // Full text fallback
+        audioSource: audioSource, // 🏥 SURGICAL: Include audio source in response
         timestamp: new Date().toISOString(),
         model: model
       });
@@ -202,10 +209,12 @@ export default async function handler(req, res) {
       res.json({ 
         segments: [{
           speaker: speaker,
-          text: result.text
+          text: result.text,
+          audioSource: audioSource // 🏥 SURGICAL: Include audio source in response
         }],
         text: result.text,
         speaker: speaker,
+        audioSource: audioSource,
         timestamp: new Date().toISOString(),
         model: model
       });

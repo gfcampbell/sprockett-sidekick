@@ -6,10 +6,10 @@ interface ConfigPanelProps {
   onConfigChange: (config: CallConfig) => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
-  onResetVoice: () => void;
+  // 🏥 SURGICAL: onResetVoice removed - no longer needed
 }
 
-export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleCollapse, onResetVoice }: ConfigPanelProps) {
+export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleCollapse }: ConfigPanelProps) {
   const [localConfig, setLocalConfig] = useState(config);
 
   const handleConfigUpdate = (updates: Partial<CallConfig>) => {
@@ -25,7 +25,7 @@ export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleColla
           Configure
         </button>
         <div className="config-summary">
-          <span className="use-case-badge">{CONVERSATION_TYPES[config.conversationType].title}</span>
+          <span className="use-case-badge">{config.conversationType && CONVERSATION_TYPES[config.conversationType] ? CONVERSATION_TYPES[config.conversationType].title : 'Select Expert'}</span>
           {config.goal && <span className="goal-preview">"{config.goal.substring(0, 30)}..."</span>}
         </div>
       </div>
@@ -92,14 +92,7 @@ export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleColla
         </div>
       </div>
 
-      <div className="config-section">
-        <button 
-          onClick={onResetVoice}
-          className="reset-voice-link"
-        >
-          Reset Voice Profile
-        </button>
-      </div>
+      {/* 🏥 SURGICAL: Voice reset removed - using physics-based audio routing */}
     </div>
   );
 }

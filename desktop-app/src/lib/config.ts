@@ -34,3 +34,13 @@ export const appConfig = {
   AUTO_SCROLL_TRANSCRIPT: true,
   MAX_SUGGESTIONS: 5,
 };
+
+// 🏥 SURGICAL FLAG: Audio Source Truth Operation
+export const surgicalFlags = {
+  // Phase 3: HEART TRANSPLANT - Enable dual audio system
+  USE_DUAL_AUDIO_CAPTURE: true,
+  
+  // Development helpers
+  ENABLE_AUDIO_DEBUG_LOGS: isDevelopment,
+  ALLOW_FALLBACK_TO_SINGLE_STREAM: true,
+};
