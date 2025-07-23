@@ -326,9 +326,9 @@ export function VoiceEnrollment({ onComplete, onSkip }: VoiceEnrollmentProps) {
                     </div>
                     
                     <Button
-                      variant="ghost"
+                      variant="outline"
                       onClick={stopRecording}
-                      className="text-red-600 hover:text-red-800"
+                      className="rounded-full px-6 py-2 text-red-600 hover:text-red-800 hover:bg-red-50 border-red-200"
                     >
                       Stop Early
                     </Button>
@@ -356,7 +356,7 @@ export function VoiceEnrollment({ onComplete, onSkip }: VoiceEnrollmentProps) {
                     }}
                     disabled={!canRecord}
                     size="lg"
-                    className="w-24 h-24 rounded-full text-2xl hover:scale-105 transition-all duration-200"
+                    className="w-24 h-24 rounded-full text-2xl bg-blue-500 hover:bg-blue-600 text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 disabled:bg-gray-200 disabled:text-gray-400"
                   >
                     🎤
                   </Button>
@@ -369,9 +369,9 @@ export function VoiceEnrollment({ onComplete, onSkip }: VoiceEnrollmentProps) {
             {/* Navigation */}
             <div className="flex justify-between items-center pt-6">
               <Button
-                variant="ghost"
+                variant="outline"
                 onClick={currentStep === 0 ? onSkip : handleBack}
-                className="text-muted-foreground"
+                className="rounded-lg px-6 py-2.5 text-gray-600 hover:text-gray-800 hover:bg-gray-50"
               >
                 {currentStep === 0 ? 'Skip Setup' : '← Back'}
               </Button>
@@ -382,7 +382,7 @@ export function VoiceEnrollment({ onComplete, onSkip }: VoiceEnrollmentProps) {
                   handleNext()
                 }}
                 disabled={!canNext}
-                className="hover:scale-105 transition-all duration-200"
+                className="rounded-lg px-8 py-2.5 bg-blue-500 hover:bg-blue-600 text-white shadow-md hover:shadow-lg hover:scale-105 transition-all duration-200 disabled:bg-gray-200 disabled:text-gray-400 disabled:hover:scale-100"
               >
                 {currentStep === ENROLLMENT_STEPS.length - 1 ? 'Start Using Sprockett' : 'Next →'}
               </Button>
