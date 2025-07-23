@@ -185,7 +185,7 @@ function App() {
       {/* Compact Top Control Bar */}
       <div className="top-bar">
         <div className="app-title">
-          <h1>🤖 AI Co-Pilot</h1>
+          <h1>AI Co-Pilot</h1>
         </div>
         
         <div className="quick-config">
@@ -211,39 +211,32 @@ function App() {
         <div className="main-controls">
           <button 
             onClick={() => setIsConfigPanelOpen(!isConfigPanelOpen)}
-            className={`config-btn ${isConfigPanelOpen ? 'active' : ''}`}
+            className={`btn btn-icon ${isConfigPanelOpen ? 'btn-primary' : 'btn-ghost'}`}
           >
-            ⚙️
+            Settings
           </button>
           
           {/* Dev: Reset voice profile button - always show for now */}
           <button 
-            onClick={() => {
-              console.log('🔄 Resetting voice profile...')
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              console.log('BUTTON CLICKED - Resetting voice profile...')
               localStorage.removeItem('sprockett_voice_profile')
               setUserVoiceProfile(null)
               setShowVoiceEnrollment(true)
-              console.log('✅ Voice profile reset, modal should appear')
+              console.log('Voice profile reset, modal should appear')
             }}
-            style={{ 
-              padding: '8px 12px', 
-              background: 'orange', 
-              color: 'white', 
-              borderRadius: '6px', 
-              border: 'none', 
-              fontSize: '12px',
-              marginLeft: '8px',
-              cursor: 'pointer'
-            }}
+            className="btn btn-warning btn-sm"
           >
-            🔄 Reset Voice
+            Reset Voice
           </button>
           
           <button 
             onClick={toggleListening}
-            className={`start-btn ${isListening ? 'listening' : ''}`}
+            className={`btn ${isListening ? 'btn-danger' : 'btn-primary'} btn-lg`}
           >
-            {isListening ? '⏹ Stop' : '🎙 Start'}
+            {isListening ? 'Stop' : 'Start'}
           </button>
         </div>
       </div>
@@ -263,100 +256,101 @@ function App() {
         <div className="suggestions-panel">
           <div className="suggestions-header">
             <h2>
-              💡 AI Coaching Suggestions
+              AI Coaching Suggestions
               {isListening && <div className="pulse-blue" />}
             </h2>
             <div className="analytics-dashboard">
-              {/* Temperature Sparkline */}
-              <div className="analytics-metric">
-                <svg width="100" height="25" className="sparkline">
-                  {tempHistory.length > 1 && (
-                    <polyline
-                      points={tempHistory.map((temp, i) => 
-                        `${(i / Math.max(tempHistory.length - 1, 1)) * 100},${25 - (temp / 5) * 20}`
-                      ).join(' ')}
-                      fill="none"
-                      stroke={conversationTemp.level >= 4 ? '#e53e3e' : conversationTemp.level >= 3 ? '#d69e2e' : '#3182ce'}
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  )}
-                  {tempHistory.length > 0 && (
-                    <circle
-                      cx="100"
-                      cy={25 - (conversationTemp.level / 5) * 20}
-                      r="2"
-                      fill={conversationTemp.level >= 4 ? '#e53e3e' : conversationTemp.level >= 3 ? '#d69e2e' : '#3182ce'}
-                    />
-                  )}
-                </svg>
-                <span className="metric-label">Warmth</span>
+              <div className="conversation-metrics">
+                {/* Conversation Tone - FLAT PANCAKE */}
+                <div className="analytics-metric">
+                  <span className="metric-label">Conversation Tone</span>
+                  <div className={`metric-current ${conversationTemp.level >= 4 ? 'good' : conversationTemp.level >= 3 ? 'okay' : 'poor'}`}>
+                    {conversationTemp.level}/5
+                  </div>
+                  <svg className="sparkline" viewBox="0 0 200 24">
+                    {tempHistory.length > 1 && (
+                      <polyline
+                        points={tempHistory.map((temp, i) => 
+                          `${(i / Math.max(tempHistory.length - 1, 1)) * 200},${24 - (temp / 5) * 20}`
+                        ).join(' ')}
+                        fill="none"
+                        stroke="var(--color-primary)"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    )}
+                  </svg>
+                  <div className="metric-trend">
+                    <span>{conversationTemp.trend === 'warming' ? '↗' : conversationTemp.trend === 'cooling' ? '↘' : '→'}</span>
+                    <span>{conversationTemp.trend}</span>
+                  </div>
+                </div>
+
+                {/* Engagement Level */}
+                <div className="analytics-metric">
+                  <span className="metric-label">Engagement</span>
+                  <div className={`metric-current ${analytics.energy.level >= 4 ? 'good' : analytics.energy.level >= 3 ? 'okay' : 'poor'}`}>
+                    {analytics.energy.level}/5
+                  </div>
+                  <svg className="sparkline" viewBox="0 0 200 24">
+                    {energyHistory.length > 1 && (
+                      <polyline
+                        points={energyHistory.map((energy, i) => 
+                          `${(i / Math.max(energyHistory.length - 1, 1)) * 200},${24 - (energy / 5) * 20}`
+                        ).join(' ')}
+                        fill="none"
+                        stroke="var(--color-success)"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    )}
+                  </svg>
+                  <div className="metric-trend">
+                    <span>{analytics.energy.trend === 'increasing' ? '↗' : analytics.energy.trend === 'decreasing' ? '↘' : '→'}</span>
+                    <span>{analytics.energy.trend}</span>
+                  </div>
+                </div>
+
+                {/* Alignment */}
+                <div className="analytics-metric">
+                  <span className="metric-label">Alignment</span>
+                  <div className={`metric-current ${analytics.agreeability.level >= 4 ? 'good' : analytics.agreeability.level >= 3 ? 'okay' : 'poor'}`}>
+                    {analytics.agreeability.level}/5
+                  </div>
+                  <svg className="sparkline" viewBox="0 0 200 24">
+                    {agreeabilityHistory.length > 1 && (
+                      <polyline
+                        points={agreeabilityHistory.map((agree, i) => 
+                          `${(i / Math.max(agreeabilityHistory.length - 1, 1)) * 200},${24 - (agree / 5) * 20}`
+                        ).join(' ')}
+                        fill="none"
+                        stroke="var(--color-warning)"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                      />
+                    )}
+                  </svg>
+                  <div className="metric-trend">
+                    <span>{analytics.agreeability.trend === 'increasing' ? '↗' : analytics.agreeability.trend === 'decreasing' ? '↘' : '→'}</span>
+                    <span>{analytics.agreeability.trend}</span>
+                  </div>
+                </div>
               </div>
 
-              {/* Energy Sparkline */}
-              <div className="analytics-metric">
-                <svg width="100" height="25" className="sparkline">
-                  {energyHistory.length > 1 && (
-                    <polyline
-                      points={energyHistory.map((energy, i) => 
-                        `${(i / Math.max(energyHistory.length - 1, 1)) * 100},${25 - (energy / 5) * 20}`
-                      ).join(' ')}
-                      fill="none"
-                      stroke={analytics.energy.level >= 4 ? '#38a169' : analytics.energy.level >= 3 ? '#d69e2e' : '#718096'}
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  )}
-                  {energyHistory.length > 0 && (
-                    <circle
-                      cx="100"
-                      cy={25 - (analytics.energy.level / 5) * 20}
-                      r="2"
-                      fill={analytics.energy.level >= 4 ? '#38a169' : analytics.energy.level >= 3 ? '#d69e2e' : '#718096'}
-                    />
-                  )}
-                </svg>
-                <span className="metric-label">Energy</span>
-              </div>
-
-              {/* Agreeability Sparkline */}
-              <div className="analytics-metric">
-                <svg width="100" height="25" className="sparkline">
-                  {agreeabilityHistory.length > 1 && (
-                    <polyline
-                      points={agreeabilityHistory.map((agree, i) => 
-                        `${(i / Math.max(agreeabilityHistory.length - 1, 1)) * 100},${25 - (agree / 5) * 20}`
-                      ).join(' ')}
-                      fill="none"
-                      stroke={analytics.agreeability.level >= 4 ? '#9f7aea' : analytics.agreeability.level >= 3 ? '#d69e2e' : '#e53e3e'}
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    />
-                  )}
-                  {agreeabilityHistory.length > 0 && (
-                    <circle
-                      cx="100"
-                      cy={25 - (analytics.agreeability.level / 5) * 20}
-                      r="2"
-                      fill={analytics.agreeability.level >= 4 ? '#9f7aea' : analytics.agreeability.level >= 3 ? '#d69e2e' : '#e53e3e'}
-                    />
-                  )}
-                </svg>
-                <span className="metric-label">Agreement</span>
-              </div>
-
-              {/* Goal Progress Thermometer */}
-              <div className="thermometer-container">
-                <div className="thermometer">
+              {/* Goal Progress - Hero Element */}
+              <div className="goal-progress">
+                <span className="goal-label">Goal Progress</span>
+                <div className="goal-percentage">{Math.round(analytics.goalProgress.percentage)}%</div>
+                <div className="goal-bar">
                   <div 
-                    className="thermometer-fill" 
-                    style={{ height: `${analytics.goalProgress.percentage}%` }}
+                    className="goal-bar-fill" 
+                    style={{ width: `${analytics.goalProgress.percentage}%` }}
                   />
                 </div>
-                <span className="metric-label">Goal Progress</span>
+                <div className="goal-label">{analytics.goalProgress.trend}</div>
               </div>
             </div>
           </div>
@@ -377,7 +371,7 @@ function App() {
               <div className="suggestions-empty">
                 {isListening ? (
                   <div className="waiting-state">
-                    <div className="pulse-animation">🎯</div>
+                    <div className="pulse-animation">⚫</div>
                     <p>Analyzing conversation...</p>
                     <small>AI suggestions will appear here in a few moments</small>
                   </div>
@@ -400,17 +394,17 @@ function App() {
       {/* Bottom Status & Optional Transcript */}
       <div className="bottom-bar">
         <div className="status-info">
-          <span>🎯 {status}</span>
-          <span>📝 {transcriptMessages.length} messages</span>
-          <span>💡 {coachingSuggestions.length} suggestions</span>
+          <span className="status-item">Status: {status}</span>
+          <span className="status-item">{transcriptMessages.length} messages</span>
+          <span className="status-item">{coachingSuggestions.length} suggestions</span>
         </div>
         
         <div className="transcript-toggle">
           <button 
             onClick={() => setShowTranscript(!showTranscript)}
-            className={`transcript-btn ${showTranscript ? 'active' : ''}`}
+            className={`btn ${showTranscript ? 'btn-primary' : 'btn-secondary'} btn-sm`}
           >
-            {showTranscript ? '▼ Hide Transcript' : '▲ Show Transcript'}
+            {showTranscript ? 'Hide Transcript' : 'Show Transcript'}
           </button>
         </div>
       </div>
@@ -447,8 +441,8 @@ function App() {
       {/* Error Display */}
       {error && (
         <div className="error-banner">
-          ⚠️ {error}
-          <button onClick={() => setError(null)} className="error-close">✕</button>
+          Warning: {error}
+          <button onClick={() => setError(null)} className="error-close">Close</button>
         </div>
       )}
     </div>

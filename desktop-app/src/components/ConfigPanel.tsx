@@ -21,7 +21,7 @@ export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleColla
     return (
       <div className="config-panel-collapsed">
         <button onClick={onToggleCollapse} className="expand-btn">
-          ⚙️ Configure
+          Configure
         </button>
         <div className="config-summary">
           <span className="use-case-badge">{CONVERSATION_TYPES[config.conversationType].title}</span>
@@ -34,8 +34,8 @@ export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleColla
   return (
     <div className="config-panel">
       <div className="config-header">
-        <h3>📋 Call Configuration</h3>
-        <button onClick={onToggleCollapse} className="collapse-btn">✕</button>
+        <h3>Call Configuration</h3>
+        <button onClick={onToggleCollapse} className="collapse-btn">Close</button>
       </div>
 
       <div className="config-section">
