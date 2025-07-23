@@ -6,9 +6,10 @@ interface ConfigPanelProps {
   onConfigChange: (config: CallConfig) => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  onResetVoice: () => void;
 }
 
-export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleCollapse }: ConfigPanelProps) {
+export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleCollapse, onResetVoice }: ConfigPanelProps) {
   const [localConfig, setLocalConfig] = useState(config);
 
   const handleConfigUpdate = (updates: Partial<CallConfig>) => {
@@ -89,6 +90,15 @@ export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleColla
           </label>
           <p className="upload-help">Upload relevant documents, notes, or prep materials</p>
         </div>
+      </div>
+
+      <div className="config-section">
+        <button 
+          onClick={onResetVoice}
+          className="reset-voice-link"
+        >
+          Reset Voice Profile
+        </button>
       </div>
     </div>
   );
