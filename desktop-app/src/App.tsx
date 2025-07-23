@@ -255,9 +255,11 @@ function App() {
                         onChange={(e) => handleConfigChange({ ...callConfig, conversationType: e.target.value as CallConfig['conversationType'] })}
                         className="use-case-quick-select"
                       >
-                        <option value="">Select conversation type</option>
+                        <option value="">Pick Your Expert</option>
                         {Object.entries(CONVERSATION_TYPES).map(([key, conversationType]) => (
-                          <option key={key} value={key}>{conversationType.title}</option>
+                          <option key={key} value={key} title={conversationType.description}>
+                            {conversationType.title}
+                          </option>
                         ))}
                       </select>
 

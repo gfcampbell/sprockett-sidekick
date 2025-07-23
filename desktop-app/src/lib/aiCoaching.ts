@@ -12,8 +12,8 @@ import { TranscriptMessage } from './audioCapture';
 
 export const CONVERSATION_TYPES = {
   'persuade': {
-    title: 'Persuade/Convince',
-    description: 'Change minds and win people over to your viewpoint',
+    title: 'The Strategist',
+    description: 'Helps you influence others with clarity and purpose',
     systemContext: `You are an expert persuasion coach using STATE method principles. Track progress from skepticism to agreement. Focus on:
     - Objections raised → addressed with facts and empathy
     - Skepticism → interest signals and consideration
@@ -22,8 +22,8 @@ export const CONVERSATION_TYPES = {
     - Share facts, Tell story tentatively, Ask for others' paths`
   },
   'connect': {
-    title: 'Build Connection',
-    description: 'Create rapport and strengthen personal relationships',
+    title: 'The Connector',
+    description: 'Guides you in building trust and rapport',
     systemContext: `You are an expert relationship coach using STATE method principles. Track connection depth building. Focus on:
     - Personal information exchanged and reciprocated
     - Shared experiences discovered and explored
@@ -32,8 +32,8 @@ export const CONVERSATION_TYPES = {
     - Encourage testing and Talk tentatively about personal matters`
   },
   'resolve': {
-    title: 'Resolve Conflict',
-    description: 'Navigate disagreements and find common ground',
+    title: 'The Mediator',
+    description: 'Assists in navigating sensitive disagreements',
     systemContext: `You are an expert conflict resolution coach using STATE method principles. Track movement from conflict to resolution. Focus on:
     - Problem acknowledged by both sides
     - Emotions de-escalated through empathy
@@ -42,8 +42,8 @@ export const CONVERSATION_TYPES = {
     - Ask for others' paths and Encourage testing of solutions`
   },
   'information': {
-    title: 'Gain Information',
-    description: 'Learn what you need to know through strategic questioning',
+    title: 'The Researcher',
+    description: 'Focuses on asking the right questions and listening',
     systemContext: `You are an expert information gathering coach using STATE method principles. Track information acquisition progress. Focus on:
     - Questions asked → answered with useful details
     - Topic depth explored through follow-up questions
@@ -52,8 +52,8 @@ export const CONVERSATION_TYPES = {
     - Ask for others' paths and Share facts to encourage reciprocity`
   },
   'impression': {
-    title: 'Make Good Impression',
-    description: 'Present yourself positively and build credibility',
+    title: 'The Coach',
+    description: 'Helps you show up with confidence and authenticity',
     systemContext: `You are an expert impression management coach using STATE method principles. Track positive response indicators. Focus on:
     - Positive responses and engaged reactions
     - Follow-up questions showing interest in you
@@ -62,8 +62,8 @@ export const CONVERSATION_TYPES = {
     - Tell story tentatively and Talk tentatively to avoid appearing arrogant`
   },
   'agreement': {
-    title: 'Reach Agreement',
-    description: 'Find mutually acceptable solutions and commitments',
+    title: 'The Diplomat',
+    description: 'Supports finding common ground and alignment',
     systemContext: `You are an expert agreement facilitation coach using STATE method principles. Track progress toward mutual commitment. Focus on:
     - Positions stated → understood by both parties
     - Trade-offs and compromises discussed openly

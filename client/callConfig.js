@@ -12,8 +12,8 @@
  */
 export const USE_CASES = {
     'sales': {
-        title: 'Close More Deals',
-        description: 'Sales calls with real-time coaching on buyer signals and objection handling',
+        title: 'The Strategist',
+        description: 'Helps you influence others with clarity and purpose',
         systemContext: `You are an expert sales coach. Focus on:
         - Identifying buyer signals and interest levels
         - Coaching on objection handling techniques
@@ -22,8 +22,8 @@ export const USE_CASES = {
         - Suggesting strategic questions to uncover needs`
     },
     'interview': {
-        title: 'Nail Every Interview',
-        description: 'Job interviews with coaching on answers and follow-up questions',
+        title: 'The Coach',
+        description: 'Helps you show up with confidence and authenticity',
         systemContext: `You are an expert interview coach. Focus on:
         - Strengthening answers to show relevant experience
         - Suggesting thoughtful follow-up questions
@@ -32,8 +32,8 @@ export const USE_CASES = {
         - Timing for questions about role and company`
     },
     'negotiation': {
-        title: 'Win Every Negotiation',
-        description: 'Business negotiations with real-time strategy and concession timing',
+        title: 'The Diplomat',
+        description: 'Supports finding common ground and alignment',
         systemContext: `You are an expert negotiation strategist. Focus on:
         - Identifying the other party's pain points and motivations
         - Strategic timing for concessions and proposals
@@ -42,8 +42,8 @@ export const USE_CASES = {
         - Suggesting creative win-win solutions`
     },
     'support': {
-        title: 'Delight Every Customer',
-        description: 'Customer support with problem diagnosis and de-escalation techniques',
+        title: 'The Connector',
+        description: 'Guides you in building trust and rapport',
         systemContext: `You are an expert customer success coach. Focus on:
         - Quick problem diagnosis and solution identification
         - De-escalation techniques for frustrated customers
@@ -52,8 +52,8 @@ export const USE_CASES = {
         - Coaching on empathy and relationship building`
     },
     'difficult': {
-        title: 'Navigate Tough Conversations',
-        description: 'Difficult conversations with emotional intelligence and solution finding',
+        title: 'The Mediator',
+        description: 'Assists in navigating sensitive disagreements',
         systemContext: `You are an expert communication coach. Focus on:
         - Reading emotional state and defensiveness
         - De-escalation and empathy techniques
@@ -62,8 +62,8 @@ export const USE_CASES = {
         - Suggesting constructive solution-focused approaches`
     },
     'general': {
-        title: 'General Conversation Coaching',
-        description: 'All-purpose conversation coaching and communication support',
+        title: 'The Researcher',
+        description: 'Focuses on asking the right questions and listening',
         systemContext: `You are a general conversation coach. Focus on:
         - Active listening and engagement techniques
         - Clear communication and articulation
