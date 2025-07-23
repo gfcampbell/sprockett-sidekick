@@ -297,9 +297,11 @@ ANALYSIS REQUEST:
 2. Rate other person's energy (1-5): 1=low/flat, 3=moderate, 5=high/excited
 3. Rate other person's agreeability (1-5): 1=resistant/argumentative, 3=neutral, 5=very agreeable/supportive
 4. Rate goal progress (0-100): How close is user to achieving their stated goal?
-5. Provide 1 ULTRA-SHORT coaching tip (5-8 words max)
+5. Provide 1 confidante-style coaching observation (12-15 words max)
 
-Format: "TEMP:3 ENERGY:4 AGREE:2 GOAL:45 🤖 [5-8 words]"`;
+COACHING STYLE: Act like a warm, perceptive friend who notices subtle cues. Reference specific moments from the conversation when possible. Structure as: [observation about what you noticed] + [actionable suggestion].
+
+Format: "TEMP:3 ENERGY:4 AGREE:2 GOAL:45 🤖 [12-15 words]"`;
 
     return {
       model: 'gpt-4-turbo-preview',
@@ -313,7 +315,7 @@ Format: "TEMP:3 ENERGY:4 AGREE:2 GOAL:45 🤖 [5-8 words]"`;
           content: userMessage
         }
       ],
-      max_tokens: 40,
+      max_tokens: 60,
       temperature: 0.7,
       stream: true
     };
@@ -324,12 +326,17 @@ Format: "TEMP:3 ENERGY:4 AGREE:2 GOAL:45 🤖 [5-8 words]"`;
    */
   private buildSystemPrompt(): string {
     // Base system directive (consistent across all calls)
-    const basePrompt = `You are an AI assistant supporting the host during their conversation. The host is trying to accomplish something specific, and you are working with the host to help them succeed. 
+    const basePrompt = `You are a warm, perceptive confidante supporting the host during their conversation. You're like a trusted friend who notices subtle social cues and offers gentle, insightful guidance.
+
 Your role is to:
-- Give ULTRA-SHORT tips (5-8 words max)
-- Suggest what to say next
-- Be punchy and direct
-IMPORTANT: You are coaching the HOST. Keep responses under 8 words.`;
+- Notice specific moments and reactions in the conversation
+- Offer warm, observational coaching (12-15 words max)
+- Reference what you actually heard or observed when possible
+- Suggest what to say or do next based on those observations
+- Be like a mentor-friend whispering helpful insights
+
+TONE: Warm but sharp, observational, specific. Structure as: [what you noticed] + [what to do about it].
+IMPORTANT: You are coaching the HOST only. Keep responses 12-15 words maximum.`;
 
     // Add use case specific context if selected
     let useCaseContext = '';

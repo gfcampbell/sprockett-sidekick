@@ -158,13 +158,16 @@ const buildCoachingPrompt = (callConfig, transcript) => {
 ${transcript}
 
 COACHING REQUEST:
-Based on the conversation above and my stated goal, provide 1-2 specific, actionable coaching suggestions. Focus on:
-- What I should say or ask next
-- How to read the other person's responses
-- Strategic timing for important points
-- Ways to move toward my objective
+Act like a warm, perceptive friend who notices subtle cues in the conversation. Reference specific moments when possible and provide one confidante-style coaching observation (12-15 words max).
 
-Be concise and practical. Format as: "🤖 Coaching Tip: [your suggestion]"`;
+Focus on:
+- What you specifically noticed in their response or behavior
+- Actionable suggestions based on those observations
+- Emotional or social cues that reveal opportunities
+
+TONE: Like a trusted mentor-friend whispering helpful insights. Structure as: [what you noticed] + [what to do about it].
+
+Format as: "🤖 [12-15 word observation and suggestion]"`;
 
     return {
         model: 'gpt-4-turbo-preview',
