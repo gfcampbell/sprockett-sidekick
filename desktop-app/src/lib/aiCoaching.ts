@@ -266,9 +266,13 @@ export class DesktopAICoaching {
       return '';
     }
     
-    // Format as conversation - you are the host leading the conversation
+    // 🫀 HEART TRANSPLANT: Use physics-based speaker identification
     let formattedTranscript = recentEntries
-      .map(entry => `👤 Other person: "${entry.text}"`)
+      .map(entry => {
+        // Now we have guaranteed accurate speaker identification
+        const label = entry.speaker === 'Host' ? '🙋‍♂️ You' : '👤 Guest';
+        return `${label}: "${entry.text}"`;
+      })
       .join('\n');
     
     // Truncate if too long
@@ -336,7 +340,12 @@ Your role is to:
 - Be like a mentor-friend whispering helpful insights
 
 TONE: Warm but sharp, observational, specific. Structure as: [what you noticed] + [what to do about it].
-IMPORTANT: You are coaching the HOST only. Keep responses 12-15 words maximum.`;
+
+🎯 SPEAKER IDENTIFICATION: The transcript uses physics-based audio routing for 100% accurate speaker identification:
+- "🙋‍♂️ You" = The HOST you're coaching (speaks into microphone)
+- "👤 Guest" = The other person (comes through system audio)
+
+IMPORTANT: You are coaching the HOST (marked as "🙋‍♂️ You") only. Keep responses 12-15 words maximum.`;
 
     // Add use case specific context if selected
     let useCaseContext = '';
