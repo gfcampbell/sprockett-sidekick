@@ -7,7 +7,10 @@
 const isDevelopment = typeof window !== 'undefined' ? 
   window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' :
   false;
-const baseUrl = isDevelopment ? 'http://localhost:3002' : '';
+
+// In Electron app, always use localhost for API calls
+const isElectron = typeof window !== 'undefined' && window.location.protocol === 'file:';
+const baseUrl = (isDevelopment || isElectron) ? 'http://localhost:3002' : '';
 
 export const transcriptionConfig = {
   // Server proxy endpoint
@@ -37,10 +40,11 @@ export const appConfig = {
 
 // 🏥 SURGICAL FLAG: Audio Source Truth Operation
 export const surgicalFlags = {
-  // Phase 3: HEART TRANSPLANT - Enable dual audio system
-  USE_DUAL_AUDIO_CAPTURE: true,
+  // Phase 3: HEART TRANSPLANT - Keep dual audio system available but default to single stream
+  USE_DUAL_AUDIO_CAPTURE: false, // Default to single stream for easier UX
   
   // Development helpers
   ENABLE_AUDIO_DEBUG_LOGS: isDevelopment,
+  // Enable fallback - allows app to work immediately without permissions
   ALLOW_FALLBACK_TO_SINGLE_STREAM: true,
 };

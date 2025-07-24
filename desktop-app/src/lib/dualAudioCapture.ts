@@ -35,6 +35,7 @@ export class DualAudioCapture {
   
   // Recording state
   private isRecording = false;
+  private isMuted = false;
   private micChunks: Blob[] = [];
   private systemChunks: Blob[] = [];
   private lastTranscriptionTime = 0;
@@ -100,6 +101,19 @@ export class DualAudioCapture {
         console.log('🔊 Initializing system audio for Guest audio...');
       }
 
+      // Request system audio permission through Electron if available
+      if (window.electronAPI?.requestSystemAudioPermission) {
+        const permissionStatus = await window.electronAPI.requestSystemAudioPermission();
+        
+        if (permissionStatus === 'denied') {
+          throw new Error('System audio permission denied. Please enable Screen Recording in System Settings > Privacy & Security.');
+        }
+        
+        if (permissionStatus === 'prompt-required') {
+          console.log('📋 System audio permission will be requested...');
+        }
+      }
+
       // Request system audio via screen share (audio only)
       this.systemStream = await navigator.mediaDevices.getDisplayMedia({
         video: false,
@@ -116,13 +130,19 @@ export class DualAudioCapture {
         console.warn('⚠️ System audio initialization failed:', error);
       }
       
+      // Provide better error messages
+      const errorMessage = error instanceof Error ? error.message : String(error);
+      if (errorMessage.includes('Permission denied') || errorMessage.includes('denied')) {
+        this.handleError('System audio permission denied. Please enable Screen Recording for this app in System Settings > Privacy & Security > Screen Recording.');
+      }
+      
       // This is expected in many scenarios (phone calls, etc.)
       // Not a fatal error if we allow fallback
       if (surgicalFlags.ALLOW_FALLBACK_TO_SINGLE_STREAM) {
         console.log('🔄 Falling back to microphone-only mode');
         return false; // Not fatal
       } else {
-        this.handleError(`System audio required but failed: ${error instanceof Error ? error.message : String(error)}`);
+        this.handleError(`System audio required but failed: ${errorMessage}`);
         return false;
       }
     }
@@ -184,6 +204,9 @@ export class DualAudioCapture {
         this.micRecorder.ondataavailable = (event) => {
           if (event.data.size > 0) {
             this.micChunks.push(event.data);
+            console.log(`🎤 Mic chunk received: ${event.data.size} bytes`);
+          } else {
+            console.log('⚠️ Empty mic chunk received');
           }
         };
 
@@ -238,12 +261,15 @@ export class DualAudioCapture {
    */
   private scheduleChunkProcessing(): void {
     const processChunks = () => {
+      console.log(`⏰ Processing chunks after ${this.config.chunkDuration}ms`);
       if (this.isRecording) {
         // Stop and restart recorders to get chunks
         if (this.micRecorder && this.micRecorder.state === 'recording') {
+          console.log('🛑 Stopping mic recorder to process chunks');
           this.micRecorder.stop();
         }
         if (this.systemRecorder && this.systemRecorder.state === 'recording') {
+          console.log('🛑 Stopping system recorder to process chunks');
           this.systemRecorder.stop();
         }
         
@@ -318,8 +344,11 @@ export class DualAudioCapture {
     audioSource: 'microphone' | 'system'
   ): Promise<void> {
     try {
+      console.log(`📤 Transcribing ${speaker} audio (${audioBlob.size} bytes) from ${audioSource}`);
+      
       const now = Date.now();
       if (now - this.lastTranscriptionTime < this.config.minInterval) {
+        console.log('⏳ Rate limited - skipping transcription');
         return; // Rate limiting
       }
 
@@ -329,6 +358,8 @@ export class DualAudioCapture {
       formData.append('speaker', speaker); // 🎯 GUARANTEED SPEAKER ID
       formData.append('audioSource', audioSource); // Track the physics
 
+      console.log(`📡 Sending to: ${this.config.transcriptionApiUrl}`);
+      
       const response = await fetch(this.config.transcriptionApiUrl, {
         method: 'POST',
         body: formData
@@ -339,23 +370,25 @@ export class DualAudioCapture {
       }
 
       const result = await response.json();
+      console.log(`📥 Transcription response:`, result);
       
-      if (result.segments && result.segments.length > 0) {
-        for (const segment of result.segments) {
-          if (segment.text && segment.text.trim()) {
-            // 🎯 SOURCE COMPARISON: Add to pending transcripts
-            const pending: PendingTranscript = {
-              speaker: speaker,
-              text: segment.text.trim(),
-              timestamp: new Date(),
-              audioSource: audioSource
-            };
+      // Handle both response formats (segments array or direct text)
+      const transcriptText = result.text || (result.segments && result.segments[0]?.text) || '';
+      
+      if (transcriptText && transcriptText.trim()) {
+        // 🎯 SOURCE COMPARISON: Add to pending transcripts
+        const pending: PendingTranscript = {
+          speaker: speaker,
+          text: transcriptText.trim(),
+          timestamp: new Date(),
+          audioSource: audioSource
+        };
 
-            const resolvedTranscripts = this.sourceComparison.addTranscript(pending);
-            
-            // Process resolved transcripts
-            for (const resolved of resolvedTranscripts) {
-              const message: TranscriptMessage = {
+        const resolvedTranscripts = this.sourceComparison.addTranscript(pending);
+        
+        // Process resolved transcripts
+        for (const resolved of resolvedTranscripts) {
+          const message: TranscriptMessage = {
                 id: `${resolved.speaker}_${Date.now()}_${Math.random()}`,
                 timestamp: resolved.timestamp,
                 speaker: resolved.speaker, // 🎯 SOURCE COMPARISON TRUTH
@@ -364,13 +397,14 @@ export class DualAudioCapture {
               };
 
               if (this.onTranscriptCallback) {
+                console.log('🔔 Calling transcript callback with:', message);
                 this.onTranscriptCallback(message);
+              } else {
+                console.warn('⚠️ No transcript callback registered!');
               }
 
-              if (surgicalFlags.ENABLE_AUDIO_DEBUG_LOGS) {
-                console.log(`📝 ${resolved.speaker} (${resolved.audioSource}): "${resolved.text.substring(0, 50)}${resolved.text.length > 50 ? '...' : ''}"`);
-              }
-            }
+          if (surgicalFlags.ENABLE_AUDIO_DEBUG_LOGS) {
+            console.log(`📝 ${resolved.speaker} (${resolved.audioSource}): "${resolved.text.substring(0, 50)}${resolved.text.length > 50 ? '...' : ''}"`);
           }
         }
       }
@@ -438,6 +472,23 @@ export class DualAudioCapture {
 
   onError(callback: (error: string) => void): void {
     this.onErrorCallback = callback;
+  }
+
+  /**
+   * 🔇 Mute/unmute microphone
+   */
+  setMuted(muted: boolean): void {
+    this.isMuted = muted;
+    if (this.micStream) {
+      this.micStream.getAudioTracks().forEach(track => {
+        track.enabled = !muted;
+      });
+    }
+    console.log(`🎤 Microphone ${muted ? 'muted' : 'unmuted'}`);
+  }
+
+  isMicMuted(): boolean {
+    return this.isMuted;
   }
 
   /**

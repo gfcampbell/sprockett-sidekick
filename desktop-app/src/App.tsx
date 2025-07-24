@@ -5,14 +5,14 @@ import { DesktopAICoaching, CallConfig, CoachingSuggestion, ConversationTemperat
 import { transcriptionConfig, coachingConfig, surgicalFlags } from '@/lib/config'
 import { ConfigPanel } from '@/components/ConfigPanel'
 // 🏥 SURGICAL: Voice enrollment theater removed
-// 🏥 SURGICAL: Logo import temporarily removed for compilation
-// import sprockettLogo from '@/assets/sprockett_logo.png'
+import sprockettLogo from './assets/sprockett_logo.png'
 
 function App() {
   // 🏥 SURGICAL: Voice enrollment state removed - now using physics-based audio routing
 
   // Core state
   const [isListening, setIsListening] = useState(false)
+  const [isMuted, setIsMuted] = useState(false)
   const [transcriptMessages, setTranscriptMessages] = useState<TranscriptMessage[]>([])
   const [coachingSuggestions, setCoachingSuggestions] = useState<CoachingSuggestion[]>([])
   const [conversationTemp, setConversationTemp] = useState<ConversationTemperature>({ level: 3, trend: 'stable', indicators: [] })
@@ -173,6 +173,17 @@ function App() {
     saveCallConfig(callConfig)
   }, [callConfig])
 
+  // Mute functionality
+  useEffect(() => {
+    if (dualAudioCaptureRef.current) {
+      dualAudioCaptureRef.current.setMuted(isMuted);
+    }
+    if (audioCaptureRef.current) {
+      // Also mute regular audio capture if it exists
+      audioCaptureRef.current.setMuted(isMuted);
+    }
+  }, [isMuted])
+
   // Removed settings dropdown click-outside handler - no longer needed
 
   const toggleListening = async () => {
@@ -238,7 +249,7 @@ function App() {
         <div className="title-bar">
           <div className="brand-section">
             <img
-              src="/src/assets/sprockett_logo.png"
+              src={sprockettLogo}
               alt="Sprockett"
               className="brand-logo"
             />
@@ -252,6 +263,15 @@ function App() {
             >
               {isListening ? 'Stop' : 'Go Live'}
             </button>
+            {isListening && (
+              <button
+                onClick={() => setIsMuted(!isMuted)}
+                className={`btn ${isMuted ? 'btn-warning' : 'btn-ghost'}`}
+                title={isMuted ? 'Unmute Microphone' : 'Mute Microphone'}
+              >
+                {isMuted ? '🔇' : '🎤'}
+              </button>
+            )}
             <button
               onClick={() => setIsConfigPanelOpen(!isConfigPanelOpen)}
               className={`btn btn-icon ${isConfigPanelOpen ? 'btn-primary' : 'btn-ghost'}`}

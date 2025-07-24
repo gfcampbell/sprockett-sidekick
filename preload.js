@@ -5,6 +5,9 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('electronAPI', {
   requestMediaAccess: () => ipcRenderer.invoke('request-media-access'),
   
+  // System audio permission handling
+  requestSystemAudioPermission: () => ipcRenderer.invoke('request-system-audio-permission'),
+  
   // Desktop capture for system audio
   getDesktopSources: () => ipcRenderer.invoke('get-desktop-sources'),
   

@@ -315,6 +315,15 @@ function addTranscriptMessage(outputElement, speakerLabel, message) {
     const conversationContainer = document.querySelector('.conversation-messages');
     if (!conversationContainer) return;
 
+    // ✨ SURGICAL FIX: Extract clean text and add to transcript buffer for AI coaching
+    const cleanText = message.replace(/^[🎤👤🎙️]\s*(Host|Visitor)(\s*\(simulated.*?\))?\s*:\s*"?([^"]*)"?$/i, '$3').trim();
+    if (cleanText && cleanText.length > 3 && !cleanText.includes('Real-time transcription started')) {
+        // Import addToTranscriptBuffer dynamically to avoid circular imports
+        if (window.addToTranscriptBuffer) {
+            window.addToTranscriptBuffer(speakerLabel, cleanText);
+        }
+    }
+
     const messageDiv = document.createElement('div');
     messageDiv.className = 'transcript-message';
     messageDiv.innerHTML = `

@@ -220,12 +220,19 @@ export class DesktopAICoaching {
    */
   private async requestCoachingSuggestion(): Promise<void> {
     try {
+      // Check if transcript messages are available
+      const transcriptMessages = this.getTranscriptMessages();
+      if (!transcriptMessages || transcriptMessages.length === 0) {
+        console.log('ℹ️ Skipping coaching request - transcript messages not available yet');
+        return;
+      }
+      
       // Get recent transcript from the app's transcript buffer
       const transcript = this.getRecentTranscript();
       
       // Skip if no meaningful transcript available
       if (!transcript || transcript.length < 50) {
-        console.log('ℹ️ Skipping coaching request - insufficient transcript');
+        console.log('ℹ️ Skipping coaching request - insufficient transcript content:', transcript.length, 'chars');
         return;
       }
       
@@ -512,7 +519,11 @@ IMPORTANT: You are coaching the HOST (marked as "🙋‍♂️ You") only. Keep 
    */
   private getTranscriptMessages(): TranscriptMessage[] {
     // This will be injected by the React app
-    return (window as any).__transcriptMessages || [];
+    const messages = (window as any).__transcriptMessages || [];
+    if (messages.length > 0) {
+      console.log(`🎯 AI Coaching: Found ${messages.length} transcript messages`);
+    }
+    return messages;
   }
 
   /**

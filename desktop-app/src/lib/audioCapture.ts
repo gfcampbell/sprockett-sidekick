@@ -166,6 +166,18 @@ export class DesktopAudioCapture {
   }
 
   /**
+   * 🔇 Mute/unmute microphone
+   */
+  setMuted(muted: boolean): void {
+    if (this.stream) {
+      this.stream.getAudioTracks().forEach((track: MediaStreamTrack) => {
+        track.enabled = !muted;
+      });
+    }
+    console.log(`🎤 Microphone ${muted ? 'muted' : 'unmuted'}`);
+  }
+
+  /**
    * Schedule next chunk processing
    */
   private scheduleNextChunk(): void {
@@ -393,6 +405,7 @@ declare global {
   interface Window {
     electronAPI?: {
       requestMediaAccess(): Promise<boolean>;
+      requestSystemAudioPermission(): Promise<'granted' | 'denied' | 'prompt-required'>;
       getDesktopSources(): Promise<Array<{id: string, name: string, thumbnail: string}>>;
       startAudioCapture(): Promise<void>;
       stopAudioCapture(): Promise<void>;

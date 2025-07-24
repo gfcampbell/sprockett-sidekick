@@ -15,3 +15,10 @@ coverage/
 
 # NPM lock file
 package-lock.json
+
+# Electron build output
+release/
+dist/
+*.dmg
+*.zip
+*.blockmap

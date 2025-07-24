@@ -9,6 +9,9 @@
     "electron-dev": "NODE_ENV=development electron .",
     "electron-build": "cd desktop-app && npm run build && cd .. && electron .",
     "build": "cd desktop-app && npm run build",
+    "dist": "npm run build && electron-builder",
+    "dist:mac": "npm run build && electron-builder --mac",
+    "pack": "npm run build && electron-builder --dir",
     "server:dev": "NODE_ENV=development nodemon server/server.js",
     "deploy": "vercel --prod"
   },
@@ -40,6 +43,29 @@
     "@vercel/node": "^3.0.0",
     "concurrently": "^8.2.2",
     "electron": "^37.2.3",
+    "electron-builder": "^25.1.8",
     "nodemon": "^3.0.1"
+  },
+  "build": {
+    "appId": "com.sprockett.sidekick",
+    "productName": "Sprockett Sidekick",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "desktop-app/dist/**/*",
+      "server/**/*",
+      "api/**/*",
+      "node_modules/**/*"
+    ],
+    "mac": {
+      "category": "public.app-category.business",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false,
+      "entitlements": "entitlements.mac.plist",
+      "icon": "desktop-app/src/assets/Sprockett_huge.png"
+    }
   }
 }

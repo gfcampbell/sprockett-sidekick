@@ -40,6 +40,13 @@ export const startAICoaching = () => {
         return;
     }
     
+    // Wait for window.state to be available before starting
+    if (!window.state) {
+        console.log('🤖 AI Coaching waiting for state initialization...');
+        setTimeout(() => startAICoaching(), 1000);
+        return;
+    }
+    
     isCoachingActive = true;
     console.log('🤖 AI Coaching started - requesting suggestions every', COACHING_CONFIG.INTERVAL_MS / 1000, 'seconds');
     

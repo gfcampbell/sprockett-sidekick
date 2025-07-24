@@ -1,0 +1,55 @@
+
+> sprockett-sidekick@1.0.0 dev
+> nodemon server/server.js
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): *.*[39m
+[33m[nodemon] watching extensions: js,mjs,cjs,json[39m
+[32m[nodemon] starting `node server/server.js`[39m
+Oblivn server running on port 3002
+🤖 AI Coaching request: 1 messages, model: gpt-4-turbo-preview
+✅ AI Coaching response: "It looks like you're performing a test. How can I assist you?..."
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server/server.js`[39m
+Oblivn server running on port 3002
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server/server.js`[39m
+Oblivn server running on port 3002
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server/server.js`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server/server.js`[39m
+Oblivn server running on port 3002
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server/server.js`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server/server.js`[39m
+Oblivn server running on port 3002
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server/server.js`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server/server.js`[39m
+Oblivn server running on port 3002
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server/server.js`[39m
+Oblivn server running on port 3002
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server/server.js`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server/server.js`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server/server.js`[39m
+Oblivn server running on port 3002
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server/server.js`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server/server.js`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `node server/server.js`[39m
+Oblivn server running on port 3002
