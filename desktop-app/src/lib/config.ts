@@ -10,7 +10,7 @@ const isDevelopment = typeof window !== 'undefined' ?
 
 // In Electron app, always use localhost for API calls
 const isElectron = typeof window !== 'undefined' && window.location.protocol === 'file:';
-const baseUrl = (isDevelopment || isElectron) ? 'http://localhost:3002' : '';
+const baseUrl = import.meta.env.VITE_API_URL || ((isDevelopment || isElectron) ? 'http://localhost:3002' : '');
 
 export const transcriptionConfig = {
   // Server proxy endpoint
