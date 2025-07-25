@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Support & Feedback - SPROCKETT</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕶️</text></svg>">
+    <link href="styles.css" rel="stylesheet" />
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --accent: #10b981;
+            --dark-bg: #ffffff;
+            --text: #1e293b;
+            --secondary-text: #64748b;
+            --card-bg: #f8fafc;
+            --radius: 8px;
+            --max-width: 800px;
+            --border-color: #e2e8f0;
+            --shadow-soft: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -1px rgb(0 0 0 / 0.06);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text);
+            line-height: 1.7;
+            font-size: 1rem;
+            padding: 3rem 1.5rem;
+            letter-spacing: -0.011em;
+        }
+
+        .container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            font-size: 2.75rem;
+            font-weight: 700;
+            color: var(--text);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+        }
+
+        .intro {
+            text-align: center;
+            font-size: 1.25rem;
+            color: var(--secondary-text);
+            margin-bottom: 4rem;
+            max-width: 640px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+            font-weight: 400;
+        }
+
+        h2 {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-top: 3rem;
+            margin-bottom: 1rem;
+            letter-spacing: -0.025em;
+        }
+
+        p {
+            margin-bottom: 1.25rem;
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        ul {
+            margin-bottom: 1.5rem;
+            padding-left: 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.75rem;
+            color: var(--text);
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.04), rgba(16, 185, 129, 0.04));
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .highlight::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+
+        .highlight p {
+            font-size: 1.125rem;
+            margin-bottom: 0;
+            font-weight: 500;
+        }
+
+        .support-section {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow-soft);
+        }
+
+        .nav-back {
+            display: inline-flex;
+            align-items: center;
+            color: var(--secondary-text);
+            text-decoration: none;
+            margin-bottom: 2.5rem;
+            font-weight: 500;
+            font-size: 0.975rem;
+            transition: color 0.2s ease;
+        }
+
+        .nav-back:hover {
+            color: var(--accent);
+        }
+
+        .nav-back::before {
+            content: '←';
+            margin-right: 0.5rem;
+            font-size: 1.1em;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .contact-card {
+            background: var(--dark-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .contact-card h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        footer {
+            text-align: center;
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            color: var(--secondary-text);
+            font-size: 0.975rem;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 2rem 1rem;
+            }
+
+            h1 {
+                font-size: 2.25rem;
+            }
+
+            .intro {
+                font-size: 1.125rem;
+                margin-bottom: 3rem;
+            }
+
+            .support-section {
+                padding: 1.5rem;
+            }
+
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <a href="index.html" class="nav-back">Back to Home</a>
+
+        <h1>Support & Feedback</h1>
+
+        <p class="intro">
+            Get help with Sprockett, report issues, or share feedback to help us improve your Smart Calls experience.
+        </p>
+
+        <div class="highlight">
+            <p><strong>We're here to help.</strong> Whether you need technical support, have questions about AI
+                coaching, or want to report inappropriate use, we're committed to providing excellent service and
+                maintaining a positive platform.</p>
+        </div>
+
+        <div class="support-section">
+            <h2>Get Support</h2>
+            <p>
+                Need help using Sprockett's features or experiencing technical issues? Our support team is ready to
+                assist you with:
+            </p>
+            <ul>
+                <li><strong>Technical troubleshooting:</strong> Connection issues, audio/video problems, browser
+                    compatibility</li>
+                <li><strong>AI coaching questions:</strong> How to create effective prompts, understanding suggestions
+                </li>
+                <li><strong>Account management:</strong> Billing, subscription changes, account settings</li>
+                <li><strong>Feature guidance:</strong> Getting the most out of Smart Calls</li>
+            </ul>
+
+            <div class="contact-grid">
+                <div class="contact-card">
+                    <h3>Email Support</h3>
+                    <p><a href="mailto:support@sprockett.ai">support@sprockett.ai</a></p>
+                    <p><small>Response within 24 hours</small></p>
+                </div>
+                <div class="contact-card">
+                    <h3>Priority Support</h3>
+                    <p><a href="mailto:priority@sprockett.ai">priority@sprockett.ai</a></p>
+                    <p><small>Premium subscribers only</small></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="support-section">
+            <h2>Report Issues</h2>
+            <p>
+                Help us maintain a safe and productive platform by reporting:
+            </p>
+            <ul>
+                <li><strong>Inappropriate AI suggestions:</strong> Harmful, biased, or inappropriate coaching
+                    recommendations</li>
+                <li><strong>Technical bugs:</strong> Software issues, unexpected behavior, security concerns</li>
+                <li><strong>Misuse of platform:</strong> Violations of our terms of service</li>
+                <li><strong>Privacy concerns:</strong> Data handling or privacy-related issues</li>
+            </ul>
+
+            <p>
+                <strong>Report to:</strong> <a href="mailto:report@sprockett.ai">report@sprockett.ai</a>
+            </p>
+            <p>
+                Please include as much detail as possible, including screenshots or recordings if relevant and
+                appropriate.
+            </p>
+        </div>
+
+        <div class="support-section">
+            <h2>Share Feedback</h2>
+            <p>
+                Your feedback helps us improve Sprockett's AI coaching and overall experience:
+            </p>
+            <ul>
+                <li><strong>Feature requests:</strong> New conversation scenarios, AI improvements, interface
+                    enhancements</li>
+                <li><strong>AI coaching quality:</strong> Suggestions for better prompts or coaching strategies</li>
+                <li><strong>User experience:</strong> Interface feedback, workflow improvements</li>
+                <li><strong>Success stories:</strong> How Sprockett has helped improve your conversations</li>
+            </ul>
+
+            <p>
+                <strong>Send feedback to:</strong> <a href="mailto:feedback@sprockett.ai">feedback@sprockett.ai</a>
+            </p>
+        </div>
+
+        <div class="support-section">
+            <h2>Responsible AI Use</h2>
+            <p>
+                If you encounter concerning AI behavior or have questions about ethical use:
+            </p>
+            <ul>
+                <li>AI suggestions that seem biased or inappropriate</li>
+                <li>Questions about transparent use of AI assistance</li>
+                <li>Concerns about AI coaching accuracy or relevance</li>
+                <li>Suggestions for improving AI safety and ethics</li>
+            </ul>
+
+            <p>
+                <strong>AI Ethics team:</strong> <a href="mailto:ethics@sprockett.ai">ethics@sprockett.ai</a>
+            </p>
+        </div>
+
+        <div class="support-section">
+            <h2>Emergency Situations</h2>
+            <p>
+                <strong>Important:</strong> Sprockett is not monitored in real-time. If you're experiencing an emergency
+                or witnessing illegal activity:
+            </p>
+            <ul>
+                <li><strong>Immediate danger:</strong> Contact local emergency services (911, 999, 112)</li>
+                <li><strong>Cybercrime:</strong> <a href="https://www.ic3.gov/" target="_blank">FBI Internet Crime
+                        Complaint Center</a></li>
+                <li><strong>Child safety:</strong> <a href="https://report.cybertip.org/" target="_blank">NCMEC
+                        CyberTipline</a></li>
+            </ul>
+        </div>
+
+        <footer>
+            © 2025 Sprockett. Making every conversation smarter.
+        </footer>
+    </div>
+</body>
+
+</html>

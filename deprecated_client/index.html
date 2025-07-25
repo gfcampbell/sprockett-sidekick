@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <script defer src="https://cloud.umami.is/script.js" data-website-id="c0cf105f-30bf-4916-9229-112f8f7423f7"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Secure, Anonymous Peer-to-Peer Video Chat">
+  <title>SPROCKETT – Private Rooms, No Trace</title>
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕶️</text></svg>">
+  <link href="styles.css" rel="stylesheet" />
+  <style>
+    /* Logo in header styles */
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      color: black;
+    }
+
+    .logo-icon {
+      height: 40px;
+      width: auto;
+      flex-shrink: 0;
+    }
+
+    /* Existing styles continue... */
+    :root {
+      --accent: #387FD0;
+      --accent-color: #387FD0;
+      --secondary-text: #666;
+      --error-color: #ff3b30;
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- Wrap landing page content -->
+  <div id="landing-page-container">
+    <!-- Landing Page Header -->
+    <header>
+      <div class="header-container">
+        <div class="logo">
+          <img class="logo-icon" src="assets/sprockett_logo.png" alt="Sprockett Logo" />
+          Sprockett.ai
+        </div>
+
+        <!-- 🆕 Sprint 3.9: Simple Auth Links in Header -->
+        <div class="auth-header">
+          <!-- Auth Links (shown when not authenticated) -->
+          <div id="auth-links" class="auth-links">
+            <a href="#" id="show-signin" class="auth-link">Sign In</a>
+            <a href="#" id="show-signup" class="auth-link">Sign Up</a>
+          </div>
+
+          <!-- Auth Status (shown when authenticated) -->
+          <div id="auth-status" class="auth-status" style="display: none;">
+            <div class="auth-info">Not signed in</div>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Landing Page Hero Section -->
+    <section class="hero">
+      <div class="container hero-layout">
+        <div class="hero-content">
+          <h1>Smart Calls. Real-Time AI Coaching. Better Conversations.</h1>
+          <p class="subtitle">
+            Sprockett listens to your calls and whispers intelligent suggestions in real-time. Get AI coaching during
+            sales calls, negotiations, interviews, and any conversation that matters.
+          </p>
+          <!-- IMPORTANT: Added id="create-room-btn" to connect with existing JS -->
+          <button id="create-room-btn" class="cta-button">Start Your First Smart Call</button>
+
+          <div style="margin-top: 1.5rem;">
+            <a href="use-cases.html"
+              style="color: var(--accent); text-decoration: none; font-weight: 500; font-size: 1.1rem;">
+              See Smart Calls in Action →
+            </a>
+          </div>
+        </div>
+
+      </div>
+      <!-- Status message area from old welcome screen, kept for potential error display -->
+      <div id="status-message" style="margin-top: 20px; color: var(--error-color); text-align: center;"></div>
+    </section>
+
+    <!-- Landing Page Features Section -->
+    <section class="features">
+      <div class="container">
+        <h2>AI-Powered Conversation Intelligence</h2>
+        <div class="features-grid">
+          <div class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24">
+                <path
+                  d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
+              </svg></div>
+            <h3 class="feature-title">Real-Time AI Coaching</h3>
+            <p>Get intelligent suggestions during your call based on what both people are saying.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24">
+                <path
+                  d="M12 14c1.66 0 3-1.34 3-3V5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3z M11 16.92c-3.94-.49-7-3.85-7-7.92h2c0 2.76 2.24 5 5 5s5-2.24 5-5h2c0 4.07-3.06 7.43-7 7.92V22h2v2H9v-2h2v-5.08z" />
+              </svg></div>
+            <h3 class="feature-title">Dual-Stream Transcription</h3>
+            <p>Captures and understands both sides of the conversation for complete context.</p>
+          </div>
+          <div class="feature-card">
+            <div class="feature-icon"><svg viewBox="0 0 24 24">
+                <path d="M9 11H7v9a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-5l-2-2H9a2 2 0 0 0-2 2z" />
+              </svg></div>
+            <h3 class="feature-title">Custom Prompts</h3>
+            <p>Tell the AI your goals: "Help me close this deal" or "Coach me through this negotiation".</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Landing Page How It Works Section -->
+    <section class="how-it-works">
+      <div class="container">
+        <h2>How Smart Calls Make You Better at Conversations</h2>
+        <p style="color: var(--secondary-text); text-align: center; max-width: 600px; margin: 0 auto 2rem;">
+          The world's first AI-powered conversation coaching that works in real-time during your actual calls.
+        </p>
+        <div class="steps">
+          <div class="step">
+            <h3 class="step-title">Set Your Intent</h3>
+            <p class="step-description">Before the call, tell the AI your goal: close a deal, nail an interview, or
+              navigate a difficult conversation.</p>
+          </div>
+          <div class="step">
+            <h3 class="step-title">AI Listens & Learns</h3>
+            <p class="step-description">Sprockett captures both audio streams, transcribes everything, and understands
+              the full context.</p>
+          </div>
+          <div class="step">
+            <h3 class="step-title">Real-Time Coaching</h3>
+            <p class="step-description">Get intelligent suggestions like "They're showing interest - ask about timeline"
+              or "Acknowledge their concern first".</p>
+          </div>
+          <div class="step">
+            <h3 class="step-title">Stay in Flow</h3>
+            <p class="step-description">Suggestions appear only to you in a subtle sidebar. Stay natural while getting
+              superhuman conversation skills.</p>
+          </div>
+          <div class="step">
+            <h3 class="step-title">Privacy Built-In</h3>
+            <p class="step-description">End-to-end encrypted calls with AI processing only what you allow. No storage
+              unless you choose it.</p>
+          </div>
+          <div class="step">
+            <h3 class="step-title">Get Better Every Call</h3>
+            <p class="step-description">Learn from AI insights and become naturally better at reading people and
+              navigating conversations.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Landing Page Footer -->
+    <footer>
+      <div class="container">
+        <div class="footer-links">
+          <a href="use-cases.html" class="footer-link">Use Cases</a>
+          <a href="privacy.html" class="footer-link">Privacy</a>
+          <a href="terms.html" class="footer-link">Terms</a>
+          <a href="report.html" class="footer-link">Report</a>
+          <a href="about.html" class="footer-link">About</a>
+        </div>
+        <p class="copyright">© 2025 Sprockett. Making every conversation smarter.</p>
+      </div>
+    </footer>
+  </div> <!-- End landing-page-container -->
+
+  <!-- ================================================================ -->
+  <!-- ELEMENTS REQUIRED BY JS - Kept hidden until activated by JS -->
+  <!-- ================================================================ -->
+
+  <!-- Room Created Screen (Hidden initially) -->
+  <div id="room-created-screen" class="screen">
+    <div class="room-created-layout">
+      <div class="room-created-main">
+        <div class="room-created">
+          <h3 style="margin-bottom: 30px; color: var(--accent-color);">Copy and share the link, then wait for them to
+            join<span class="loading-dots"></span></h3>
+          <div class="room-link-container">
+            <input id="room-link" type="text" class="room-link" readonly>
+            <button id="copy-link-btn" class="btn btn-copy">Copy/Share Link</button>
+          </div>
+          <div class="local-video-container">
+            <video id="local-preview" class="local-video" autoplay muted playsinline></video>
+          </div>
+          <div class="device-selection">
+            <div class="device-row">
+              <div class="device-label">Camera:</div>
+              <select id="preview-video-source" class="device-select"></select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ✨ Sprint 4.0: Pre-Call Configuration Panel for Host -->
+      <div id="ai-assist-container-waiting" class="ai-assist-container ai-assist-waiting" style="display: none;">
+        <div class="ai-assist-header">
+          <label class="ai-toggle-label">
+            <input type="checkbox" id="ai-toggle-waiting" />
+            <span class="ai-toggle-text">🤖 Enable AI Coaching</span>
+          </label>
+        </div>
+        <div class="ai-assist-content">
+          <div class="call-config-section">
+            <h4 class="config-section-title">📋 Call Setup</h4>
+
+            <!-- Use Case Selection -->
+            <div class="config-field">
+              <label for="use-case-select" class="config-label">Situation:</label>
+              <select id="use-case-select" class="config-select">
+                <option value="">Pick Your Expert</option>
+                <option value="sales" title="Helps you influence others with clarity and purpose">🎯 The Strategist</option>
+                <option value="interview" title="Helps you show up with confidence and authenticity">💼 The Coach</option>
+                <option value="negotiation" title="Supports finding common ground and alignment">🤝 The Diplomat</option>
+                <option value="support" title="Guides you in building trust and rapport">❤️ The Connector</option>
+                <option value="difficult" title="Assists in navigating sensitive disagreements">💬 The Mediator</option>
+                <option value="general" title="Focuses on asking the right questions and listening">🗣️ The Researcher</option>
+              </select>
+              <div id="use-case-description" class="config-description"></div>
+            </div>
+
+            <!-- Goal Input with History -->
+            <div class="config-field">
+              <label for="goal-input" class="config-label">Your Goal:</label>
+              <div class="goal-input-container">
+                <input type="text" id="goal-input" class="config-input"
+                  placeholder="What do you want to accomplish in this call?" maxlength="200" />
+                <button type="button" id="goal-history-btn" class="goal-history-btn" title="Previous goals">
+                  📝
+                </button>
+              </div>
+              <div id="goal-history-dropdown" class="goal-history-dropdown" style="display: none;"></div>
+              <div class="config-hint">Be specific about your objective</div>
+            </div>
+
+            <!-- Context/Background -->
+            <div class="config-field">
+              <label for="context-textarea" class="config-label">Background:</label>
+              <textarea id="context-textarea" class="config-textarea"
+                placeholder="Relevant context, project details, or important background information..." rows="3"
+                maxlength="500"></textarea>
+              <div class="config-hint">Optional details that help AI understand the situation</div>
+            </div>
+          </div>
+
+          <!-- Additional AI Prompt (existing field) -->
+          <div class="ai-prompt-section">
+            <h4 class="config-section-title">🤖 Additional Instructions</h4>
+            <textarea id="ai-prompt-waiting" placeholder="Any specific coaching requests or focus areas?" rows="2"
+              maxlength="300"></textarea>
+            <div class="ai-assist-preview">
+              <small>💡 AI will provide specialized coaching based on your setup</small>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Video Chat Screen (Hidden initially) -->
+  <div id="video-chat-screen" class="screen">
+    <div class="video-chat-layout">
+      <div class="video-container">
+        <video id="remote-video" class="remote-video" autoplay playsinline></video>
+        <div id="remote-video-off" class="remote-video-off" style="display: none;">Remote Video Off</div>
+        <div id="local-video-container" class="local-video-container">
+          <video id="local-video" class="local-video" autoplay muted playsinline></video>
+        </div>
+      </div>
+
+      <!-- ✨ Sprint 3 Phase 1: AI Assist Container (Host Only) -->
+      <div id="ai-assist-container" class="ai-assist-container" style="display: none;">
+        <div class="ai-assist-header">
+          <label class="ai-toggle-label">
+            <input type="checkbox" id="ai-toggle" />
+            <span class="ai-toggle-text">🤖 Enable AI Assist</span>
+          </label>
+        </div>
+        <div class="ai-assist-content">
+          <textarea id="ai-prompt" placeholder="What should the AI help you with?" rows="2"></textarea>
+
+          <!-- AI Coaching Window (TOP - Primary) -->
+          <div id="ai-coaching-output" class="ai-coaching-output">
+            <div class="window-header">🎧 AI Coach</div>
+            <div class="coaching-messages"></div>
+          </div>
+
+          <!-- Conversation Feed (BOTTOM - Context) -->
+          <div id="conversation-feed" class="conversation-feed">
+            <div class="window-header">💬 Live Conversation</div>
+            <div class="conversation-messages"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="controls">
+      <div class="controls-inner">
+        <button id="toggle-video-btn" class="control-btn" title="Toggle Camera">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 7l-7 5 7 5V7z"></path>
+            <rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
+          </svg>
+        </button>
+        <button id="toggle-audio-btn" class="control-btn" title="Toggle Microphone">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"></path>
+            <line x1="12" y1="19" x2="12" y2="23"></line>
+            <line x1="8" y1="23" x2="16" y2="23"></line>
+          </svg>
+        </button>
+        <button id="toggle-devices-btn" class="control-btn" title="Settings">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path
+              d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+            </path>
+          </svg>
+        </button>
+        <button id="end-call-btn" class="end-call-btn" title="End Call">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path
+              d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-3.33-2.67m-2.67-3.34a19.79 19.79 0 0 1-3.07-8.63A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91">
+            </path>
+            <line x1="23" y1="1" x2="1" y2="23"></line>
+          </svg>
+          <span>End Call</span>
+        </button>
+      </div>
+    </div>
+    <!-- Device Selection Panel (Hidden initially) -->
+    <div id="device-selection" class="device-selection" style="display: none;">
+      <div class="device-row">
+        <div class="device-label">Camera:</div>
+        <select id="video-source" class="device-select"></select>
+      </div>
+      <div class="device-row">
+        <div class="device-label">Microphone:</div>
+        <select id="audio-source" class="device-select"></select>
+      </div>
+      <div class="device-row">
+        <div class="device-label">Speaker:</div>
+        <select id="audio-output" class="device-select"></select>
+      </div>
+      <div class="device-row">
+        <div class="device-label">Share Screen:</div>
+        <button id="share-screen-btn" class="control-btn settings-btn" title="Share Screen">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tutorial Overlay (Hidden initially) -->
+  <div id="tutorial-overlay" class="tutorial-overlay" style="display: none;">
+    <div class="tutorial-content">
+      <h2>Welcome to Sprockett!</h2>
+      <div class="tutorial-step">
+        <h3>1. Camera & Microphone</h3>
+        <p>Allow camera and microphone access when prompted.</p>
+        <p>You can mute or disable your camera anytime using the controls.</p>
+      </div>
+      <div class="tutorial-step">
+        <h3>2. Your Privacy</h3>
+        <p>All communication is direct peer-to-peer.</p>
+        <p>No data or conversations are stored on any server.</p>
+      </div>
+      <div class="tutorial-step">
+        <h3>3. Call Controls</h3>
+        <p>Use the buttons to toggle your camera, microphone, and settings.</p>
+        <p>End the call with the red button - all connections are permanently closed.</p>
+      </div>
+      <button id="tutorial-close-btn" class="btn">Got it!</button>
+    </div>
+  </div>
+
+  <!-- Message Display (Hidden initially) -->
+  <div id="message" class="message" style="display: none;"></div>
+
+  <!-- Status Popup (Hidden initially) -->
+  <div id="status-popup" class="status-popup" style="display: none;">
+    <h3>Connection Status</h3>
+    <p id="status-popup-message"></p>
+    <button id="status-popup-close" class="btn">Close</button>
+  </div>
+
+  <!-- 🆕 Authentication Modal -->
+  <div id="auth-modal" class="auth-modal" style="display: none;">
+    <div class="auth-modal-content">
+      <div class="auth-modal-header">
+        <h3 id="auth-modal-title">Sign In</h3>
+        <button id="auth-modal-close" class="auth-modal-close">&times;</button>
+      </div>
+      <div class="auth-modal-body">
+        <form id="auth-form" class="auth-form">
+          <input type="email" id="auth-email" placeholder="Email" class="auth-input" required />
+          <input type="password" id="auth-password" placeholder="Password" class="auth-input" required />
+          <button type="submit" id="auth-submit-btn" class="auth-btn">Sign In</button>
+        </form>
+        <div class="auth-toggle">
+          <span id="auth-toggle-text">Don't have an account?</span>
+          <a href="#" id="auth-toggle-link">Sign Up</a>
+        </div>
+      </div>
+      <!-- Auth Messages -->
+      <div id="auth-message" class="auth-message"></div>
+    </div>
+  </div>
+
+  <!-- ================================================================ -->
+  <!-- SCRIPTS -->
+  <!-- ================================================================ -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="module" src="config.js"></script>
+  <script type="module" src="supabaseClient.js"></script>
+  <script type="module" src="auth.js"></script>
+  <script type="module" src="callConfig.js"></script>
+  <script type="module" src="callConfigUI.js"></script>
+  <script type="module" src="aiCoach.js"></script>
+  <script type="module" src="presence.js"></script>
+  <script type="module" src="sessionLogger.js"></script>
+  <script type="module" src="trust.js"></script>
+  <script type="module" src="agent.js"></script>
+  <script type="module" src="aiAssist.js"></script>
+  <script type="module" src="connection.js"></script>
+  <script src="security-panel.js"></script>
+  <script type="module" src="ui.js"></script>
+  <script type="module" src="theme.js"></script>
+
+  <script>
+    // Trust overlay for peer fingerprint verification
+    window.showTrustOverlay = (fp) => {
+      const badge = document.createElement("div");
+      badge.innerText = "🔐 Trust: " + fp.slice(0, 12).toUpperCase() + "...";
+      badge.style.position = "fixed";
+      badge.style.bottom = "12px";
+      badge.style.right = "12px";
+      badge.style.background = "#121212";
+      badge.style.color = "#00ff99";
+      badge.style.padding = "6px 12px";
+      badge.style.fontSize = "12px";
+      badge.style.borderRadius = "8px";
+      badge.style.zIndex = 9999;
+      badge.style.fontFamily = "monospace";
+      badge.style.boxShadow = "0 2px 4px rgba(0,0,0,0.5)";
+      document.body.appendChild(badge);
+    };
+  </script>
+
+</body>
+
+</html>

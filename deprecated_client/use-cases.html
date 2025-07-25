@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Calls Use Cases - SPROCKETT</title>
+    <link rel="icon"
+        href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🕶️</text></svg>">
+    <link href="styles.css" rel="stylesheet" />
+    <style>
+        :root {
+            --primary: #0ea5e9;
+            --accent: #10b981;
+            --dark-bg: #ffffff;
+            --text: #1e293b;
+            --secondary-text: #64748b;
+            --card-bg: #f8fafc;
+            --radius: 8px;
+            --max-width: 1200px;
+            --border-color: #e2e8f0;
+            --subtle-border: #f1f5f9;
+            --shadow-subtle: 0 1px 3px 0 rgb(0 0 0 / 0.05);
+            --shadow-soft: 0 4px 6px -1px rgb(0 0 0 / 0.07), 0 2px 4px -1px rgb(0 0 0 / 0.06);
+            --shadow-elegant: 0 10px 15px -3px rgb(0 0 0 / 0.08), 0 4px 6px -2px rgb(0 0 0 / 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Inter', 'Helvetica Neue', Arial, sans-serif;
+            background-color: var(--dark-bg);
+            color: var(--text);
+            line-height: 1.7;
+            font-size: 1rem;
+            padding: 3rem 1.5rem;
+            letter-spacing: -0.011em;
+        }
+
+        .container {
+            max-width: var(--max-width);
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            font-size: 2.75rem;
+            font-weight: 700;
+            color: var(--text);
+            text-align: center;
+            margin-bottom: 1.5rem;
+            letter-spacing: -0.04em;
+            line-height: 1.1;
+        }
+
+        .intro {
+            text-align: center;
+            font-size: 1.25rem;
+            color: var(--secondary-text);
+            margin-bottom: 5rem;
+            max-width: 640px;
+            margin-left: auto;
+            margin-right: auto;
+            line-height: 1.6;
+            font-weight: 400;
+        }
+
+        .use-case {
+            margin-bottom: 6rem;
+            position: relative;
+        }
+
+        .use-case-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 2.5rem 2rem;
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.04), rgba(16, 185, 129, 0.04));
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .use-case-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+
+        .use-case-title {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            font-size: 2.25rem;
+            color: var(--text);
+            margin-bottom: 0.75rem;
+            font-weight: 700;
+            letter-spacing: -0.025em;
+            line-height: 1.2;
+        }
+
+        .use-case-subtitle {
+            color: var(--secondary-text);
+            font-size: 1.125rem;
+            max-width: 600px;
+            margin: 0 auto;
+            line-height: 1.6;
+            font-weight: 400;
+        }
+
+        .progression {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 2rem;
+            margin-top: 3rem;
+            position: relative;
+        }
+
+        .progression::before {
+            display: none;
+        }
+
+        .step {
+            background: var(--dark-bg);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            position: relative;
+            box-shadow: var(--shadow-soft);
+            transition: all 0.2s ease;
+            z-index: 2;
+        }
+
+        .step:hover {
+            box-shadow: var(--shadow-elegant);
+            border-color: var(--accent);
+            transform: translateY(-1px);
+        }
+
+        /* Override the main site's automatic step numbering */
+        .step::before {
+            display: none !important;
+        }
+
+        .step-number {
+            position: absolute;
+            top: -15px;
+            left: 30px;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1rem;
+            box-shadow: var(--shadow-soft);
+            border: 3px solid var(--dark-bg);
+            z-index: 3;
+        }
+
+        .step-title {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.875rem;
+            margin-top: 0.5rem;
+            font-size: 1.125rem;
+            letter-spacing: -0.015em;
+        }
+
+        .step-description {
+            color: var(--text);
+            font-size: 0.975rem;
+            line-height: 1.6;
+            margin-bottom: 1rem;
+        }
+
+        .ai-suggestion {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.08), rgba(16, 185, 129, 0.04));
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            font-style: italic;
+            color: var(--accent);
+            font-size: 0.925rem;
+            line-height: 1.5;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ai-suggestion::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--accent);
+            opacity: 0.6;
+        }
+
+        .ai-suggestion strong {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .result {
+            text-align: center;
+            margin-top: 2.5rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .result-title {
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.75rem;
+            font-size: 1.25rem;
+            letter-spacing: -0.015em;
+        }
+
+        .result p {
+            color: var(--secondary-text);
+            line-height: 1.6;
+            font-size: 1rem;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .nav-back {
+            display: inline-flex;
+            align-items: center;
+            color: var(--secondary-text);
+            text-decoration: none;
+            margin-bottom: 2.5rem;
+            font-weight: 500;
+            font-size: 0.975rem;
+            transition: color 0.2s ease;
+        }
+
+        .nav-back:hover {
+            color: var(--accent);
+        }
+
+        .nav-back::before {
+            content: '←';
+            margin-right: 0.5rem;
+            font-size: 1.1em;
+        }
+
+        .cta-section {
+            text-align: center;
+            margin-top: 5rem;
+            padding: 3rem 2rem;
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.03), rgba(16, 185, 129, 0.03));
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .cta-section a {
+            display: inline-flex;
+            align-items: center;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.125rem;
+            transition: all 0.2s ease;
+            box-shadow: var(--shadow-soft);
+            letter-spacing: -0.01em;
+        }
+
+        .cta-section a:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-elegant);
+        }
+
+        .cta-section a::after {
+            content: '→';
+            margin-left: 0.5rem;
+            font-size: 1.1em;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 2rem 1rem;
+            }
+
+            h1 {
+                font-size: 2.25rem;
+            }
+
+            .intro {
+                font-size: 1.125rem;
+                margin-bottom: 3rem;
+            }
+
+            .use-case {
+                margin-bottom: 4rem;
+            }
+
+            .progression {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+
+            .step {
+                padding: 1.5rem;
+            }
+
+            .use-case-title {
+                font-size: 1.875rem;
+            }
+
+            .result {
+                padding: 2rem;
+            }
+
+            .cta-section {
+                margin-top: 3rem;
+                padding: 2rem 1rem;
+            }
+        }
+
+        @media (max-width: 1024px) {
+            .progression {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Logo bug styles */
+        .logo-bug {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            z-index: 1000;
+            width: 32px;
+            height: 35px;
+            opacity: 0.8;
+            transition: opacity 0.2s ease;
+        }
+
+        .logo-bug:hover {
+            opacity: 1;
+        }
+
+        .logo-bug svg {
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Logo Bug -->
+    <div class="logo-bug">
+        <svg width="119" height="132" viewBox="0 0 119 132" xmlns="http://www.w3.org/2000/svg">
+            <g transform="translate(-1608 -545)">
+                <path
+                    d="M1612 983.487C1612 742.422 1807.53 547 2048.74 547L2366.26 547C2607.46 547 2803 742.422 2803 983.487L2803 1326.29C2803 1567.35 2607.46 1762.77 2366.26 1762.77L2048.74 1762.77C1953.83 1749.9 1734.34 1893.47 1665.53 1858.49 1620.89 1810.17 1716.22 1670.87 1707.3 1582.17 1668.54 1537.21 1616.28 1429.71 1612 1326.29L1612 983.487Z"
+                    fill="#387FD0" fill-rule="evenodd" />
+                <path d="M2107 936 2134.85 753 2284.15 753 2312 936Z" fill="#FFFFFF" fill-rule="evenodd" />
+                <path d="M2310 1403 2282.15 1586 2132.85 1586 2105 1403Z" fill="#FFFFFF" fill-rule="evenodd" />
+                <path d="M1971.98 1076.32 1862.34 927.314 1967.77 821.886 2116.77 931.53Z" fill="#FFFFFF"
+                    fill-rule="evenodd" />
+                <path d="M2445.2 1262.84 2554.84 1411.84 2449.41 1517.27 2300.41 1407.63Z" fill="#FFFFFF"
+                    fill-rule="evenodd" />
+                <path d="M1975 1271 1792 1243.15 1792 1093.85 1975 1066Z" fill="#FFFFFF" fill-rule="evenodd" />
+                <path d="M2442 1068 2625 1095.85 2625 1245.15 2442 1273Z" fill="#FFFFFF" fill-rule="evenodd" />
+                <path d="M2115.33 1406.19 1966.32 1515.83 1860.9 1410.4 1970.54 1261.4Z" fill="#FFFFFF"
+                    fill-rule="evenodd" />
+                <path d="M2301.85 932.97 2450.85 823.326 2556.28 928.754 2446.64 1077.76Z" fill="#FFFFFF"
+                    fill-rule="evenodd" />
+                <path
+                    d="M1890 1174C1890 993.955 2035.96 848 2216 848 2396.04 848 2542 993.955 2542 1174 2542 1354.04 2396.04 1500 2216 1500 2035.96 1500 1890 1354.04 1890 1174Z"
+                    fill="#FFFFFF" fill-rule="evenodd" />
+                <path
+                    d="M2025 1168.5C2025 1067.16 2107.16 985 2208.5 985 2309.84 985 2392 1067.16 2392 1168.5 2392 1269.84 2309.84 1352 2208.5 1352 2107.16 1352 2025 1269.84 2025 1168.5Z"
+                    fill="#387FD0" fill-rule="evenodd" />
+            </g>
+        </svg>
+    </div>
+
+    <div class="container">
+        <a href="index.html" class="nav-back">Back to Home</a>
+
+        <h1>Smart Calls in Action</h1>
+        <p class="intro">
+            See how AI-powered conversation coaching transforms real scenarios. Every suggestion happens in real-time
+            during your actual calls.
+        </p>
+
+        <!-- Sales Call Use Case -->
+        <div class="use-case">
+            <div class="use-case-header">
+                <h2 class="use-case-title">Close More Deals</h2>
+                <p class="use-case-subtitle">Sales calls with real-time coaching on buyer signals, objection handling,
+                    and
+                    closing techniques</p>
+            </div>
+
+            <div class="progression">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">Set Your Intent</h3>
+                    <p class="step-description">"Help me identify buying signals and close this enterprise deal"</p>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">AI Detects Interest</h3>
+                    <p class="step-description">Prospect says: "This could work for our Q2 rollout..."</p>
+                    <div class="ai-suggestion"><strong>AI:</strong> "Strong buying signal detected - they're thinking
+                        timeline. Ask
+                        about budget and decision process."</div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">Handle Objections</h3>
+                    <p class="step-description">Prospect: "The price seems high compared to alternatives"</p>
+                    <div class="ai-suggestion"><strong>AI:</strong> "Price objection - don't defend. Ask: 'What's your
+                        budget range?'
+                        Then focus on ROI and unique value."</div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3 class="step-title">Perfect Timing</h3>
+                    <p class="step-description">Prospect: "I'll need to discuss this with my team"</p>
+                    <div class="ai-suggestion"><strong>AI:</strong> "Decision maker identified. Ask: 'What would make
+                        this an easy yes
+                        for your team?' Then suggest a trial."</div>
+                </div>
+            </div>
+
+            <div class="result">
+                <h3 class="result-title">Result: 40% Higher Close Rates</h3>
+                <p>Never miss buying signals again. Get coached through objections in real-time. Close deals you would
+                    have lost.</p>
+            </div>
+        </div>
+
+        <!-- Job Interview Use Case -->
+        <div class="use-case">
+            <div class="use-case-header">
+                <h2 class="use-case-title">Nail Every Interview</h2>
+                <p class="use-case-subtitle">Job interviews with real-time coaching on answers, follow-up questions, and
+                    reading interviewer cues</p>
+            </div>
+
+            <div class="progression">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">Prepare Your AI Coach</h3>
+                    <p class="step-description">"Help me showcase my leadership experience and ask smart questions about
+                        company culture"</p>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">Strengthen Your Answers</h3>
+                    <p class="step-description">Interviewer: "Tell me about a time you led a difficult project"</p>
+                    <div class="ai-suggestion"><strong>AI:</strong> "Great question - use STAR method. Mention specific
+                        metrics and
+                        team size. They want leadership proof."</div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">Read the Room</h3>
+                    <p class="step-description">You finish explaining your approach...</p>
+                    <div class="ai-suggestion"><strong>AI:</strong> "They're nodding and leaning forward - strong
+                        positive signal. Ask
+                        a follow-up about their current challenges."</div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3 class="step-title">Smart Questions</h3>
+                    <p class="step-description">Interview wrapping up...</p>
+                    <div class="ai-suggestion"><strong>AI:</strong> "Perfect time to ask: 'What would success look like
+                        in this role
+                        after 6 months?' Shows forward thinking."</div>
+                </div>
+            </div>
+
+            <div class="result">
+                <h3 class="result-title">Result: Land Your Dream Job</h3>
+                <p>Answer questions with confidence. Ask questions that impress. Read interviewer reactions like a pro.
+                </p>
+            </div>
+        </div>
+
+        <!-- Negotiation Use Case -->
+        <div class="use-case">
+            <div class="use-case-header">
+                <h2 class="use-case-title">Win Every Negotiation</h2>
+                <p class="use-case-subtitle">Business negotiations with real-time strategy, concession timing, and
+                    leverage
+                    identification</p>
+            </div>
+
+            <div class="progression">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">Strategic Setup</h3>
+                    <p class="step-description">"Help me negotiate this contract renewal. I want 20% price reduction and
+                        better terms"</p>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">Find Their Pain</h3>
+                    <p class="step-description">Them: "We've had some service issues lately but overall it's been good"
+                    </p>
+                    <div class="ai-suggestion"><strong>AI:</strong> "They admitted problems - leverage identified. Ask
+                        for specifics
+                        about service issues before discussing price."</div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">Strategic Concession</h3>
+                    <p class="step-description">Them: "We could do 10% reduction but that's our limit"</p>
+                    <div class="ai-suggestion"><strong>AI:</strong> "First offer - they have more room. Say: 'I
+                        appreciate that start.
+                        Given the service issues, what would 15% look like?'"</div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3 class="step-title">Close Strong</h3>
+                    <p class="step-description">Them: "Let me think about 15%..."</p>
+                    <div class="ai-suggestion"><strong>AI:</strong> "They're considering it - positive sign. Add value:
+                        'If we can
+                        agree on 15%, I'd commit to a 2-year term.'"</div>
+                </div>
+            </div>
+
+            <div class="result">
+                <h3 class="result-title">Result: Get What You Want</h3>
+                <p>Identify leverage in real-time. Know when to push and when to concede. Win negotiations that matter.
+                </p>
+            </div>
+        </div>
+
+        <!-- Customer Support Use Case -->
+        <div class="use-case">
+            <div class="use-case-header">
+                <h2 class="use-case-title">Delight Every Customer</h2>
+                <p class="use-case-subtitle">Customer support calls with real-time problem diagnosis, de-escalation
+                    techniques, and solution suggestions</p>
+            </div>
+
+            <div class="progression">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">Prep for Success</h3>
+                    <p class="step-description">"Help me solve this customer's issue quickly and leave them feeling
+                        heard and valued"</p>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">Read Emotions</h3>
+                    <p class="step-description">Customer: "This is the third time I'm calling about this! Nobody seems
+                        to care!"</p>
+                    <div class="ai-suggestion"><strong>AI:</strong> "High frustration - acknowledge their feeling first.
+                        Say: 'I hear
+                        how frustrated you are. Let me fix this for you right now.'"</div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">Smart Solutions</h3>
+                    <p class="step-description">Customer explains the technical issue...</p>
+                    <div class="ai-suggestion"><strong>AI:</strong> "Based on their description, this sounds like a
+                        known billing sync
+                        issue. Suggest account refresh + credit for trouble."</div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3 class="step-title">Go Above & Beyond</h3>
+                    <p class="step-description">Issue resolved, customer calming down...</p>
+                    <div class="ai-suggestion"><strong>AI:</strong> "Perfect recovery moment. Offer: 'I'm adding a month
+                        of free
+                        service for the trouble. Is there anything else I can help with?'"</div>
+                </div>
+            </div>
+
+            <div class="result">
+                <h3 class="result-title">Result: Turn Complaints into Loyalty</h3>
+                <p>De-escalate angry customers instantly. Solve problems faster. Create raving fans from support calls.
+                </p>
+            </div>
+        </div>
+
+        <!-- Difficult Conversation Use Case -->
+        <div class="use-case">
+            <div class="use-case-header">
+                <h2 class="use-case-title">Navigate Tough Conversations</h2>
+                <p class="use-case-subtitle">Personal or professional difficult conversations with real-time emotional
+                    intelligence and conflict resolution</p>
+            </div>
+
+            <div class="progression">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <h3 class="step-title">Set Your Intention</h3>
+                    <p class="step-description">"Help me give constructive feedback to my team member while maintaining
+                        our relationship"</p>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <h3 class="step-title">Start Right</h3>
+                    <p class="step-description">Beginning the conversation...</p>
+                    <div class="ai-suggestion"><strong>AI:</strong> "Lead with positive intent. Try: 'I want to talk
+                        because I value
+                        our working relationship and see your potential.'"</div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <h3 class="step-title">Handle Defensiveness</h3>
+                    <p class="step-description">Them: "I don't think that's fair. I've been doing my best!"</p>
+                    <div class="ai-suggestion"><strong>AI:</strong> "They're getting defensive. Validate first: 'You're
+                        right, you
+                        have been working hard. Let me explain what I'm seeing...'"</div>
+                </div>
+
+                <div class="step">
+                    <div class="step-number">4</div>
+                    <h3 class="step-title">Find Solutions Together</h3>
+                    <p class="step-description">Tension decreasing, more open dialogue...</p>
+                    <div class="ai-suggestion"><strong>AI:</strong> "Good progress. Ask: 'What support do you need from
+                        me to tackle
+                        this?' Make it collaborative."</div>
+                </div>
+            </div>
+
+            <div class="result">
+                <h3 class="result-title">Result: Stronger Relationships</h3>
+                <p>Have difficult conversations without destroying relationships. Get real issues resolved with empathy
+                    and respect.</p>
+            </div>
+        </div>
+
+        <div class="cta-section">
+            <a href="index.html">Start Your First Smart Call</a>
+        </div>
+    </div>
+</body>
+
+</html>
