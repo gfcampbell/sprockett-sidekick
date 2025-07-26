@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabaseClient'
 import AIConfiguration from './AIConfiguration'
 import SessionAnalytics from './SessionAnalytics'
 import ConversationAgents from './ConversationAgents'
+import Economics from './Economics'
 
 interface UserAccount {
   user_id: string
@@ -19,7 +20,7 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<UserAccount[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'users' | 'ai' | 'analytics' | 'agents'>('users')
+  const [activeTab, setActiveTab] = useState<'users' | 'ai' | 'analytics' | 'agents' | 'economics'>('users')
 
   useEffect(() => {
     fetchUsers()
@@ -129,6 +130,12 @@ export default function AdminDashboard() {
         >
           🎭 Conversation Agents
         </button>
+        <button 
+          className={`admin-tab ${activeTab === 'economics' ? 'active' : ''}`}
+          onClick={() => setActiveTab('economics')}
+        >
+          💰 Economics
+        </button>
       </div>
 
       {error && (
@@ -193,6 +200,7 @@ export default function AdminDashboard() {
       {activeTab === 'analytics' && <SessionAnalytics />}
       
       {activeTab === 'agents' && <ConversationAgents />}
+      {activeTab === 'economics' && <Economics />}
     </div>
   )
 }

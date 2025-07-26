@@ -71,7 +71,7 @@ export default function TokenPurchaseModal({ onClose, onPurchase }: TokenPurchas
     try {
       if (onPurchase) {
         await onPurchase(selectedTier.tokens, selectedTier.totalPrice);
-        showMessage(`Successfully purchased ${selectedTier.tokens} tokens!`, 'success');
+        showMessage(`Successfully added ${selectedTier.tokens} tokens to your account!`, 'success');
         
         // Close modal after success
         setTimeout(() => {
