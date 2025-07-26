@@ -6,10 +6,31 @@
 
 import { TranscriptMessage } from './audioCapture';
 import { getActiveAIConfig } from './aiConfigManager';
+import { loadConversationAgents, ConversationAgentsConfig } from './conversationAgentsManager';
 
 // =============================================
 // USE CASE DEFINITIONS (from Sprockett)
 // =============================================
+
+// Dynamic conversation types loaded from database
+let DYNAMIC_CONVERSATION_TYPES: ConversationAgentsConfig | null = null;
+
+/**
+ * Get current conversation types (from database or fallback to hardcoded)
+ */
+export async function getCurrentConversationTypes(): Promise<ConversationAgentsConfig> {
+  if (!DYNAMIC_CONVERSATION_TYPES) {
+    DYNAMIC_CONVERSATION_TYPES = await loadConversationAgents();
+  }
+  return DYNAMIC_CONVERSATION_TYPES;
+}
+
+/**
+ * Clear the conversation types cache (when admin makes changes)
+ */
+export function clearConversationTypesCache(): void {
+  DYNAMIC_CONVERSATION_TYPES = null;
+}
 
 export const CONVERSATION_TYPES = {
   'persuade': {
@@ -334,7 +355,7 @@ export class DesktopAICoaching {
     const aiConfig = await getActiveAIConfig();
     
     // Build system prompt with use case context
-    const systemPrompt = this.buildSystemPrompt(aiConfig.system_prompt);
+    const systemPrompt = await this.buildSystemPrompt(aiConfig.system_prompt);
     
     // Build user message with context and transcript
     const userMessage = `CURRENT CONVERSATION (last 60 seconds):
@@ -365,7 +386,7 @@ Analyze this moment and provide ratings + coaching insight.`;
   /**
    * Builds the system prompt with use case and goal context (from Sprockett)
    */
-  private buildSystemPrompt(baseSystemPrompt: string): string {
+  private async buildSystemPrompt(baseSystemPrompt: string): Promise<string> {
     // Use the dynamic system prompt from config
     const basePrompt = baseSystemPrompt;
 
@@ -378,10 +399,13 @@ Transcript Formatting:
 
 Provide ONLY your coaching insight (12-15 words max). Do not include any ratings or metrics.`;
 
-    // Add use case specific context if selected
+    // Add use case specific context if selected using dynamic conversation types
     let useCaseContext = '';
-    if (this.callConfig.conversationType && CONVERSATION_TYPES[this.callConfig.conversationType]) {
-      useCaseContext = `\n\nSITUATION CONTEXT:\n${CONVERSATION_TYPES[this.callConfig.conversationType].systemContext}`;
+    if (this.callConfig.conversationType) {
+      const conversationTypes = await getCurrentConversationTypes();
+      if (conversationTypes[this.callConfig.conversationType]) {
+        useCaseContext = `\n\nSITUATION CONTEXT:\n${conversationTypes[this.callConfig.conversationType].systemContext}`;
+      }
     }
 
     // Add user's specific goal

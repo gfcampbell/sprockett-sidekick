@@ -3,6 +3,7 @@ import { useAuth } from '@/lib/authContext'
 import { supabase } from '@/lib/supabaseClient'
 import AIConfiguration from './AIConfiguration'
 import SessionAnalytics from './SessionAnalytics'
+import ConversationAgents from './ConversationAgents'
 
 interface UserAccount {
   user_id: string
@@ -18,7 +19,7 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<UserAccount[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'users' | 'ai' | 'analytics'>('users')
+  const [activeTab, setActiveTab] = useState<'users' | 'ai' | 'analytics' | 'agents'>('users')
 
   useEffect(() => {
     fetchUsers()
@@ -122,6 +123,12 @@ export default function AdminDashboard() {
         >
           📊 Session Analytics
         </button>
+        <button 
+          className={`admin-tab ${activeTab === 'agents' ? 'active' : ''}`}
+          onClick={() => setActiveTab('agents')}
+        >
+          🎭 Conversation Agents
+        </button>
       </div>
 
       {error && (
@@ -184,6 +191,8 @@ export default function AdminDashboard() {
       {activeTab === 'ai' && <AIConfiguration />}
       
       {activeTab === 'analytics' && <SessionAnalytics />}
+      
+      {activeTab === 'agents' && <ConversationAgents />}
     </div>
   )
 }
