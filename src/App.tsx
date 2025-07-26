@@ -14,7 +14,7 @@ function App() {
   // 🏥 SURGICAL: Voice enrollment state removed - now using physics-based audio routing
 
   // Initialize auth system
-  const { initializeAuth, userState, updateTokenBalance } = useAuthFunctions()
+  const { initializeAuth, userState, updateTokenBalance, fetchTokenBalance } = useAuthFunctions()
 
   // Session tracking state
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
@@ -302,6 +302,9 @@ function App() {
           // Update local token balance
           const newBalance = Math.max(0, userState.tokensRemaining - tokensUsed);
           await updateTokenBalance(newBalance);
+          
+          // Force refresh token balance from database to ensure UI is synced
+          await fetchTokenBalance();
           
           console.log(`💰 Session ended. Tokens used: ${tokensUsed}, New balance: ${newBalance}`);
           setStatus(`Session complete - ${tokensUsed} tokens used`);

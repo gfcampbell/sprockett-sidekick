@@ -26,6 +26,7 @@ export function useAuthFunctions() {
 
   /**
    * Ensures user account exists in database with starting token balance
+   * Only sets default tokens for NEW users, preserves existing balance
    * @param userId - User ID from Supabase auth
    * @param email - User email from Supabase auth
    */
@@ -34,38 +35,59 @@ export function useAuthFunctions() {
     console.log(`🔐 [${new Date().toISOString()}] Starting ensureUserAccount for: ${email}`);
     
     try {
-      console.log(`🔐 [${new Date().toISOString()}] About to call supabase.from('user_accounts').upsert...`);
+      console.log(`🔐 [${new Date().toISOString()}] About to check if user account exists...`);
       
-      // Use upsert to create account if doesn't exist, or update email if changed
-      const { data, error } = await supabase
+      // First check if user account already exists
+      const { data: existingAccount } = await supabase
         .from('user_accounts')
-        .upsert({
-          user_id: userId,
-          email: email,
-          tokens_remaining: 100, // Default starting balance for new users
-          subscription_tier: 'free'
-        }, {
-          onConflict: 'user_id',
-          ignoreDuplicates: false // Update email if it changed
-        })
-        .select();
+        .select('user_id, email, tokens_remaining')
+        .eq('user_id', userId)
+        .single();
 
-      const duration = Date.now() - startTime;
-      console.log(`🔐 [${new Date().toISOString()}] Database operation completed in ${duration}ms`);
+      if (existingAccount) {
+        // User exists - only update email if changed, preserve token balance
+        console.log(`🔐 [${new Date().toISOString()}] User exists with ${existingAccount.tokens_remaining} tokens, updating email only`);
+        
+        if (existingAccount.email !== email) {
+          const { error } = await supabase
+            .from('user_accounts')
+            .update({ email: email })
+            .eq('user_id', userId);
 
-      if (error) {
-        console.error(`❌ [${new Date().toISOString()}] Database error after ${duration}ms:`, {
-          error: error,
-          message: error.message,
-          details: error.details,
-          hint: error.hint,
-          code: error.code
-        });
-        throw error;
+          if (error) {
+            console.error(`❌ [${new Date().toISOString()}] Error updating email:`, error);
+            throw error;
+          }
+          
+          console.log(`✅ [${new Date().toISOString()}] Email updated for existing user`);
+        } else {
+          console.log(`✅ [${new Date().toISOString()}] User account already exists with correct email`);
+        }
+      } else {
+        // User doesn't exist - create with default tokens
+        console.log(`🔐 [${new Date().toISOString()}] Creating new user account with 100 starting tokens`);
+        
+        const { data, error } = await supabase
+          .from('user_accounts')
+          .insert({
+            user_id: userId,
+            email: email,
+            tokens_remaining: 100, // Default starting balance for new users only
+            subscription_tier: 'free'
+          })
+          .select();
+
+        if (error) {
+          console.error(`❌ [${new Date().toISOString()}] Database error creating new user:`, error);
+          throw error;
+        }
+
+        console.log(`✅ [${new Date().toISOString()}] New user account created:`, data);
       }
 
-      console.log(`✅ [${new Date().toISOString()}] User account ensured successfully in ${duration}ms:`, data);
-      return data;
+      const duration = Date.now() - startTime;
+      console.log(`✅ [${new Date().toISOString()}] User account ensured successfully in ${duration}ms`);
+      
     } catch (error) {
       const duration = Date.now() - startTime;
       console.error(`❌ [${new Date().toISOString()}] Exception in ensureUserAccount after ${duration}ms:`, error);
@@ -158,15 +180,25 @@ export function useAuthFunctions() {
       if (data.user) {
         console.log('✅ User signed in successfully');
         
-        // Update user state immediately
+        // Fetch actual token balance from database
+        const { data: userAccount } = await supabase
+          .from('user_accounts')
+          .select('tokens_remaining, subscription_tier')
+          .eq('user_id', data.user.id)
+          .single();
+        
+        // Update user state with actual balance
         setUserState(prev => ({
           ...prev,
           currentUserId: data.user!.id,
           isAuthenticated: true,
           userEmail: data.user!.email || null,
-          tokensRemaining: 100,
-          subscriptionTier: 'free'
+          tokensRemaining: userAccount?.tokens_remaining || 0,
+          subscriptionTier: userAccount?.subscription_tier || 'free'
         }));
+        
+        // Ensure user account exists (will not overwrite existing balance)
+        await ensureUserAccount(data.user.id, data.user.email || '');
         
         // Verify session is stored immediately after sign-in
         setTimeout(async () => {
@@ -427,7 +459,7 @@ export function useAuthFunctions() {
   }, [updateUserSession]);
 
   /**
-   * Fetches current token balance from database
+   * Fetches current token balance from database and updates local state
    * @returns Current token balance
    */
   const fetchTokenBalance = useCallback(async (): Promise<number> => {
@@ -436,9 +468,11 @@ export function useAuthFunctions() {
     }
 
     try {
+      console.log('🔄 Fetching fresh token balance from database...');
+      
       const { data, error } = await supabase
         .from('user_accounts')
-        .select('tokens_remaining')
+        .select('tokens_remaining, subscription_tier')
         .eq('user_id', userState.currentUserId)
         .single();
 
@@ -448,11 +482,13 @@ export function useAuthFunctions() {
       }
 
       const balance = data?.tokens_remaining || 0;
+      console.log(`✅ Fresh token balance fetched: ${balance}`);
       
-      // Update local state
+      // Update local state with fresh data
       setUserState(prev => ({
         ...prev,
-        tokensRemaining: balance
+        tokensRemaining: balance,
+        subscriptionTier: data?.subscription_tier || prev.subscriptionTier
       }));
       
       return balance;

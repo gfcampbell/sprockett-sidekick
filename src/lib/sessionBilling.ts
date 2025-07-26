@@ -85,6 +85,10 @@ export async function endSession(
 
     if (sessionError) {
       console.error('❌ Error updating session:', sessionError);
+      console.error('❌ Session update failed for sessionId:', sessionId);
+      // Don't throw - continue with token deduction for billing purposes
+    } else {
+      console.log('✅ Session end_time updated successfully');
     }
 
     // Step 2: Get current user token balance
