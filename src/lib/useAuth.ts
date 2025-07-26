@@ -314,8 +314,60 @@ export function useAuthFunctions() {
   }, [setUserState, ensureUserAccount]);
 
   /**
-   * Sets up auth state change listener
-   * Automatically updates user state when auth changes
+   * Session update helper - handles user state updates for both initial load and auth changes
+   */
+  const updateUserSession = useCallback(async (session: any) => {
+    if (session) {
+      console.log('✅ User session active:', session.user.email);
+      
+      try {
+        // Fetch token balance and update state
+        const { data: userAccount } = await supabase
+          .from('user_accounts')
+          .select('tokens_remaining, subscription_tier')
+          .eq('user_id', session.user.id)
+          .single();
+        
+        setUserState(prev => ({
+          ...prev,
+          currentUserId: session.user.id,
+          isAuthenticated: true,
+          userEmail: session.user.email || null,
+          tokensRemaining: userAccount?.tokens_remaining || 0,
+          subscriptionTier: userAccount?.subscription_tier || 'free'
+        }));
+        
+        // Ensure user account exists in database (non-blocking)
+        Promise.race([
+          ensureUserAccount(session.user.id, session.user.email || ''),
+          new Promise((_, reject) => setTimeout(() => reject(new Error('Database timeout after 10 seconds')), 10000))
+        ]).catch(error => {
+          console.error(`❌ Failed to ensure user account (non-blocking):`, {
+            error: error.message,
+            userEmail: session.user.email,
+            userId: session.user.id
+          });
+        });
+        
+      } catch (error) {
+        console.error('❌ Error updating user session:', error);
+      }
+    } else {
+      console.log('🔐 No user session - clearing state');
+      setUserState(prev => ({
+        ...prev,
+        currentUserId: null,
+        isAuthenticated: false,
+        userEmail: null,
+        tokensRemaining: 0,
+        subscriptionTier: 'free'
+      }));
+    }
+  }, [setUserState, ensureUserAccount]);
+
+  /**
+   * Sets up auth state change listener - follows official Supabase pattern
+   * Checks existing session FIRST, then sets up listener for future changes
    */
   const initializeAuth = useCallback(async () => {
     console.log('🔐 Initializing Supabase Auth system');
@@ -325,83 +377,54 @@ export function useAuthFunctions() {
       return;
     }
 
-    // Simple auth state listener - handles everything
     try {
-      supabase.auth.onAuthStateChange(async (event, session) => {
-        console.log('🔐 Auth event:', event);
-        
-        if (session) {
-          console.log('✅ User session active:', session.user.email);
-          // Fetch token balance and update state
-          const { data: userAccount } = await supabase
-            .from('user_accounts')
-            .select('tokens_remaining, subscription_tier')
-            .eq('user_id', session.user.id)
-            .single();
-          
-          setUserState(prev => ({
-            ...prev,
-            currentUserId: session.user.id,
-            isAuthenticated: true,
-            userEmail: session.user.email || null,
-            tokensRemaining: userAccount?.tokens_remaining || 0,
-            subscriptionTier: userAccount?.subscription_tier || 'free'
-          }));
-          
-          // Ensure user account exists in database
-          try {
-            console.log(`🔐 [${new Date().toISOString()}] Starting background ensureUserAccount for: ${session.user.email}`);
-            
-            // Don't await - let it run in background with timeout
-            Promise.race([
-              ensureUserAccount(session.user.id, session.user.email || ''),
-              new Promise((_, reject) => setTimeout(() => reject(new Error('Database timeout after 10 seconds')), 10000))
-            ]).catch(error => {
-              console.error(`❌ [${new Date().toISOString()}] Failed to ensure user account (non-blocking):`, {
-                error: error,
-                message: error.message,
-                userEmail: session.user.email,
-                userId: session.user.id
-              });
-            });
-          } catch (error) {
-            console.error(`❌ [${new Date().toISOString()}] Failed to ensure user account:`, error);
-          }
-        } else {
-          console.log('🔐 No user session');
-          setUserState(prev => ({
-            ...prev,
-            currentUserId: null,
-            isAuthenticated: false,
-            userEmail: null,
-            tokensRemaining: 0,
-            subscriptionTier: 'free'
-          }));
-        }
-      });
-      console.log('🔐 Auth listener set up successfully');
-    } catch (error) {
-      console.error('❌ Error setting up auth listener:', error);
-    }
-    
-    // Get initial session using proper Supabase method
-    console.log('🔐 About to check for existing session...');
-    try {
-      const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) {
-        console.error('❌ Error getting session:', error);
-      } else if (session) {
-        console.log('🔄 Initial session check - found:', session.user.email);
-        // Auth listener will handle the rest
+      // STEP 1: Check for existing session FIRST (official Supabase pattern)
+      console.log('🔐 Checking for existing session...');
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      
+      if (sessionError) {
+        console.error('❌ Error getting initial session:', sessionError);
       } else {
-        console.log('🔄 Initial session check - no session');
+        if (session) {
+          console.log('🔄 Found existing session on initialization:', session.user.email);
+        } else {
+          console.log('🔄 No existing session found');
+        }
+        // Update state immediately with existing session (or null)
+        await updateUserSession(session);
       }
+
+      // STEP 2: Set up listener for future auth changes
+      console.log('🔐 Setting up auth state change listener...');
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        console.log('🔐 Auth state change event:', event);
+        
+        // Handle specific events
+        if (event === 'SIGNED_IN') {
+          console.log('✅ User signed in:', session?.user.email);
+        } else if (event === 'SIGNED_OUT') {
+          console.log('👋 User signed out');
+        } else if (event === 'TOKEN_REFRESHED') {
+          console.log('🔄 Token refreshed for:', session?.user.email);
+        } else if (event === 'INITIAL_SESSION') {
+          console.log('🔄 Initial session event:', session?.user.email || 'no session');
+        }
+        
+        // Update user state for any auth change
+        await updateUserSession(session);
+      });
+      
+      console.log('✅ Auth listener set up successfully');
+      
+      // Store subscription for potential cleanup
+      return subscription;
+      
     } catch (error) {
-      console.error('❌ Exception during session check:', error);
+      console.error('❌ Exception during auth initialization:', error);
     }
     
-    console.log('✅ Auth initialized');
-  }, [setUserState, ensureUserAccount]);
+    console.log('✅ Auth initialization complete');
+  }, [updateUserSession]);
 
   /**
    * Fetches current token balance from database
