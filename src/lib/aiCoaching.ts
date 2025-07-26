@@ -168,10 +168,12 @@ export class DesktopAICoaching {
   /**
    * Schedule the next coaching call with dynamic frequency checking
    */
-  private scheduleNextCoachingCall(): void {
+  private async scheduleNextCoachingCall(): Promise<void> {
     if (!this.isActive) {
       return;
     }
+
+    const frequency = await this.getCurrentCoachingFrequency();
 
     // Use setTimeout instead of setInterval for dynamic frequency
     setTimeout(async () => {
@@ -179,15 +181,12 @@ export class DesktopAICoaching {
         return;
       }
 
-      // Get current coaching config (might have changed)
-      const coachingConfig = await getActiveAIConfig('coaching');
-      
       // Run coaching analysis
       await this.requestCoachingSuggestion();
 
       // Schedule next call with current frequency
       this.scheduleNextCoachingCall();
-    }, await this.getCurrentCoachingFrequency());
+    }, frequency);
   }
 
   /**
