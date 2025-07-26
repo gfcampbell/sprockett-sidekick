@@ -150,15 +150,15 @@ export default function Economics() {
   }
 
   const calculateLLMCosts = (sessions: any[], _usage: any[]) => {
-    // Use current API pricing from state (convert from per 1M to per 1K tokens)
+    // Use current API pricing from state (convert from per 1M to per 1 token)
     const PRICING = {
       gpt4: {
-        input: apiPricing.gpt4.input / 1000,   // Convert from per 1M to per 1K tokens
-        output: apiPricing.gpt4.output / 1000   // Convert from per 1M to per 1K tokens
+        input: apiPricing.gpt4.input / 1000000,   // Convert from per 1M to per 1 token
+        output: apiPricing.gpt4.output / 1000000   // Convert from per 1M to per 1 token
       },
       gpt35: {
-        input: apiPricing.gpt35.input / 1000, // Convert from per 1M to per 1K tokens  
-        output: apiPricing.gpt35.output / 1000  // Convert from per 1M to per 1K tokens
+        input: apiPricing.gpt35.input / 1000000, // Convert from per 1M to per 1 token  
+        output: apiPricing.gpt35.output / 1000000  // Convert from per 1M to per 1 token
       },
       whisper: apiPricing.whisper / 60     // Per minute
     }
