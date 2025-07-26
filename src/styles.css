@@ -87,6 +87,35 @@
   color: var(--color-gray-600);
 }
 
+.admin-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-gray-200);
+  margin-bottom: var(--space-6);
+}
+
+.admin-tab {
+  background: none;
+  border: none;
+  padding: var(--space-3) var(--space-4);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--color-gray-600);
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.admin-tab:hover {
+  color: var(--color-gray-900);
+  background: var(--color-gray-50);
+}
+
+.admin-tab.active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  background: var(--color-gray-50);
+}
+
 .admin-error {
   background: #fef2f2;
   border: 1px solid #fecaca;
@@ -216,6 +245,261 @@
 
 .add-tokens-btn:hover {
   background: var(--color-success-hover);
+}
+
+/* =============================================
+   AI CONFIGURATION STYLES
+   ============================================= */
+
+.ai-config-section {
+  margin-top: var(--space-8);
+}
+
+.ai-config-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-6);
+}
+
+.ai-config-controls {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.create-config-btn {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: var(--space-2) var(--space-4);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}
+
+.create-config-btn:hover {
+  background: var(--color-primary-hover);
+}
+
+.active-config-display {
+  background: #f0fdf4;
+  border: 1px solid #22c55e;
+  border-radius: 8px;
+  padding: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.active-config-display h3 {
+  margin: 0 0 var(--space-2) 0;
+  color: #15803d;
+  font-size: var(--font-size-lg);
+}
+
+.config-summary {
+  display: flex;
+  gap: var(--space-4);
+  flex-wrap: wrap;
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+}
+
+.configs-list {
+  display: grid;
+  gap: var(--space-4);
+}
+
+.config-card {
+  border: 1px solid var(--color-gray-200);
+  border-radius: 8px;
+  padding: var(--space-4);
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.config-card.active {
+  border-color: #22c55e;
+  background: #f0fdf4;
+}
+
+.config-info h4 {
+  margin: 0 0 var(--space-2) 0;
+  font-size: var(--font-size-lg);
+  color: var(--color-gray-900);
+}
+
+.config-details {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-600);
+}
+
+.config-prompt-preview {
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+  font-style: italic;
+  max-width: 500px;
+}
+
+.config-actions {
+  display: flex;
+  gap: var(--space-2);
+  flex-shrink: 0;
+}
+
+.activate-btn {
+  background: var(--color-success);
+  color: white;
+  border: none;
+  padding: var(--space-1) var(--space-3);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+}
+
+.activate-btn:hover {
+  background: var(--color-success-hover);
+}
+
+.edit-btn {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: var(--space-1) var(--space-3);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+}
+
+.edit-btn:hover {
+  background: var(--color-primary-hover);
+}
+
+.delete-btn {
+  background: var(--color-danger);
+  color: white;
+  border: none;
+  padding: var(--space-1) var(--space-3);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: var(--font-size-xs);
+}
+
+.delete-btn:hover {
+  background: var(--color-danger-hover);
+}
+
+/* Config Form Overlay */
+.config-form-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.config-form {
+  background: white;
+  border-radius: 12px;
+  padding: var(--space-6);
+  max-width: 700px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.config-form h3 {
+  margin: 0 0 var(--space-6) 0;
+  font-size: var(--font-size-xl);
+  color: var(--color-gray-900);
+}
+
+.form-group {
+  margin-bottom: var(--space-4);
+}
+
+.form-group label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: var(--space-1);
+  font-size: var(--font-size-sm);
+  color: var(--color-gray-700);
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-gray-300);
+  border-radius: 6px;
+  font-size: var(--font-size-sm);
+  font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+
+.form-group small {
+  display: block;
+  margin-top: var(--space-1);
+  font-size: var(--font-size-xs);
+  color: var(--color-gray-500);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-gray-200);
+}
+
+.cancel-btn {
+  background: var(--color-gray-100);
+  color: var(--color-gray-700);
+  border: none;
+  padding: var(--space-2) var(--space-4);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}
+
+.cancel-btn:hover {
+  background: var(--color-gray-200);
+}
+
+.save-btn {
+  background: var(--color-primary);
+  color: white;
+  border: none;
+  padding: var(--space-2) var(--space-4);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+}
+
+.save-btn:hover {
+  background: var(--color-primary-hover);
 }
 
 * {

@@ -5,6 +5,7 @@
  */
 
 import { TranscriptMessage } from './audioCapture';
+import { getActiveAIConfig } from './aiConfigManager';
 
 // =============================================
 // USE CASE DEFINITIONS (from Sprockett)
@@ -78,9 +79,9 @@ export const CONVERSATION_TYPES = {
 // =============================================
 
 const COACHING_CONFIG = {
-  INTERVAL_MS: 15000,           // Send coaching request every 15 seconds
   TRANSCRIPT_WINDOW_MS: 60000,  // Use last 60 seconds of transcript
   MAX_TRANSCRIPT_CHARS: 2000    // Limit transcript length for API efficiency
+  // INTERVAL_MS removed - now dynamic from config
 };
 
 // =============================================
@@ -129,7 +130,6 @@ export interface ConversationAnalytics {
 // =============================================
 
 export class DesktopAICoaching {
-  private coachingInterval: number | null = null;
   private isActive = false;
   // private lastCoachingRequest = 0; // Reserved for rate limiting
   private callConfig: CallConfig;
@@ -145,23 +145,62 @@ export class DesktopAICoaching {
   }
 
   /**
-   * Starts the AI coaching system
+   * Starts the AI coaching system with dynamic frequency
    */
-  start(): void {
+  async start(): Promise<void> {
     if (this.isActive) return;
     
     this.isActive = true;
-    console.log('🤖 AI Coaching started - requesting suggestions every', COACHING_CONFIG.INTERVAL_MS / 1000, 'seconds');
     
-    // Start periodic coaching requests
-    this.coachingInterval = window.setInterval(async () => {
-      await this.requestCoachingSuggestion();
-    }, COACHING_CONFIG.INTERVAL_MS) as number;
+    // Get coaching config for initial frequency
+    const coachingConfig = await getActiveAIConfig('coaching');
+    console.log(`🤖 AI Coaching started - requesting suggestions every ${coachingConfig.frequency_ms / 1000} seconds`);
+    
+    // Start dynamic coaching loop
+    this.scheduleNextCoachingCall();
     
     // Send initial request after a short delay to let conversation start
     setTimeout(async () => {
       await this.requestCoachingSuggestion();
     }, 5000);
+  }
+
+  /**
+   * Schedule the next coaching call with dynamic frequency checking
+   */
+  private scheduleNextCoachingCall(): void {
+    if (!this.isActive) {
+      return;
+    }
+
+    // Use setTimeout instead of setInterval for dynamic frequency
+    setTimeout(async () => {
+      if (!this.isActive) {
+        return;
+      }
+
+      // Get current coaching config (might have changed)
+      const coachingConfig = await getActiveAIConfig('coaching');
+      
+      // Run coaching analysis
+      await this.requestCoachingSuggestion();
+
+      // Schedule next call with current frequency
+      this.scheduleNextCoachingCall();
+    }, await this.getCurrentCoachingFrequency());
+  }
+
+  /**
+   * Get current coaching frequency from config
+   */
+  private async getCurrentCoachingFrequency(): Promise<number> {
+    try {
+      const coachingConfig = await getActiveAIConfig('coaching');
+      return coachingConfig.frequency_ms;
+    } catch (error) {
+      console.warn('⚠️ Failed to get coaching frequency, using default 15s');
+      return 15000; // Default fallback
+    }
   }
 
   /**
@@ -172,10 +211,8 @@ export class DesktopAICoaching {
     
     this.isActive = false;
     
-    if (this.coachingInterval) {
-      clearInterval(this.coachingInterval);
-      this.coachingInterval = null;
-    }
+    // No need to clear interval since we're using setTimeout in a loop
+    // The scheduleNextCoachingCall will check this.isActive and stop
     
     console.log('🤖 AI Coaching stopped');
   }
@@ -237,7 +274,7 @@ export class DesktopAICoaching {
       }
       
       // Build the coaching prompt
-      const promptPayload = this.buildCoachingPrompt(transcript);
+      const promptPayload = await this.buildCoachingPrompt(transcript);
       
       // Send to coaching API
       await this.sendToCoachAPI(promptPayload);
@@ -293,9 +330,12 @@ export class DesktopAICoaching {
   /**
    * Builds the complete coaching prompt for the AI (from Sprockett)
    */
-  private buildCoachingPrompt(transcript: string) {
+  private async buildCoachingPrompt(transcript: string) {
+    // Get dynamic AI configuration
+    const aiConfig = await getActiveAIConfig();
+    
     // Build system prompt with use case context
-    const systemPrompt = this.buildSystemPrompt();
+    const systemPrompt = this.buildSystemPrompt(aiConfig.system_prompt);
     
     // Build user message with context and transcript
     const userMessage = `CURRENT CONVERSATION (last 60 seconds):
@@ -306,7 +346,7 @@ HOST'S GOAL: ${this.callConfig.goal || 'Build connection and communicate effecti
 Analyze this moment and provide ratings + coaching insight.`;
 
     return {
-      model: 'gpt-4-turbo-preview',
+      model: aiConfig.model,
       messages: [
         {
           role: 'system',
@@ -317,8 +357,8 @@ Analyze this moment and provide ratings + coaching insight.`;
           content: userMessage
         }
       ],
-      max_tokens: 60,
-      temperature: 0.7,
+      max_tokens: aiConfig.max_tokens,
+      temperature: aiConfig.temperature,
       stream: true
     };
   }
@@ -326,34 +366,18 @@ Analyze this moment and provide ratings + coaching insight.`;
   /**
    * Builds the system prompt with use case and goal context (from Sprockett)
    */
-  private buildSystemPrompt(): string {
-    // Base system directive (consistent across all calls)
-    const basePrompt = `You are an elite real-time coaching assistant for professional conversations. Think of yourself as a perceptive, emotionally intelligent confidante — warm like a close friend, sharp like a world-class communication coach. Your job is to analyze subtle cues and patterns in the conversation and deliver short but transformative insights.
+  private buildSystemPrompt(baseSystemPrompt: string): string {
+    // Use the dynamic system prompt from config
+    const basePrompt = baseSystemPrompt;
 
-Your purpose:
-- Detect specific emotional shifts, energy changes, or social cues in the last 60 seconds
-- Reference what actually happened (words, tone, silence, pacing, energy)
-- Offer one precise coaching insight that helps the host improve clarity, connection, or influence
-- Always frame the coaching as a whisper from a trusted advisor — never robotic, obvious, or judgmental
-
-⚠️ Keep responses short: 12–15 words max  
-🎯 Use this structure: [What you picked up on] → [What to say/do about it]  
-✅ Focus ONLY on coaching the HOST (🙋‍♂️ You) based on transcript
-
-You will also rate the moment using the following scale:
-1. Warmth (1–5): 1=cold, 5=very warm
-2. Guest Energy (1–5): 1=flat, 5=high
-3. Guest Agreeability (1–5): 1=resistant, 5=very open
-4. Goal Progress (0–100): How close is the host to achieving their stated goal?
-5. Coaching Comment (max 15 words): Insightful, situational, friendly
+    // Add coaching-specific instructions (no metrics, just pure coaching)
+    const formatInstructions = `
 
 Transcript Formatting:
 - 🙋‍♂️ You = Host (being coached)
 - 👤 Guest = Other speaker
 
-Your output format:
-
-TEMP:[Warmth] ENERGY:[Energy] AGREE:[Agreeability] GOAL:[0–100] 🤖 [Coaching Insight (12–15 words)]`;
+Provide ONLY your coaching insight (12-15 words max). Do not include any ratings or metrics.`;
 
     // Add use case specific context if selected
     let useCaseContext = '';
@@ -373,7 +397,7 @@ TEMP:[Warmth] ENERGY:[Energy] AGREE:[Agreeability] GOAL:[0–100] 🤖 [Coaching
       backgroundContext = `\n\nRELEVANT CONTEXT: ${this.callConfig.context.trim()}`;
     }
 
-    return basePrompt + useCaseContext + goalContext + backgroundContext;
+    return basePrompt + formatInstructions + useCaseContext + goalContext + backgroundContext;
   }
 
   /**

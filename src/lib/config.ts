@@ -26,9 +26,16 @@ export const transcriptionConfig = {
 export const coachingConfig = {
   // Server proxy endpoint for AI coaching
   COACHING_API_URL: `${baseUrl}/api/coach`,
-  COACHING_INTERVAL: 15000, // 15 seconds between coaching suggestions
+  COACHING_INTERVAL: 15000, // 15 seconds between coaching suggestions (now dynamic)
   CONTEXT_WINDOW_DURATION: 60000, // 60 seconds of context
   MAX_TRANSCRIPT_ENTRIES: 100, // Keep last 100 transcript entries
+};
+
+export const metricsConfig = {
+  // Server proxy endpoint for conversation metrics
+  METRICS_API_URL: `${baseUrl}/api/metrics`,
+  METRICS_INTERVAL: 60000, // 60 seconds between metrics analysis (now dynamic)
+  CONTEXT_WINDOW_DURATION: 120000, // 2 minutes of context for metrics
 };
 
 export const appConfig = {

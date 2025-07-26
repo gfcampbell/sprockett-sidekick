@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/authContext'
 import { supabase } from '@/lib/supabaseClient'
+import AIConfiguration from './AIConfiguration'
 
 interface UserAccount {
   user_id: string
@@ -16,6 +17,7 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<UserAccount[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'users' | 'ai'>('users')
 
   useEffect(() => {
     fetchUsers()
@@ -91,6 +93,21 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      <div className="admin-tabs">
+        <button 
+          className={`admin-tab ${activeTab === 'users' ? 'active' : ''}`}
+          onClick={() => setActiveTab('users')}
+        >
+          👥 User Management
+        </button>
+        <button 
+          className={`admin-tab ${activeTab === 'ai' ? 'active' : ''}`}
+          onClick={() => setActiveTab('ai')}
+        >
+          🤖 AI Configuration
+        </button>
+      </div>
+
       {error && (
         <div className="admin-error">
           {error}
@@ -98,53 +115,57 @@ export default function AdminDashboard() {
         </div>
       )}
 
-      <div className="admin-section">
-        <h2>User Management ({users.length} users)</h2>
-        <button onClick={fetchUsers} className="refresh-btn">
-          Refresh Data
-        </button>
+      {activeTab === 'users' && (
+        <div className="admin-section">
+          <h2>User Management ({users.length} users)</h2>
+          <button onClick={fetchUsers} className="refresh-btn">
+            Refresh Data
+          </button>
 
-        {loading ? (
-          <div className="loading">Loading users...</div>
-        ) : (
-          <div className="users-table">
-            <div className="table-header">
-              <div>Email</div>
-              <div>Tokens</div>
-              <div>Tier</div>
-              <div>Role</div>
-              <div>Joined</div>
-              <div>Actions</div>
-            </div>
-            
-            {users.map(user => (
-              <div key={user.user_id} className="table-row">
-                <div className="user-email">{user.email}</div>
-                <div className="user-tokens">{user.tokens_remaining}</div>
-                <div className="user-tier">{user.subscription_tier}</div>
-                <div className="user-role">{user.role}</div>
-                <div className="user-joined">
-                  {new Date(user.created_at).toLocaleDateString()}
-                </div>
-                <div className="user-actions">
-                  <button 
-                    onClick={() => addTokens(user.user_id, 100)}
-                    className="add-tokens-btn"
-                  >
-                    +100 Tokens
-                  </button>
-                  <button 
-                    onClick={() => addTokens(user.user_id, 1000)}
-                    className="add-tokens-btn"
-                  >
-                    +1000 Tokens
-                  </button>
-                </div>
+          {loading ? (
+            <div className="loading">Loading users...</div>
+          ) : (
+            <div className="users-table">
+              <div className="table-header">
+                <div>Email</div>
+                <div>Tokens</div>
+                <div>Tier</div>
+                <div>Role</div>
+                <div>Joined</div>
+                <div>Actions</div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
+              
+              {users.map(user => (
+                <div key={user.user_id} className="table-row">
+                  <div className="user-email">{user.email}</div>
+                  <div className="user-tokens">{user.tokens_remaining}</div>
+                  <div className="user-tier">{user.subscription_tier}</div>
+                  <div className="user-role">{user.role}</div>
+                  <div className="user-joined">
+                    {new Date(user.created_at).toLocaleDateString()}
+                  </div>
+                  <div className="user-actions">
+                    <button 
+                      onClick={() => addTokens(user.user_id, 100)}
+                      className="add-tokens-btn"
+                    >
+                      +100 Tokens
+                    </button>
+                    <button 
+                      onClick={() => addTokens(user.user_id, 1000)}
+                      className="add-tokens-btn"
+                    >
+                      +1000 Tokens
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {activeTab === 'ai' && <AIConfiguration />}
     </div>
   )
 }

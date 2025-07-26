@@ -2,7 +2,8 @@ import { useState, useEffect, useRef } from 'react'
 import { DesktopAudioCapture, TranscriptMessage } from '@/lib/audioCapture'
 import { DualAudioCapture, TranscriptMessage as DualTranscriptMessage, DualAudioConfig } from '@/lib/dualAudioCapture'
 import { DesktopAICoaching, CallConfig, CoachingSuggestion, ConversationTemperature, ConversationAnalytics, CONVERSATION_TYPES, loadCallConfig, saveCallConfig } from '@/lib/aiCoaching'
-import { transcriptionConfig, coachingConfig, surgicalFlags } from '@/lib/config'
+import { MetricsTracker, ConversationMetrics, MetricsUpdate } from '@/lib/metricsTracking'
+import { transcriptionConfig, coachingConfig, metricsConfig, surgicalFlags } from '@/lib/config'
 import { ConfigPanel } from '@/components/ConfigPanel'
 import AuthHeader from '@/components/AuthHeader'
 import AdminDashboard from '@/components/AdminDashboard'
@@ -33,6 +34,19 @@ function App() {
   const [isMuted, setIsMuted] = useState(false)
   const [transcriptMessages, setTranscriptMessages] = useState<TranscriptMessage[]>([])
   const [coachingSuggestions, setCoachingSuggestions] = useState<CoachingSuggestion[]>([])
+  // Conversation analytics state (now from separate metrics system)
+  const [conversationMetrics, setConversationMetrics] = useState<ConversationMetrics>({
+    warmth: 3,
+    energy: 3,
+    agreeability: 3,
+    goal_progress: 50
+  })
+  const [warmthHistory, setWarmthHistory] = useState<number[]>([])
+  const [energyHistory, setEnergyHistory] = useState<number[]>([])
+  const [agreeabilityHistory, setAgreeabilityHistory] = useState<number[]>([])
+  const [goalProgressHistory, setGoalProgressHistory] = useState<number[]>([])
+
+  // Legacy analytics interfaces (for UI compatibility)
   const [conversationTemp, setConversationTemp] = useState<ConversationTemperature>({ level: 3, trend: 'stable', indicators: [] })
   const [tempHistory, setTempHistory] = useState<number[]>([])
   const [analytics, setAnalytics] = useState<ConversationAnalytics>({
@@ -40,9 +54,6 @@ function App() {
     agreeability: { level: 3, trend: 'stable', indicators: [] },
     goalProgress: { percentage: 0, trend: 'advancing', indicators: [] }
   })
-  const [energyHistory, setEnergyHistory] = useState<number[]>([])
-  const [agreeabilityHistory, setAgreeabilityHistory] = useState<number[]>([])
-  // const [goalProgressHistory, setGoalProgressHistory] = useState<number[]>([]); // Reserved for future use
   const [status, setStatus] = useState('Ready to start')
   const [error, setError] = useState<string | null>(null)
 
@@ -52,10 +63,11 @@ function App() {
   const [showTranscript, setShowTranscript] = useState(false)
   const [showControls, setShowControls] = useState(true)
 
-  // Refs - Updated for dual audio system
+  // Refs - Updated for dual audio system and metrics tracking
   const audioCaptureRef = useRef<DesktopAudioCapture | null>(null)
   const dualAudioCaptureRef = useRef<DualAudioCapture | null>(null)
   const aiCoachingRef = useRef<DesktopAICoaching | null>(null)
+  const metricsTrackerRef = useRef<MetricsTracker | null>(null)
 
   // 🏥 SURGICAL: Voice enrollment handlers removed
 
@@ -175,6 +187,40 @@ function App() {
 
     aiCoachingRef.current = aiCoaching
 
+    // Initialize metrics tracking system
+    const metricsTracker = new MetricsTracker(metricsConfig.METRICS_API_URL)
+
+    // Set up metrics callback
+    metricsTracker.onMetrics((update: MetricsUpdate) => {
+      const { metrics } = update
+      
+      // Update metrics state
+      setConversationMetrics(metrics)
+      
+      // Add to history for sparklines (keep last 20 readings)
+      setWarmthHistory(prev => [...prev.slice(-19), metrics.warmth])
+      setEnergyHistory(prev => [...prev.slice(-19), metrics.energy])
+      setAgreeabilityHistory(prev => [...prev.slice(-19), metrics.agreeability])
+      setGoalProgressHistory(prev => [...prev.slice(-19), metrics.goal_progress])
+      
+      // Update legacy analytics interfaces for UI compatibility
+      setConversationTemp({ level: metrics.warmth, trend: 'stable', indicators: [] })
+      setTempHistory(prev => [...prev.slice(-19), metrics.warmth])
+      setAnalytics({
+        energy: { level: metrics.energy, trend: 'stable', indicators: [] },
+        agreeability: { level: metrics.agreeability, trend: 'stable', indicators: [] },
+        goalProgress: { percentage: metrics.goal_progress, trend: 'advancing', indicators: [] }
+      })
+    })
+
+    // Set up metrics error callback
+    metricsTracker.onError((errorMessage: string) => {
+      console.warn('⚠️ Metrics tracking error:', errorMessage)
+      // Don't show metrics errors to user - they're non-critical
+    })
+
+    metricsTrackerRef.current = metricsTracker
+
     return () => {
       // 🫀 HEART TRANSPLANT: Cleanup both audio systems
       if (surgicalFlags.USE_DUAL_AUDIO_CAPTURE && dualAudioCaptureRef.current) {
@@ -184,6 +230,9 @@ function App() {
       }
       if (aiCoachingRef.current) {
         aiCoachingRef.current.stop()
+      }
+      if (metricsTrackerRef.current) {
+        metricsTrackerRef.current.stop()
       }
     }
   }, [])
@@ -297,8 +346,9 @@ function App() {
           // Continue anyway - don't block the session
         }
 
-        // Start AI coaching
+        // Start AI coaching and metrics tracking
         aiCoachingRef.current.start()
+        metricsTrackerRef.current?.start()
         setIsListening(true)
         
         // Enhanced status for dual audio system
@@ -320,6 +370,7 @@ function App() {
         audioCaptureRef.current.stopRecording()
       }
       aiCoachingRef.current.stop()
+      metricsTrackerRef.current?.stop()
       setIsListening(false)
       setStatus('Processing session...')
 
