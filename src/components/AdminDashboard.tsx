@@ -88,7 +88,16 @@ export default function AdminDashboard() {
   return (
     <div className="admin-dashboard">
       <div className="admin-header">
-        <h1>Admin Dashboard</h1>
+        <div className="admin-title-section">
+          <button 
+            onClick={() => window.location.href = '/'}
+            className="back-to-app-btn"
+            title="Back to App"
+          >
+            ← Back to App
+          </button>
+          <h1>Admin Dashboard</h1>
+        </div>
         <div className="admin-info">
           Logged in as: {userState.userEmail} ({userState.role})
         </div>

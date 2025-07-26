@@ -188,7 +188,7 @@ function App() {
     aiCoachingRef.current = aiCoaching
 
     // Initialize metrics tracking system
-    const metricsTracker = new MetricsTracker(metricsConfig.METRICS_API_URL)
+    const metricsTracker = new MetricsTracker(callConfig, metricsConfig.METRICS_API_URL)
 
     // Set up metrics callback
     metricsTracker.onMetrics((update: MetricsUpdate) => {
@@ -237,10 +237,13 @@ function App() {
     }
   }, [])
 
-  // Update AI coaching config when call config changes
+  // Update AI coaching and metrics config when call config changes
   useEffect(() => {
     if (aiCoachingRef.current) {
       aiCoachingRef.current.updateConfig(callConfig)
+    }
+    if (metricsTrackerRef.current) {
+      metricsTrackerRef.current.updateConfig(callConfig)
     }
     saveCallConfig(callConfig)
   }, [callConfig])

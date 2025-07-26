@@ -5,6 +5,7 @@
 
 import { TranscriptMessage } from './audioCapture'
 import { getActiveAIConfig } from './aiConfigManager'
+import { CallConfig } from './aiCoaching'
 
 export interface ConversationMetrics {
   warmth: number      // 1-5
@@ -21,6 +22,7 @@ export interface MetricsUpdate {
 
 export class MetricsTracker {
   private metricsApiUrl: string
+  private callConfig: CallConfig
   private isRunning: boolean = false
   private intervalId: NodeJS.Timeout | null = null
   private currentFrequency: number = 60000 // Default 60s
@@ -29,8 +31,16 @@ export class MetricsTracker {
   private onMetricsCallback?: (update: MetricsUpdate) => void
   private onErrorCallback?: (error: string) => void
 
-  constructor(metricsApiUrl: string) {
+  constructor(callConfig: CallConfig, metricsApiUrl: string) {
+    this.callConfig = callConfig
     this.metricsApiUrl = metricsApiUrl
+  }
+
+  /**
+   * Update the call configuration (including goal)
+   */
+  updateConfig(callConfig: CallConfig): void {
+    this.callConfig = callConfig
   }
 
   /**
@@ -196,9 +206,11 @@ export class MetricsTracker {
     // Get dynamic metrics configuration
     const metricsConfig = await getActiveAIConfig('metrics')
     
-    // Build user message with transcript for analysis
+    // Build user message with transcript and goal for analysis
     const userMessage = `CONVERSATION TRANSCRIPT (last 2 minutes):
 ${transcript}
+
+HOST'S GOAL: ${this.callConfig.goal || 'Build connection and communicate effectively'}
 
 Please analyze this conversation and provide metrics ratings.`
 
