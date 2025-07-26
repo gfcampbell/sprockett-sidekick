@@ -99,6 +99,16 @@ export default function Economics() {
         throw new Error(`Session query failed: ${sessionError.message}`)
       }
 
+      // Fetch actual AI configuration for real frequency and token settings
+      const { data: aiConfigData, error: aiConfigError } = await supabase
+        .from('ai_config')
+        .select('config_type, frequency_ms, max_tokens, is_active')
+        .eq('is_active', true)
+
+      if (aiConfigError) {
+        throw new Error(`AI config query failed: ${aiConfigError.message}`)
+      }
+
       // Fetch token usage for detailed cost calculation
       const { data: usageData, error: usageError } = await supabase
         .from('token_usage')
@@ -115,8 +125,8 @@ export default function Economics() {
         sum + (transaction.amount_usd || 0), 0) || 0
       const transactionCount = revenueData?.length || 0
 
-      // Estimate costs based on real usage patterns
-      const costBreakdown = calculateLLMCosts(sessionData || [], usageData || [])
+      // Calculate costs based on real AI configuration and session data
+      const costBreakdown = calculateLLMCosts(sessionData || [], usageData || [], aiConfigData || [])
       const totalCosts = costBreakdown.gpt4Costs + costBreakdown.gpt35Costs + costBreakdown.whisperCosts
 
       // Calculate profit metrics
@@ -149,7 +159,7 @@ export default function Economics() {
     }
   }
 
-  const calculateLLMCosts = (sessions: any[], _usage: any[]) => {
+  const calculateLLMCosts = (sessions: any[], _usage: any[], aiConfigs: any[]) => {
     // Use current API pricing from state (convert from per 1M to per 1 token)
     const PRICING = {
       gpt4: {
@@ -163,27 +173,38 @@ export default function Economics() {
       whisper: apiPricing.whisper / 60     // Per minute
     }
 
+    // Get actual AI configuration settings
+    const coachingConfig = aiConfigs.find(config => config.config_type === 'coaching')
+    const metricsConfig = aiConfigs.find(config => config.config_type === 'metrics')
+    
+    // Use real configuration or fallback to defaults
+    const coachingFrequencyMs = coachingConfig?.frequency_ms || 15000 // Default 15 seconds
+    const metricsFrequencyMs = metricsConfig?.frequency_ms || 60000   // Default 60 seconds
+    const coachingTokens = coachingConfig?.max_tokens || 150          // From actual config
+    const metricsTokens = metricsConfig?.max_tokens || 100            // From actual config
+
     let gpt4Costs = 0
     let gpt35Costs = 0
     let whisperCosts = 0
     let totalLLMCalls = 0
 
-    // Estimate costs from session duration and usage patterns
+    // Calculate costs based on REAL session data and REAL AI configuration
     sessions.forEach(session => {
       if (session.start_time && session.end_time) {
         const durationMinutes = (new Date(session.end_time).getTime() - new Date(session.start_time).getTime()) / (1000 * 60)
         
-        // Estimate coaching calls (GPT-4) - typically every 15 seconds during active sessions
-        const coachingCalls = Math.floor(durationMinutes * 4) // 4 calls per minute
-        const avgCoachingTokens = 150 // Average tokens per coaching call (input + output)
-        gpt4Costs += coachingCalls * avgCoachingTokens * (PRICING.gpt4.input + PRICING.gpt4.output)
+        // Calculate calls based on ACTUAL configured frequencies
+        const coachingCallsPerMinute = 60000 / coachingFrequencyMs  // Real frequency from config
+        const metricsCallsPerMinute = 60000 / metricsFrequencyMs    // Real frequency from config
         
-        // Estimate metrics calls (GPT-3.5) - typically every 60 seconds
-        const metricsCalls = Math.floor(durationMinutes) // 1 call per minute
-        const avgMetricsTokens = 100 // Average tokens per metrics call
-        gpt35Costs += metricsCalls * avgMetricsTokens * (PRICING.gpt35.input + PRICING.gpt35.output)
+        const coachingCalls = Math.floor(durationMinutes * coachingCallsPerMinute)
+        const metricsCalls = Math.floor(durationMinutes * metricsCallsPerMinute)
         
-        // Estimate transcription costs (Whisper) - charged per minute
+        // Use REAL token limits from configuration
+        gpt4Costs += coachingCalls * coachingTokens * (PRICING.gpt4.input + PRICING.gpt4.output)
+        gpt35Costs += metricsCalls * metricsTokens * (PRICING.gpt35.input + PRICING.gpt35.output)
+        
+        // Whisper transcription costs (per minute of audio)
         whisperCosts += durationMinutes * PRICING.whisper
         
         totalLLMCalls += coachingCalls + metricsCalls
