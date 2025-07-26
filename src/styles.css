@@ -2113,3 +2113,42 @@ body {
   .session-tokens::before { content: "Tokens: "; font-weight: 400; color: var(--color-gray-500); }
   .session-mode::before { content: "Mode: "; font-weight: 400; color: var(--color-gray-500); }
 }
+
+/* =============================================
+   AI CONFIGURATION FREQUENCY CONTROLS
+   ============================================= */
+
+.frequency-presets {
+  display: flex;
+  gap: var(--space-2);
+  margin-top: var(--space-2);
+  flex-wrap: wrap;
+}
+
+.preset-btn {
+  background: var(--color-gray-100);
+  border: 1px solid var(--color-gray-300);
+  color: var(--color-gray-700);
+  padding: var(--space-1) var(--space-3);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.preset-btn:hover {
+  background: var(--color-gray-200);
+  border-color: var(--color-gray-400);
+}
+
+.preset-btn.active {
+  background: var(--color-primary);
+  color: white;
+  border-color: var(--color-primary);
+}
+
+.frequency-display {
+  color: var(--color-primary) !important;
+  font-weight: 600 !important;
+}

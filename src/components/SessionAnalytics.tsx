@@ -54,7 +54,7 @@ export default function SessionAnalytics() {
           start_time,
           end_time,
           mode,
-          user_accounts!inner(email)
+          user_accounts(email)
         `)
         .not('end_time', 'is', null)
         .order('start_time', { ascending: false })
@@ -81,7 +81,7 @@ export default function SessionAnalytics() {
         return {
           id: session.id,
           user_id: session.user_id,
-          email: session.user_accounts?.email || 'Unknown',
+          email: (session.user_accounts as any)?.email || 'Unknown',
           start_time: session.start_time,
           end_time: session.end_time,
           duration_minutes: durationMinutes,

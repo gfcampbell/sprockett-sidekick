@@ -239,6 +239,7 @@ export default function AIConfiguration() {
                   <span>{config.model}</span>
                   <span>T: {config.temperature}</span>
                   <span>Tokens: {config.max_tokens}</span>
+                  <span className="frequency-display">⏱️ {config.frequency_ms / 1000}s</span>
                 </div>
                 <div className="config-prompt-preview">
                   {config.system_prompt.substring(0, 100)}...
@@ -382,6 +383,63 @@ function ConfigForm({ config, onSave, onCancel }: ConfigFormProps) {
                 onChange={(e) => setFormData(prev => ({ ...prev, max_tokens: parseInt(e.target.value) }))}
               />
             </div>
+          </div>
+
+          <div className="form-group">
+            <label>Frequency - Every {formData.frequency_ms / 1000} seconds</label>
+            <input
+              type="range"
+              min="5000"
+              max="120000"
+              step="1000"
+              value={formData.frequency_ms}
+              onChange={(e) => setFormData(prev => ({ ...prev, frequency_ms: parseInt(e.target.value) }))}
+            />
+            <div className="frequency-presets">
+              <button 
+                type="button" 
+                onClick={() => setFormData(prev => ({ ...prev, frequency_ms: 5000 }))}
+                className={`preset-btn ${formData.frequency_ms === 5000 ? 'active' : ''}`}
+              >
+                5s
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setFormData(prev => ({ ...prev, frequency_ms: 10000 }))}
+                className={`preset-btn ${formData.frequency_ms === 10000 ? 'active' : ''}`}
+              >
+                10s
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setFormData(prev => ({ ...prev, frequency_ms: 15000 }))}
+                className={`preset-btn ${formData.frequency_ms === 15000 ? 'active' : ''}`}
+              >
+                15s
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setFormData(prev => ({ ...prev, frequency_ms: 30000 }))}
+                className={`preset-btn ${formData.frequency_ms === 30000 ? 'active' : ''}`}
+              >
+                30s
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setFormData(prev => ({ ...prev, frequency_ms: 60000 }))}
+                className={`preset-btn ${formData.frequency_ms === 60000 ? 'active' : ''}`}
+              >
+                1m
+              </button>
+              <button 
+                type="button" 
+                onClick={() => setFormData(prev => ({ ...prev, frequency_ms: 120000 }))}
+                className={`preset-btn ${formData.frequency_ms === 120000 ? 'active' : ''}`}
+              >
+                2m
+              </button>
+            </div>
+            <small>How often the AI analyzes conversation chunks. Coaching typically 10-15s, Metrics typically 60s+</small>
           </div>
 
           <div className="form-group">
