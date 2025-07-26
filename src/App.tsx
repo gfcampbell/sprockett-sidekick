@@ -13,7 +13,7 @@ function App() {
   // 🏥 SURGICAL: Voice enrollment state removed - now using physics-based audio routing
 
   // Initialize auth system
-  const { initializeAuth } = useAuthFunctions()
+  const { initializeAuth, userState } = useAuthFunctions()
 
   // Core state
   const [isListening, setIsListening] = useState(false)
@@ -197,6 +197,13 @@ function App() {
   // Removed settings dropdown click-outside handler - no longer needed
 
   const toggleListening = async () => {
+    // Check authentication first
+    if (!userState.isAuthenticated) {
+      setError('Please sign in to use AI coaching features');
+      setStatus('Sign in required');
+      return;
+    }
+
     // 🫀 HEART TRANSPLANT: Handle both audio systems
     const activeAudioCapture = surgicalFlags.USE_DUAL_AUDIO_CAPTURE ? dualAudioCaptureRef.current : audioCaptureRef.current;
     
@@ -457,7 +464,17 @@ function App() {
                 ))
               ) : (
                 <div className="suggestions-empty">
-                  {isListening ? (
+                  {!userState.isAuthenticated ? (
+                    <div className="auth-required-state">
+                      <h3>Sign in to use AI coaching</h3>
+                      <p>Create a free account to get real-time conversation coaching powered by AI</p>
+                      <div className="auth-benefits">
+                        <div>✓ Real-time AI suggestions</div>
+                        <div>✓ Conversation analytics</div>
+                        <div>✓ Personalized coaching</div>
+                      </div>
+                    </div>
+                  ) : isListening ? (
                     <div className="waiting-state">
                       <div className="pulse-animation">⚫</div>
                       <p>Analyzing conversation...</p>
