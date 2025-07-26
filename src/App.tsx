@@ -6,6 +6,7 @@ import { transcriptionConfig, coachingConfig, surgicalFlags } from '@/lib/config
 import { ConfigPanel } from '@/components/ConfigPanel'
 import AuthHeader from '@/components/AuthHeader'
 import { useAuthFunctions } from '@/lib/useAuth'
+import { useAuth } from '@/lib/authContext'
 import { startSession, endSession, formatSessionDuration, getSessionCostEstimate } from '@/lib/sessionBilling'
 // 🏥 SURGICAL: Voice enrollment theater removed
 import sprockettLogo from './assets/sprockett_logo.png'
@@ -15,11 +16,13 @@ function App() {
 
   // Initialize auth system
   const { initializeAuth, userState, updateTokenBalance, fetchTokenBalance } = useAuthFunctions()
+  const { setUserState } = useAuth()
 
   // Session tracking state
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null)
   const [sessionDuration, setSessionDuration] = useState<number>(0)
+  const [initialTokenBalance, setInitialTokenBalance] = useState<number>(0)
 
   // Core state
   const [isListening, setIsListening] = useState(false)
@@ -204,6 +207,33 @@ function App() {
     };
   }, [isListening, sessionStartTime]);
 
+  // UI-first token countdown - updates token balance in real-time during session
+  useEffect(() => {
+    let tokenTimer: NodeJS.Timeout;
+    
+    if (isListening && sessionStartTime && initialTokenBalance > 0) {
+      // Update token balance every minute
+      tokenTimer = setInterval(() => {
+        const elapsedMs = Date.now() - sessionStartTime;
+        const minutesElapsed = Math.floor(elapsedMs / 60000);
+        const tokensUsed = Math.min(minutesElapsed, initialTokenBalance);
+        const newBalance = Math.max(0, initialTokenBalance - tokensUsed);
+        
+        // Update UI immediately (don't wait for database)
+        setUserState(prev => ({
+          ...prev,
+          tokensRemaining: newBalance
+        }));
+        
+        console.log(`🪙 UI token update: ${tokensUsed} tokens used, ${newBalance} remaining`);
+      }, 60000); // Every 60 seconds (1 minute)
+    }
+    
+    return () => {
+      if (tokenTimer) clearInterval(tokenTimer);
+    };
+  }, [isListening, sessionStartTime, initialTokenBalance, setUserState]);
+
   // Mute functionality
   useEffect(() => {
     if (dualAudioCaptureRef.current) {
@@ -256,7 +286,8 @@ function App() {
           setCurrentSessionId(sessionId);
           setSessionStartTime(startTime);
           setSessionDuration(0);
-          console.log(`💰 Session ${sessionId} started for billing`);
+          setInitialTokenBalance(userState.tokensRemaining); // Capture starting balance for UI countdown
+          console.log(`💰 Session ${sessionId} started for billing with ${userState.tokensRemaining} tokens`);
         } catch (error) {
           console.error('❌ Failed to start session billing:', error);
           // Continue anyway - don't block the session
@@ -320,6 +351,7 @@ function App() {
       setCurrentSessionId(null);
       setSessionStartTime(null);
       setSessionDuration(0);
+      setInitialTokenBalance(0);
     }
   }
 

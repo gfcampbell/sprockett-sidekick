@@ -32,7 +32,7 @@ export async function startSession(userId: string): Promise<string> {
         user_id: userId,
         room_id: `coaching_${Date.now()}`,
         start_time: new Date().toISOString(),
-        mode: 'voice',
+        mode: 'voice-only',
         used_turn: false,
         credit_cost: 0.00
       })
