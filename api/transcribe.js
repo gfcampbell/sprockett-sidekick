@@ -2,6 +2,37 @@
 const multer = require('multer');
 const upload = multer();
 
+// Filter out non-English text (Korean, Chinese, etc.)
+function isEnglishText(text) {
+  if (!text || text.trim().length === 0) return false;
+  
+  // Check for Korean characters (Hangul)
+  const koreanRegex = /[\u3131-\u3163\uac00-\ud7a3]/;
+  if (koreanRegex.test(text)) return false;
+  
+  // Check for Chinese characters (CJK)
+  const chineseRegex = /[\u4e00-\u9fff]/;
+  if (chineseRegex.test(text)) return false;
+  
+  // Check for Japanese characters (Hiragana, Katakana)
+  const japaneseRegex = /[\u3040-\u309f\u30a0-\u30ff]/;
+  if (japaneseRegex.test(text)) return false;
+  
+  // Check if text is mostly English (letters, numbers, common punctuation)
+  const englishRegex = /^[a-zA-Z0-9\s.,!?'"();:\-–—\[\]{}@#$%^&*+=/<>~`|\\]+$/;
+  return englishRegex.test(text.trim());
+}
+
+function filterEnglishText(text) {
+  if (!text) return '';
+  
+  // Split by sentences and filter out non-English ones
+  const sentences = text.split(/[.!?]+/).map(s => s.trim()).filter(s => s.length > 0);
+  const englishSentences = sentences.filter(sentence => isEnglishText(sentence));
+  
+  return englishSentences.join('. ').trim();
+}
+
 // Wrap multer middleware for serverless
 function runMiddleware(req, res, fn) {
   return new Promise((resolve, reject) => {
@@ -83,6 +114,7 @@ module.exports = async (req, res) => {
     const audioBlob = new Blob([audioBuffer], { type: req.file.mimetype || 'audio/webm' });
     formData.append('file', audioBlob, req.file.originalname || 'audio.webm');
     formData.append('model', model);
+    formData.append('language', 'en'); // Force English-only transcription
     
     if (enableSpeakerDetection) {
       formData.append('response_format', 'verbose_json');
@@ -133,38 +165,55 @@ module.exports = async (req, res) => {
         speakerInfo.segments += 1;
         speakerMap.set(speakerId, speakerInfo);
         
-        segments.push({
-          speaker: speakerId,
-          text: segment.text.trim(),
-          start: segment.start,
-          end: segment.end
-        });
+        const filteredText = filterEnglishText(segment.text.trim());
+        if (filteredText) { // Only add segments with English text
+          segments.push({
+            speaker: speakerId,
+            text: filteredText,
+            start: segment.start,
+            end: segment.end
+          });
+        }
       }
       
       console.log(`✅ Speaker detection transcription: ${segments.length} segments from ${speakerMap.size} speakers`);
       
+      const filteredFullText = filterEnglishText(result.text);
+      
       res.json({
         segments: segments,
         speakers: Object.fromEntries(speakerMap),
-        text: result.text,
+        text: filteredFullText,
         timestamp: new Date().toISOString(),
         model: model
       });
       
     } else {
       // Standard single-speaker response
-      console.log(`✅ Transcription for ${speaker}: "${result.text}"`);
+      const filteredText = filterEnglishText(result.text);
+      console.log(`✅ Transcription for ${speaker}: "${filteredText}"`);
       
-      res.json({ 
-        segments: [{
+      if (filteredText) {
+        res.json({ 
+          segments: [{
+            speaker: speaker,
+            text: filteredText
+          }],
+          text: filteredText,
           speaker: speaker,
-          text: result.text
-        }],
-        text: result.text,
-        speaker: speaker,
-        timestamp: new Date().toISOString(),
-        model: model
-      });
+          timestamp: new Date().toISOString(),
+          model: model
+        });
+      } else {
+        // No English text found, return empty result
+        res.json({ 
+          segments: [],
+          text: '',
+          speaker: speaker,
+          timestamp: new Date().toISOString(),
+          model: model
+        });
+      }
     }
 
   } catch (error) {
