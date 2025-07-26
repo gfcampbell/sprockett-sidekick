@@ -32,7 +32,7 @@ export async function startSession(userId: string): Promise<string> {
         user_id: userId,
         room_id: `coaching_${Date.now()}`,
         start_time: new Date().toISOString(),
-        mode: 'voice-only',
+        mode: 'voice',
         used_turn: false,
         credit_cost: 0.00
       })
@@ -167,7 +167,7 @@ async function logTokenUsage(
         session_id: sessionId,
         tokens_used: tokensUsed,
         timestamp: new Date().toISOString(),
-        mode: 'voice-only',
+        mode: 'voice',
         used_turn: false, // Not applicable for coaching
         duration_seconds: Math.round(durationSeconds)
       });
