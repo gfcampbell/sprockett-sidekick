@@ -76,10 +76,11 @@ export default function Economics() {
       const startDateStr = startDate.toISOString()
       const endDateStr = endDate.toISOString()
 
-      // Fetch revenue data from tokens ledger
+      // Fetch revenue data from token transactions
       const { data: revenueData, error: revenueError } = await supabase
-        .from('tokens_ledger')
-        .select('*')
+        .from('token_transactions')
+        .select('tokens, amount_usd, transaction_type, created_at')
+        .eq('transaction_type', 'purchase')
         .gte('created_at', startDateStr)
         .lte('created_at', endDateStr)
 
