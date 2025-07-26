@@ -1,5 +1,5 @@
 // Auth header component - exact replica of deprecated client header auth
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { useAuth } from '../lib/authContext';
 import { useAuthFunctions } from '../lib/useAuth';
 import AuthModal from './AuthModal';

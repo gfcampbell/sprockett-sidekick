@@ -108,13 +108,13 @@ export function useAuthFunctions() {
         // Update user state immediately
         setUserState(prev => ({
           ...prev,
-          currentUserId: data.user.id,
+          currentUserId: data.user!.id,
           isAuthenticated: true,
-          userEmail: data.user.email
+          userEmail: data.user!.email || null
         }));
         
         // Create user account in database
-        await ensureUserAccount(data.user.id, data.user.email || '');
+        await ensureUserAccount(data.user!.id, data.user!.email || '');
         return true;
       }
 
@@ -159,9 +159,9 @@ export function useAuthFunctions() {
         // Update user state immediately
         setUserState(prev => ({
           ...prev,
-          currentUserId: data.user.id,
+          currentUserId: data.user!.id,
           isAuthenticated: true,
-          userEmail: data.user.email
+          userEmail: data.user!.email || null
         }));
         
         // Verify session is stored immediately after sign-in
@@ -324,7 +324,7 @@ export function useAuthFunctions() {
             ...prev,
             currentUserId: session.user.id,
             isAuthenticated: true,
-            userEmail: session.user.email
+            userEmail: session.user.email || null
           }));
           
           // Ensure user account exists in database
