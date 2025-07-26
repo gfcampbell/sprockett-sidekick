@@ -1,5 +1,6 @@
 // Auth header component - exact replica of deprecated client header auth
 import { useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useAuth } from '../lib/authContext';
 import { useAuthFunctions } from '../lib/useAuth';
 import AuthModal from './AuthModal';
@@ -57,13 +58,14 @@ export default function AuthHeader() {
         )}
       </div>
 
-      {/* Auth Modal */}
-      {showModal && (
+      {/* Auth Modal - Render at document body level using portal */}
+      {showModal && createPortal(
         <AuthModal 
           mode={modalMode}
           onClose={() => setShowModal(false)}
           onToggleMode={() => setModalMode(modalMode === 'signin' ? 'signup' : 'signin')}
-        />
+        />,
+        document.body
       )}
     </>
   );
