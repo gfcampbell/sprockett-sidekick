@@ -4,12 +4,14 @@ import { createPortal } from 'react-dom';
 import { useAuth } from '../lib/authContext';
 import { useAuthFunctions } from '../lib/useAuth';
 import AuthModal from './AuthModal';
+import TokenPurchaseModal from './TokenPurchaseModal';
 
 export default function AuthHeader() {
   const { userState } = useAuth();
   const { signOut } = useAuthFunctions();
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState<'signin' | 'signup'>('signin');
+  const [showTokenPurchase, setShowTokenPurchase] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -53,6 +55,13 @@ export default function AuthHeader() {
               <span className="token-balance">
                 🪙 {userState.tokensRemaining} tokens
               </span>
+              <button 
+                className="buy-tokens-btn" 
+                onClick={() => setShowTokenPurchase(true)}
+                title="Buy more tokens"
+              >
+                Buy Tokens
+              </button>
               <button id="logout-button" className="logout-btn" onClick={handleSignOut}>
                 Sign Out
               </button>
@@ -67,6 +76,14 @@ export default function AuthHeader() {
           mode={modalMode}
           onClose={() => setShowModal(false)}
           onToggleMode={() => setModalMode(modalMode === 'signin' ? 'signup' : 'signin')}
+        />,
+        document.body
+      )}
+
+      {/* Token Purchase Modal */}
+      {showTokenPurchase && createPortal(
+        <TokenPurchaseModal 
+          onClose={() => setShowTokenPurchase(false)}
         />,
         document.body
       )}
