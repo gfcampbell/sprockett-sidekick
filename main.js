@@ -80,7 +80,7 @@ function createWindow() {
     mainWindow.webContents.openDevTools();
   } else {
     // In production, load built files
-    mainWindow.loadFile('desktop-app/dist/index.html');
+    mainWindow.loadFile('dist/index.html');
     
     // Enable DevTools with Cmd+Option+I
     mainWindow.webContents.on('before-input-event', (event, input) => {

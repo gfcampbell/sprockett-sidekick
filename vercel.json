@@ -1,5 +1,5 @@
 {
   "version": 2,
-  "buildCommand": "cd desktop-app && npm run build",
-  "outputDirectory": "desktop-app/dist"
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist"
 }

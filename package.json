@@ -5,14 +5,15 @@
   "main": "main.js",
   "scripts": {
     "start": "node server/server.js",
-    "dev": "nodemon server/server.js",
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "server:dev": "NODE_ENV=development nodemon server/server.js",
     "electron-dev": "NODE_ENV=development electron .",
-    "electron-build": "cd desktop-app && npm run build && cd .. && electron .",
-    "build": "cd desktop-app && npm run build",
+    "electron-build": "npm run build && electron .",
     "dist": "npm run build && electron-builder",
     "dist:mac": "npm run build && electron-builder --mac",
     "pack": "npm run build && electron-builder --dir",
-    "server:dev": "NODE_ENV=development nodemon server/server.js",
     "deploy": "vercel --prod"
   },
   "engines": {
@@ -27,22 +28,36 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.14",
+    "@radix-ui/react-progress": "^1.1.7",
+    "@radix-ui/react-slot": "^1.2.3",
     "@supabase/supabase-js": "^2.49.10",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "dotenv": "^16.5.0",
     "express": "^4.18.2",
     "express-rate-limit": "^7.5.0",
     "form-data": "^4.0.0",
     "formdata-node": "^6.0.3",
     "helmet": "^8.1.0",
+    "lucide-react": "^0.525.0",
     "multer": "^1.4.5-lts.1",
-    "node-fetch": "^2.7.0"
+    "node-fetch": "^2.7.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "tailwind-merge": "^3.3.1"
   },
   "devDependencies": {
+    "@types/react": "^19.1.8",
+    "@types/react-dom": "^19.1.6",
     "@vercel/node": "^3.0.0",
+    "@vitejs/plugin-react": "^4.7.0",
     "concurrently": "^8.2.2",
     "electron": "^37.2.3",
     "electron-builder": "^25.1.8",
-    "nodemon": "^3.0.1"
+    "nodemon": "^3.0.1",
+    "typescript": "^5.8.3",
+    "vite": "^7.0.5"
   },
   "build": {
     "appId": "com.sprockett.sidekick",
@@ -53,7 +68,7 @@
     "files": [
       "main.js",
       "preload.js",
-      "desktop-app/dist/**/*",
+      "dist/**/*",
       "server/**/*",
       "api/**/*",
       "node_modules/**/*"
@@ -63,7 +78,7 @@
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "entitlements": "entitlements.mac.plist",
-      "icon": "desktop-app/src/assets/Sprockett_huge.png"
+      "icon": "src/assets/Sprockett_huge.png"
     }
   }
 }
