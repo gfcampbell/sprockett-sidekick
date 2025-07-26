@@ -4,11 +4,16 @@ import { DualAudioCapture, TranscriptMessage as DualTranscriptMessage, DualAudio
 import { DesktopAICoaching, CallConfig, CoachingSuggestion, ConversationTemperature, ConversationAnalytics, CONVERSATION_TYPES, loadCallConfig, saveCallConfig } from '@/lib/aiCoaching'
 import { transcriptionConfig, coachingConfig, surgicalFlags } from '@/lib/config'
 import { ConfigPanel } from '@/components/ConfigPanel'
+import AuthHeader from '@/components/AuthHeader'
+import { useAuthFunctions } from '@/lib/useAuth'
 // 🏥 SURGICAL: Voice enrollment theater removed
 import sprockettLogo from './assets/sprockett_logo.png'
 
 function App() {
   // 🏥 SURGICAL: Voice enrollment state removed - now using physics-based audio routing
+
+  // Initialize auth system
+  const { initializeAuth } = useAuthFunctions()
 
   // Core state
   const [isListening, setIsListening] = useState(false)
@@ -40,6 +45,11 @@ function App() {
   const aiCoachingRef = useRef<DesktopAICoaching | null>(null)
 
   // 🏥 SURGICAL: Voice enrollment handlers removed
+
+  // Initialize auth system
+  useEffect(() => {
+    initializeAuth()
+  }, [initializeAuth])
 
   // Initialize audio capture and AI coaching systems
   useEffect(() => {
@@ -257,6 +267,7 @@ function App() {
           </div>
 
           <div className="title-bar-controls">
+            <AuthHeader />
             <button
               onClick={toggleListening}
               className={`btn ${isListening ? 'btn-danger' : 'btn-primary'}`}

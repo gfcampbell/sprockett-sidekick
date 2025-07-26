@@ -290,6 +290,12 @@ export class DualAudioCapture {
     const audioBlob = new Blob(this.micChunks, { type: 'audio/webm' });
     this.micChunks = [];
     
+    // 🔇 Skip silent audio to prevent Whisper hallucinations
+    if (audioBlob.size < 1000) {
+      console.log('🔇 Skipping silent microphone audio chunk');
+      return;
+    }
+    
     // Restart recorder if still recording
     if (this.isRecording && this.micStream) {
       this.micRecorder = new MediaRecorder(this.micStream, {
@@ -316,6 +322,12 @@ export class DualAudioCapture {
 
     const audioBlob = new Blob(this.systemChunks, { type: 'audio/webm' });
     this.systemChunks = [];
+    
+    // 🔇 Skip silent audio to prevent Whisper hallucinations
+    if (audioBlob.size < 1000) {
+      console.log('🔇 Skipping silent system audio chunk');
+      return;
+    }
     
     // Restart recorder if still recording
     if (this.isRecording && this.systemStream) {
