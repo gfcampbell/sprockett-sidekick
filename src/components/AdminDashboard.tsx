@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/lib/authContext'
 import { supabase } from '@/lib/supabaseClient'
 import AIConfiguration from './AIConfiguration'
+import SessionAnalytics from './SessionAnalytics'
 
 interface UserAccount {
   user_id: string
@@ -17,7 +18,7 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<UserAccount[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'users' | 'ai'>('users')
+  const [activeTab, setActiveTab] = useState<'users' | 'ai' | 'analytics'>('users')
 
   useEffect(() => {
     fetchUsers()
@@ -106,6 +107,12 @@ export default function AdminDashboard() {
         >
           🤖 AI Configuration
         </button>
+        <button 
+          className={`admin-tab ${activeTab === 'analytics' ? 'active' : ''}`}
+          onClick={() => setActiveTab('analytics')}
+        >
+          📊 Session Analytics
+        </button>
       </div>
 
       {error && (
@@ -166,6 +173,8 @@ export default function AdminDashboard() {
       )}
 
       {activeTab === 'ai' && <AIConfiguration />}
+      
+      {activeTab === 'analytics' && <SessionAnalytics />}
     </div>
   )
 }
