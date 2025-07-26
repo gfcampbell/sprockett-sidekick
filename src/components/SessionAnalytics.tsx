@@ -45,21 +45,20 @@ export default function SessionAnalytics() {
     setError(null)
 
     try {
-      // Fetch overall stats
+      // Fetch sessions
       const { data: sessions, error: sessionsError } = await supabase
         .from('call_sessions')
-        .select(`
-          id,
-          user_id,
-          start_time,
-          end_time,
-          mode,
-          user_accounts(email)
-        `)
+        .select('id, user_id, start_time, end_time, mode')
         .not('end_time', 'is', null)
         .order('start_time', { ascending: false })
 
+      // Fetch user emails separately
+      const { data: users, error: usersError } = await supabase
+        .from('user_accounts')
+        .select('user_id, email')
+
       if (sessionsError) throw sessionsError
+      if (usersError) throw usersError
 
       // Fetch token usage
       const { data: tokenUsage, error: tokenError } = await supabase
@@ -78,10 +77,12 @@ export default function SessionAnalytics() {
         const sessionTokens = tokenUsage?.filter(t => t.session_id === session.id)
           .reduce((sum, t) => sum + t.tokens_used, 0) || 0
 
+        const user = users?.find(u => u.user_id === session.user_id)
+
         return {
           id: session.id,
           user_id: session.user_id,
-          email: (session.user_accounts as any)?.email || 'Unknown',
+          email: user?.email || 'Unknown',
           start_time: session.start_time,
           end_time: session.end_time,
           duration_minutes: durationMinutes,
