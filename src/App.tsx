@@ -35,15 +35,18 @@ function App() {
   const [transcriptMessages, setTranscriptMessages] = useState<TranscriptMessage[]>([])
   const [coachingSuggestions, setCoachingSuggestions] = useState<CoachingSuggestion[]>([])
   // Conversation analytics state (now from separate metrics system)
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [conversationMetrics, setConversationMetrics] = useState<ConversationMetrics>({
     warmth: 3,
     energy: 3,
     agreeability: 3,
     goal_progress: 50
   })
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [warmthHistory, setWarmthHistory] = useState<number[]>([])
   const [energyHistory, setEnergyHistory] = useState<number[]>([])
   const [agreeabilityHistory, setAgreeabilityHistory] = useState<number[]>([])
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [goalProgressHistory, setGoalProgressHistory] = useState<number[]>([])
 
   // Legacy analytics interfaces (for UI compatibility)
