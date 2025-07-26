@@ -1,6 +1,12 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 
+interface APIPricing {
+  gpt4: { input: number; output: number }
+  gpt35: { input: number; output: number }
+  whisper: number
+}
+
 interface EconomicsData {
   totalRevenue: number
   totalCosts: number
@@ -28,6 +34,12 @@ export default function Economics() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | '90d' | 'all'>('30d')
+  const [showPricingConfig, setShowPricingConfig] = useState(false)
+  const [apiPricing, setApiPricing] = useState<APIPricing>({
+    gpt4: { input: 2.50, output: 10.00 },  // gpt-4o current pricing per 1M tokens
+    gpt35: { input: 0.15, output: 0.60 },  // gpt-4o-mini current pricing per 1M tokens
+    whisper: 0.006  // Whisper current pricing per minute
+  })
 
   useEffect(() => {
     fetchEconomicsData()
@@ -137,17 +149,17 @@ export default function Economics() {
   }
 
   const calculateLLMCosts = (sessions: any[], _usage: any[]) => {
-    // Real cost estimates based on OpenAI pricing (as of 2024)
+    // Use current API pricing from state (convert from per 1M to per 1K tokens)
     const PRICING = {
       gpt4: {
-        input: 0.03 / 1000,   // $0.03 per 1K input tokens
-        output: 0.06 / 1000   // $0.06 per 1K output tokens
+        input: apiPricing.gpt4.input / 1000,   // Convert from per 1M to per 1K tokens
+        output: apiPricing.gpt4.output / 1000   // Convert from per 1M to per 1K tokens
       },
       gpt35: {
-        input: 0.0015 / 1000, // $0.0015 per 1K input tokens  
-        output: 0.002 / 1000  // $0.002 per 1K output tokens
+        input: apiPricing.gpt35.input / 1000, // Convert from per 1M to per 1K tokens  
+        output: apiPricing.gpt35.output / 1000  // Convert from per 1M to per 1K tokens
       },
-      whisper: 0.006 / 60     // $0.006 per minute
+      whisper: apiPricing.whisper / 60     // Per minute
     }
 
     let gpt4Costs = 0
@@ -298,13 +310,104 @@ export default function Economics() {
         </div>
 
         <div className="breakdown-section">
-          <h3>Cost Breakdown</h3>
+          <div className="breakdown-header">
+            <h3>Cost Breakdown</h3>
+            <button 
+              className="pricing-config-toggle"
+              onClick={() => setShowPricingConfig(!showPricingConfig)}
+              title="Configure API pricing"
+            >
+              <span className={`chevron ${showPricingConfig ? 'expanded' : ''}`}>▼</span>
+              Pricing
+            </button>
+          </div>
+
+          {showPricingConfig && (
+            <div className="pricing-configurator">
+              <h4>API Pricing Configuration</h4>
+              
+              <div className="pricing-row">
+                <label>GPT-4 Input (per 1M tokens)</label>
+                <input 
+                  type="number" 
+                  step="0.001" 
+                  value={apiPricing.gpt4.input}
+                  onChange={(e) => setApiPricing(prev => ({
+                    ...prev,
+                    gpt4: { ...prev.gpt4, input: parseFloat(e.target.value) || 0 }
+                  }))}
+                />
+              </div>
+              
+              <div className="pricing-row">
+                <label>GPT-4 Output (per 1M tokens)</label>
+                <input 
+                  type="number" 
+                  step="0.001" 
+                  value={apiPricing.gpt4.output}
+                  onChange={(e) => setApiPricing(prev => ({
+                    ...prev,
+                    gpt4: { ...prev.gpt4, output: parseFloat(e.target.value) || 0 }
+                  }))}
+                />
+              </div>
+              
+              <div className="pricing-row">
+                <label>GPT-4o-mini Input (per 1M tokens)</label>
+                <input 
+                  type="number" 
+                  step="0.01" 
+                  value={apiPricing.gpt35.input}
+                  onChange={(e) => setApiPricing(prev => ({
+                    ...prev,
+                    gpt35: { ...prev.gpt35, input: parseFloat(e.target.value) || 0 }
+                  }))}
+                />
+              </div>
+              
+              <div className="pricing-row">
+                <label>GPT-4o-mini Output (per 1M tokens)</label>
+                <input 
+                  type="number" 
+                  step="0.01" 
+                  value={apiPricing.gpt35.output}
+                  onChange={(e) => setApiPricing(prev => ({
+                    ...prev,
+                    gpt35: { ...prev.gpt35, output: parseFloat(e.target.value) || 0 }
+                  }))}
+                />
+              </div>
+              
+              <div className="pricing-row">
+                <label>Whisper (per minute)</label>
+                <input 
+                  type="number" 
+                  step="0.001" 
+                  value={apiPricing.whisper}
+                  onChange={(e) => setApiPricing(prev => ({
+                    ...prev,
+                    whisper: parseFloat(e.target.value) || 0
+                  }))}
+                />
+              </div>
+              
+              <div className="pricing-actions">
+                <button 
+                  className="apply-pricing-btn"
+                  onClick={fetchEconomicsData}
+                >
+                  Recalculate Costs
+                </button>
+              </div>
+            </div>
+          )}
+
           <div className="breakdown-item">
-            <span>GPT-4 (Coaching)</span>
+            <span>GPT-4o (Coaching)</span>
             <span>{formatCurrency(economicsData.costBreakdown.gpt4Costs)}</span>
           </div>
           <div className="breakdown-item">
-            <span>GPT-3.5 (Metrics)</span>
+            <span>GPT-4o-mini (Metrics)</span>
             <span>{formatCurrency(economicsData.costBreakdown.gpt35Costs)}</span>
           </div>
           <div className="breakdown-item">
