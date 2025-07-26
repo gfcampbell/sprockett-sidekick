@@ -50,6 +50,9 @@ export default function AuthHeader() {
           <div id="auth-status" className="auth-status">
             <div className="auth-info">
               <span className="user-email">{userState.userEmail}</span>
+              <span className="token-balance">
+                🪙 {userState.tokensRemaining} tokens
+              </span>
               <button id="logout-button" className="logout-btn" onClick={handleSignOut}>
                 Sign Out
               </button>

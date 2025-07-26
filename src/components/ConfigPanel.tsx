@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { CONVERSATION_TYPES, CallConfig } from '@/lib/aiCoaching';
+import { getTokenRate } from '@/lib/sessionBilling';
 
 interface ConfigPanelProps {
   config: CallConfig;
@@ -93,6 +94,23 @@ export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleColla
       </div>
 
       {/* 🏥 SURGICAL: Voice reset removed - using physics-based audio routing */}
+      
+      <div className="config-section pricing-info">
+        <label>💰 Session Pricing</label>
+        <div className="pricing-details">
+          <div className="rate-info">
+            <strong>{getTokenRate()} token per minute</strong>
+          </div>
+          <div className="cost-examples">
+            <div>10 min session: ~10 tokens</div>
+            <div>30 min session: ~30 tokens</div>
+            <div>60 min session: ~60 tokens</div>
+          </div>
+          <div className="value-info">
+            <small>Tokens cost 5¢-15¢ each depending on package size</small>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

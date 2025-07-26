@@ -6,6 +6,7 @@ import { transcriptionConfig, coachingConfig, surgicalFlags } from '@/lib/config
 import { ConfigPanel } from '@/components/ConfigPanel'
 import AuthHeader from '@/components/AuthHeader'
 import { useAuthFunctions } from '@/lib/useAuth'
+import { startSession, endSession, generateSessionId, formatSessionDuration, getSessionCostEstimate } from '@/lib/sessionBilling'
 // 🏥 SURGICAL: Voice enrollment theater removed
 import sprockettLogo from './assets/sprockett_logo.png'
 
@@ -13,7 +14,12 @@ function App() {
   // 🏥 SURGICAL: Voice enrollment state removed - now using physics-based audio routing
 
   // Initialize auth system
-  const { initializeAuth, userState } = useAuthFunctions()
+  const { initializeAuth, userState, updateTokenBalance } = useAuthFunctions()
+
+  // Session tracking state
+  const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
+  const [sessionStartTime, setSessionStartTime] = useState<number | null>(null)
+  const [sessionDuration, setSessionDuration] = useState<number>(0)
 
   // Core state
   const [isListening, setIsListening] = useState(false)
@@ -183,6 +189,21 @@ function App() {
     saveCallConfig(callConfig)
   }, [callConfig])
 
+  // Session timer - updates every second when listening
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    
+    if (isListening && sessionStartTime) {
+      timer = setInterval(() => {
+        setSessionDuration(Date.now() - sessionStartTime);
+      }, 1000);
+    }
+    
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [isListening, sessionStartTime]);
+
   // Mute functionality
   useEffect(() => {
     if (dualAudioCaptureRef.current) {
@@ -227,6 +248,21 @@ function App() {
 
       const started = await activeAudioCapture.startRecording()
       if (started) {
+        // Start session billing
+        const sessionId = generateSessionId();
+        const startTime = Date.now();
+        
+        try {
+          await startSession(userState.currentUserId!, sessionId);
+          setCurrentSessionId(sessionId);
+          setSessionStartTime(startTime);
+          setSessionDuration(0);
+          console.log(`💰 Session ${sessionId} started for billing`);
+        } catch (error) {
+          console.error('❌ Failed to start session billing:', error);
+          // Continue anyway - don't block the session
+        }
+
         // Start AI coaching
         aiCoachingRef.current.start()
         setIsListening(true)
@@ -251,7 +287,37 @@ function App() {
       }
       aiCoachingRef.current.stop()
       setIsListening(false)
-      setStatus('Ready to start')
+      setStatus('Processing session...')
+
+      // End session billing
+      if (currentSessionId && sessionStartTime && userState.currentUserId) {
+        try {
+          const endTime = Date.now();
+          const tokensUsed = await endSession(
+            userState.currentUserId,
+            currentSessionId,
+            sessionStartTime,
+            endTime
+          );
+          
+          // Update local token balance
+          const newBalance = Math.max(0, userState.tokensRemaining - tokensUsed);
+          await updateTokenBalance(newBalance);
+          
+          console.log(`💰 Session ended. Tokens used: ${tokensUsed}, New balance: ${newBalance}`);
+          setStatus(`Session complete - ${tokensUsed} tokens used`);
+        } catch (error) {
+          console.error('❌ Failed to end session billing:', error);
+          setStatus('Session complete');
+        }
+      } else {
+        setStatus('Ready to start');
+      }
+
+      // Clear session state
+      setCurrentSessionId(null);
+      setSessionStartTime(null);
+      setSessionDuration(0);
     }
   }
 
@@ -275,6 +341,12 @@ function App() {
 
           <div className="title-bar-controls">
             <AuthHeader />
+            {isListening && sessionDuration > 0 && (
+              <div className="session-timer">
+                🔴 Live: {formatSessionDuration(sessionDuration)} 
+                <span className="token-cost">({getSessionCostEstimate(sessionDuration)} tokens)</span>
+              </div>
+            )}
             <button
               onClick={toggleListening}
               className={`btn ${isListening ? 'btn-danger' : 'btn-primary'}`}

@@ -8,6 +8,10 @@ interface UserState {
   isAuthenticated: boolean;
   userEmail: string | null;
   
+  // Token/billing state
+  tokensRemaining: number;
+  subscriptionTier: string;
+  
   // AI Assist state (host-only)
   aiAssistEnabled: boolean;
   aiPrompt: string;
@@ -25,6 +29,10 @@ const initialUserState: UserState = {
   currentUserId: null,
   isAuthenticated: false,
   userEmail: null,
+  
+  // Token/billing state
+  tokensRemaining: 0,
+  subscriptionTier: 'free',
   
   // AI Assist state (host-only)
   aiAssistEnabled: false,

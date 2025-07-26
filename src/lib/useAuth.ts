@@ -110,7 +110,9 @@ export function useAuthFunctions() {
           ...prev,
           currentUserId: data.user!.id,
           isAuthenticated: true,
-          userEmail: data.user!.email || null
+          userEmail: data.user!.email || null,
+          tokensRemaining: 100,
+          subscriptionTier: 'free'
         }));
         
         // Create user account in database
@@ -161,7 +163,9 @@ export function useAuthFunctions() {
           ...prev,
           currentUserId: data.user!.id,
           isAuthenticated: true,
-          userEmail: data.user!.email || null
+          userEmail: data.user!.email || null,
+          tokensRemaining: 100,
+          subscriptionTier: 'free'
         }));
         
         // Verify session is stored immediately after sign-in
@@ -266,12 +270,20 @@ export function useAuthFunctions() {
       if (user) {
         console.log('✅ User authenticated:', user.email);
         
-        // Update global state
+        // Update global state and fetch token balance
+        const { data: userAccount } = await supabase
+          .from('user_accounts')
+          .select('tokens_remaining, subscription_tier')
+          .eq('user_id', user.id)
+          .single();
+        
         setUserState(prev => ({
           ...prev,
           currentUserId: user.id,
           isAuthenticated: true,
-          userEmail: user.email
+          userEmail: user.email,
+          tokensRemaining: userAccount?.tokens_remaining || 0,
+          subscriptionTier: userAccount?.subscription_tier || 'free'
         }));
 
         // Auto-create user_accounts row with starting tokens
@@ -320,11 +332,20 @@ export function useAuthFunctions() {
         
         if (session) {
           console.log('✅ User session active:', session.user.email);
+          // Fetch token balance and update state
+          const { data: userAccount } = await supabase
+            .from('user_accounts')
+            .select('tokens_remaining, subscription_tier')
+            .eq('user_id', session.user.id)
+            .single();
+          
           setUserState(prev => ({
             ...prev,
             currentUserId: session.user.id,
             isAuthenticated: true,
-            userEmail: session.user.email || null
+            userEmail: session.user.email || null,
+            tokensRemaining: userAccount?.tokens_remaining || 0,
+            subscriptionTier: userAccount?.subscription_tier || 'free'
           }));
           
           // Ensure user account exists in database
@@ -352,7 +373,9 @@ export function useAuthFunctions() {
             ...prev,
             currentUserId: null,
             isAuthenticated: false,
-            userEmail: null
+            userEmail: null,
+            tokensRemaining: 0,
+            subscriptionTier: 'free'
           }));
         }
       });
@@ -380,12 +403,83 @@ export function useAuthFunctions() {
     console.log('✅ Auth initialized');
   }, [setUserState, ensureUserAccount]);
 
+  /**
+   * Fetches current token balance from database
+   * @returns Current token balance
+   */
+  const fetchTokenBalance = useCallback(async (): Promise<number> => {
+    if (!userState.currentUserId) {
+      return 0;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('user_accounts')
+        .select('tokens_remaining')
+        .eq('user_id', userState.currentUserId)
+        .single();
+
+      if (error) {
+        console.error('❌ Error fetching token balance:', error);
+        return 0;
+      }
+
+      const balance = data?.tokens_remaining || 0;
+      
+      // Update local state
+      setUserState(prev => ({
+        ...prev,
+        tokensRemaining: balance
+      }));
+      
+      return balance;
+    } catch (error) {
+      console.error('❌ Exception fetching token balance:', error);
+      return 0;
+    }
+  }, [userState.currentUserId, setUserState]);
+
+  /**
+   * Updates token balance in database and local state
+   * @param newBalance - New token balance
+   */
+  const updateTokenBalance = useCallback(async (newBalance: number): Promise<void> => {
+    if (!userState.currentUserId) {
+      console.warn('⚠️ Cannot update tokens: user not authenticated');
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('user_accounts')
+        .update({ tokens_remaining: newBalance })
+        .eq('user_id', userState.currentUserId);
+
+      if (error) {
+        console.error('❌ Error updating token balance:', error);
+        return;
+      }
+
+      // Update local state
+      setUserState(prev => ({
+        ...prev,
+        tokensRemaining: newBalance
+      }));
+      
+      console.log(`✅ Token balance updated: ${newBalance}`);
+    } catch (error) {
+      console.error('❌ Exception updating token balance:', error);
+    }
+  }, [userState.currentUserId, setUserState]);
+
   return {
     signUp,
     signIn,
     signOut,
     getCurrentUser,
     initializeAuth,
+    fetchTokenBalance,
+    updateTokenBalance,
     userState
   };
 }
