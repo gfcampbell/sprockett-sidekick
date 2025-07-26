@@ -1,23 +1,18 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "desktop-app/dist/**/*",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "desktop-app/api/**/*.js",
-      "use": "@vercel/node"
+  "functions": {
+    "desktop-app/api/**/*.js": {
+      "runtime": "@vercel/node@3.0.0"
     }
-  ],
-  "routes": [
+  },
+  "rewrites": [
     {
-      "src": "/api/(.*)",
-      "dest": "/desktop-app/api/$1"
+      "source": "/api/:path*",
+      "destination": "/desktop-app/api/:path*"
     },
     {
-      "src": "/(.*)",
-      "dest": "/desktop-app/dist/$1"
+      "source": "/:path*",
+      "destination": "/desktop-app/dist/:path*"
     }
   ]
 }
