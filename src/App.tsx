@@ -6,7 +6,7 @@ import { transcriptionConfig, coachingConfig, surgicalFlags } from '@/lib/config
 import { ConfigPanel } from '@/components/ConfigPanel'
 import AuthHeader from '@/components/AuthHeader'
 import { useAuthFunctions } from '@/lib/useAuth'
-import { startSession, endSession, generateSessionId, formatSessionDuration, getSessionCostEstimate } from '@/lib/sessionBilling'
+import { startSession, endSession, formatSessionDuration, getSessionCostEstimate } from '@/lib/sessionBilling'
 // 🏥 SURGICAL: Voice enrollment theater removed
 import sprockettLogo from './assets/sprockett_logo.png'
 
@@ -249,11 +249,10 @@ function App() {
       const started = await activeAudioCapture.startRecording()
       if (started) {
         // Start session billing
-        const sessionId = generateSessionId();
         const startTime = Date.now();
         
         try {
-          await startSession(userState.currentUserId!, sessionId);
+          const sessionId = await startSession(userState.currentUserId!);
           setCurrentSessionId(sessionId);
           setSessionStartTime(startTime);
           setSessionDuration(0);

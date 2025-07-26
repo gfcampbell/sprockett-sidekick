@@ -17,38 +17,36 @@ export interface SessionInfo {
   mode: 'coaching';
 }
 
-/**
- * Generates a unique session ID
- */
-export function generateSessionId(): string {
-  return `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-}
 
 /**
- * Creates a new coaching session record
+ * Creates a new coaching session record - returns auto-generated UUID
  */
-export async function startSession(userId: string, sessionId: string): Promise<void> {
+export async function startSession(userId: string): Promise<string> {
   try {
-    console.log(`💰 [${new Date().toISOString()}] Starting session ${sessionId} for user ${userId}`);
+    console.log(`💰 [${new Date().toISOString()}] Starting session for user ${userId}`);
     
-    const { error } = await supabase
+    // Let database auto-generate UUID for id field (like deprecated client)
+    const { data, error } = await supabase
       .from('call_sessions')
       .insert({
-        id: sessionId,
         user_id: userId,
-        room_id: `coaching_${sessionId}`,
+        room_id: `coaching_${Date.now()}`,
         start_time: new Date().toISOString(),
         mode: 'coaching',
         used_turn: false,
         credit_cost: 0.00
-      });
+      })
+      .select('id')
+      .single();
 
     if (error) {
       console.error('❌ Error creating session record:', error);
       throw error;
     }
 
+    const sessionId = data.id;
     console.log(`✅ Session ${sessionId} started successfully`);
+    return sessionId;
   } catch (error) {
     console.error('❌ Exception starting session:', error);
     throw error;
