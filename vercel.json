@@ -1,11 +1,5 @@
 {
   "version": 2,
   "buildCommand": "cd desktop-app && npm run build",
-  "outputDirectory": "desktop-app/dist",
-  "installCommand": "npm install",
-  "functions": {
-    "desktop-app/api/**/*.js": {
-      "runtime": "@vercel/node@3.0.0"
-    }
-  }
+  "outputDirectory": "desktop-app/dist"
 }
