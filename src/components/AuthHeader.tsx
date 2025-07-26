@@ -8,7 +8,7 @@ import TokenPurchaseModal from './TokenPurchaseModal';
 
 export default function AuthHeader() {
   const { userState } = useAuth();
-  const { signOut } = useAuthFunctions();
+  const { signOut, updateTokenBalance, fetchTokenBalance } = useAuthFunctions();
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState<'signin' | 'signup'>('signin');
   const [showTokenPurchase, setShowTokenPurchase] = useState(false);
@@ -29,6 +29,22 @@ export default function AuthHeader() {
   const showSignUp = () => {
     setModalMode('signup');
     setShowModal(true);
+  };
+
+  const handleTokenPurchase = async (tokens: number, price: number) => {
+    try {
+      // For beta testing - just add tokens directly to account
+      const newBalance = userState.tokensRemaining + tokens;
+      await updateTokenBalance(newBalance);
+      
+      // Refresh the token balance in UI
+      await fetchTokenBalance();
+      
+      console.log(`✅ Beta purchase: Added ${tokens} tokens for $${price} (new balance: ${newBalance})`);
+    } catch (error) {
+      console.error('Token purchase failed:', error);
+      throw error;
+    }
   };
 
   return (
@@ -84,6 +100,7 @@ export default function AuthHeader() {
       {showTokenPurchase && createPortal(
         <TokenPurchaseModal 
           onClose={() => setShowTokenPurchase(false)}
+          onPurchase={handleTokenPurchase}
         />,
         document.body
       )}
