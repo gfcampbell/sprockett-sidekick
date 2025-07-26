@@ -4,15 +4,15 @@
   "description": "Sprockett voice print system for personalized AI coaching",
   "main": "main.js",
   "scripts": {
-    "start": "node server/server-clean.js",
-    "dev": "nodemon server/server-clean.js",
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js",
     "electron-dev": "NODE_ENV=development electron .",
     "electron-build": "cd desktop-app && npm run build && cd .. && electron .",
     "build": "cd desktop-app && npm run build",
     "dist": "npm run build && electron-builder",
     "dist:mac": "npm run build && electron-builder --mac",
     "pack": "npm run build && electron-builder --dir",
-    "server:dev": "NODE_ENV=development nodemon server/server-clean.js",
+    "server:dev": "NODE_ENV=development nodemon server/server.js",
     "deploy": "vercel --prod"
   },
   "engines": {

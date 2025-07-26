@@ -1,11 +1,10 @@
-// server.js - WebRTC Video Chat Signaling Server
-// This server handles WebRTC signaling between peers for the Oblivn private video chat application.
-// It manages room creation, peer connections, and WebRTC signaling exchange.
+// server.js - Sprockett AI Coaching Server
+// This server handles AI transcription and coaching for the Sprockett application.
+// It provides secure API endpoints for audio processing and AI-powered conversation analysis.
 require('dotenv').config();
 const express = require('express');
 const http = require('node:http');
 const path = require('node:path');
-const { Server } = require('socket.io');
 const crypto = require('node:crypto');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
@@ -15,23 +14,15 @@ const multer = require('multer');
 // SERVER INITIALIZATION
 // =============================================
 
-// Initialize express app (only once)
+// Initialize express app
 const app = express();
 const server = http.createServer(app);
-
-// Initialize Socket.io with CORS configuration
-const io = new Server(server, {
-  cors: {
-    origin: "*",
-    methods: ["GET", "POST"]
-  }
-});
 
 // =============================================
 // TRANSCRIPTION API CONFIGURATION
 // =============================================
 
-// ✨ Phase III: OpenAI Whisper API configuration
+// OpenAI Whisper API configuration
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
 const ENABLE_TRANSCRIPTION = process.env.ENABLE_TRANSCRIPTION === 'true' || false;
 
@@ -82,13 +73,13 @@ app.use(helmet({
 // Rate limiting to prevent abuse
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 1000, // Increased to 1000 requests per 15 minutes (more reasonable for development)
+  max: 1000, // Increased to 1000 requests per 15 minutes
   message: 'Too many requests from this IP, please try again later.',
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
 });
 
-// ✨ Phase III: Specific rate limiting for transcription API
+// Specific rate limiting for transcription API
 const transcriptionLimiter = rateLimit({
   windowMs: 1 * 60 * 1000, // 1 minute
   max: 20, // Limit each IP to 20 transcription requests per minute
@@ -97,7 +88,7 @@ const transcriptionLimiter = rateLimit({
   legacyHeaders: false,
 });
 
-// Apply general rate limiting to all routes (but with generous limits)
+// Apply general rate limiting to all routes
 app.use(limiter);
 
 // Add CORS headers for desktop app
@@ -114,14 +105,81 @@ app.use((req, res, next) => {
   }
 });
 
-// Serve static files from client directory
-app.use(express.static(path.join(__dirname, '../client')));
 
 // Parse JSON in request body
 app.use(express.json());
 
 // =============================================
-// ✨ PHASE III: TRANSCRIPTION API ENDPOINTS
+// SECURITY TOKEN FUNCTIONS (Preserved for future use)
+// =============================================
+
+/**
+ * Generates a secure room token with HMAC validation
+ * @param {string} roomId - The room ID to create a token for
+ * @returns {object} Token data including expiration
+ */
+function generateRoomToken(roomId) {
+  // Create expiration 24 hours from now
+  const expiration = Date.now() + (24 * 60 * 60 * 1000);
+  
+  // Data to sign
+  const payload = {
+    roomId,
+    exp: expiration
+  };
+  
+  // Create HMAC signature using server secret
+  const serverSecret = process.env.TOKEN_SECRET || 'fallback_dev_secret_DO_NOT_USE_IN_PRODUCTION';
+  const signature = crypto
+    .createHmac('sha256', serverSecret)
+    .update(JSON.stringify(payload))
+    .digest('hex');
+  
+  // Return token with payload and signature
+  return {
+    token: Buffer.from(JSON.stringify({
+      ...payload,
+      sig: signature
+    })).toString('base64'),
+    expiration
+  };
+}
+
+/**
+ * Verifies a room token's authenticity and expiration
+ * @param {string} token - The token to verify
+ * @returns {object} Verification result
+ */
+function verifyRoomToken(token) {
+  try {
+    // Decode token
+    const decoded = JSON.parse(Buffer.from(token, 'base64').toString());
+    
+    // Check if token is expired
+    if (decoded.exp < Date.now()) {
+      return { valid: false, reason: 'Token expired' };
+    }
+    
+    // Verify signature
+    const serverSecret = process.env.TOKEN_SECRET || 'fallback_dev_secret_DO_NOT_USE_IN_PRODUCTION';
+    const payload = { roomId: decoded.roomId, exp: decoded.exp };
+    const expectedSignature = crypto
+      .createHmac('sha256', serverSecret)
+      .update(JSON.stringify(payload))
+      .digest('hex');
+    
+    if (decoded.sig !== expectedSignature) {
+      return { valid: false, reason: 'Invalid signature' };
+    }
+    
+    return { valid: true, roomId: decoded.roomId };
+  } catch (error) {
+    return { valid: false, reason: 'Invalid token format' };
+  }
+}
+
+// =============================================
+// TRANSCRIPTION API ENDPOINTS
 // =============================================
 
 /**
@@ -294,7 +352,7 @@ app.post('/api/transcribe', transcriptionLimiter, upload.single('audio'), async 
 });
 
 // =============================================
-// ✨ SPRINT 4.1: AI COACHING API ENDPOINT
+// AI COACHING API ENDPOINT
 // =============================================
 
 /**
@@ -374,380 +432,6 @@ app.post('/api/coach', async (req, res) => {
 });
 
 // =============================================
-// SECURITY TOKEN FUNCTIONS
-// =============================================
-
-/**
- * Generates a secure room token with HMAC validation
- * @param {string} roomId - The room ID to create a token for
- * @returns {object} Token data including expiration
- */
-function generateRoomToken(roomId) {
-  // Create expiration 24 hours from now
-  const expiration = Date.now() + (24 * 60 * 60 * 1000);
-  
-  // Data to sign
-  const payload = {
-    roomId,
-    exp: expiration
-  };
-  
-  // Create HMAC signature using server secret
-  const serverSecret = process.env.TOKEN_SECRET || 'fallback_dev_secret_DO_NOT_USE_IN_PRODUCTION';
-  const signature = crypto
-    .createHmac('sha256', serverSecret)
-    .update(JSON.stringify(payload))
-    .digest('hex');
-  
-  // Return token with payload and signature
-  return {
-    token: Buffer.from(JSON.stringify({
-      ...payload,
-      sig: signature
-    })).toString('base64'),
-    expiration
-  };
-}
-
-/**
- * Verifies a room token's authenticity and expiration
- * @param {string} token - The token to verify
- * @returns {object} Verification result
- */
-function verifyRoomToken(token) {
-  try {
-    // Decode token
-    const decoded = JSON.parse(Buffer.from(token, 'base64').toString());
-    
-    // Check if token is expired
-    if (decoded.exp < Date.now()) {
-      return { valid: false, reason: 'Token expired' };
-    }
-    
-    // Verify signature
-    const serverSecret = process.env.TOKEN_SECRET || 'fallback_dev_secret_DO_NOT_USE_IN_PRODUCTION';
-    const payload = { roomId: decoded.roomId, exp: decoded.exp };
-    const expectedSignature = crypto
-      .createHmac('sha256', serverSecret)
-      .update(JSON.stringify(payload))
-      .digest('hex');
-    
-    if (decoded.sig !== expectedSignature) {
-      return { valid: false, reason: 'Invalid signature' };
-    }
-    
-    return { valid: true, roomId: decoded.roomId };
-  } catch (error) {
-    return { valid: false, reason: 'Invalid token format' };
-  }
-}
-
-// =============================================
-// ROOM MANAGEMENT
-// =============================================
-
-// Track active rooms and their participants
-const rooms = new Map();
-
-/**
- * Generates a cryptographically secure room ID
- * @returns {string} Hexadecimal room identifier
- */
-function generateRoomId() {
-  return crypto.randomBytes(8).toString('hex');
-}
-
-// =============================================
-// SOCKET.IO EVENT HANDLERS
-// =============================================
-
-// Socket.io connection handling
-io.on('connection', (socket) => {
-  console.log('User connected:', socket.id);
-
-  // Create new room
-  socket.on('create-room', () => {
-    try {
-      const roomId = generateRoomId();
-      const { token, expiration } = generateRoomToken(roomId);
-      
-      rooms.set(roomId, {
-        creator: socket.id,
-        participants: [socket.id],
-        created: Date.now(),
-        token
-      });
-
-      socket.join(roomId);
-      socket.emit('room-created', { roomId, token, expiration });
-      console.log(`Room created: ${roomId} by ${socket.id}`);
-    } catch (error) {
-      console.error(`Error creating room for ${socket.id}:`, error);
-      socket.emit('error', { message: `Failed to create room: ${error.message}` });
-    }
-  });
-
-  // Join existing room
-  socket.on('join-room', ({ roomId, token }) => {
-    try {
-      // First verify token if provided
-      if (token) {
-        const verification = verifyRoomToken(token);
-        if (!verification.valid) {
-          console.log(`Invalid token for room ${roomId}: ${verification.reason}`);
-          socket.emit('error', { message: `Invalid room token: ${verification.reason}` });
-          return;
-        }
-        
-        // Verify roomId matches token
-        if (verification.roomId !== roomId) {
-          console.log(`Token doesn't match room ID: ${roomId}`);
-          socket.emit('error', { message: 'Security verification failed' });
-          return;
-        }
-      } else {
-        // For backward compatibility, allow connections without token
-        // but log them as potentially less secure
-        console.log(`Room ${roomId} joined without security token by ${socket.id}`);
-      }
-      
-      const room = rooms.get(roomId);
-
-      if (!room) {
-        console.log(`Room not found: ${roomId}, requested by ${socket.id}`);
-        socket.emit('error', { message: 'Room not found' });
-        return;
-      }
-
-      if (room.participants.length >= 2) {
-        console.log(`Room full: ${roomId}, rejected ${socket.id}`);
-        socket.emit('error', { message: 'Room is full' });
-        return;
-      }
-
-      room.participants.push(socket.id);
-      socket.join(roomId);
-      socket.emit('room-joined', { roomId });
-
-      // Notify the other participant
-      socket.to(roomId).emit('peer-joined', { peerId: socket.id });
-      console.log(`User ${socket.id} joined room ${roomId}`);
-    } catch (error) {
-      console.error(`Error joining room ${roomId} for ${socket.id}:`, error);
-      socket.emit('error', { message: `Failed to join room: ${error.message}` });
-    }
-  });
-
-  // Rejoin room after disconnection
-  socket.on('rejoin-room', ({ roomId, token }) => {
-    try {
-      // First verify token if provided (same logic as join-room)
-      if (token) {
-        const verification = verifyRoomToken(token);
-        if (!verification.valid) {
-          console.log(`Invalid token for rejoin ${roomId}: ${verification.reason}`);
-          socket.emit('error', { message: `Invalid room token: ${verification.reason}` });
-          return;
-        }
-        
-        if (verification.roomId !== roomId) {
-          console.log(`Token doesn't match room ID for rejoin: ${roomId}`);
-          socket.emit('error', { message: 'Security verification failed' });
-          return;
-        }
-      }
-      
-      const room = rooms.get(roomId);
-      
-      if (!room) {
-        console.log(`Room not found for rejoin: ${roomId}, requested by ${socket.id}`);
-        socket.emit('error', { message: 'Room expired or not found' });
-        return;
-      }
-      
-      // If the room is full but this socket wasn't in it, reject
-      if (room.participants.length >= 2 && !room.participants.includes(socket.id)) {
-        console.log(`Room full for rejoin: ${roomId}, rejected ${socket.id}`);
-        socket.emit('error', { message: 'Room is full' });
-        return;
-      }
-      
-      // Add user to participants if not already there
-      if (!room.participants.includes(socket.id)) {
-        room.participants.push(socket.id);
-      }
-      
-      socket.join(roomId);
-      socket.emit('room-rejoined', { roomId });
-      
-      // Notify the other participant
-      socket.to(roomId).emit('peer-rejoined', { peerId: socket.id });
-      console.log(`User ${socket.id} rejoined room ${roomId}`);
-    } catch (error) {
-      console.error(`Error rejoining room ${roomId} for ${socket.id}:`, error);
-      socket.emit('error', { message: `Failed to rejoin room: ${error.message}` });
-    }
-  });
-
-  // =============================================
-  // WEBRTC SIGNALING
-  // =============================================
-
-  // Handle SDP offer from initiating peer
-  socket.on('offer', ({ roomId, offer }) => {
-    try {
-      if (!rooms.has(roomId)) {
-        console.log(`Invalid room for offer: ${roomId}`);
-        socket.emit('error', { message: 'Room not found for offer' });
-        return;
-      }
-      // Forward offer to the other peer in the room
-      socket.to(roomId).emit('offer', { peerId: socket.id, offer });
-    } catch (error) {
-      console.error(`Error processing offer for room ${roomId}:`, error);
-      socket.emit('error', { message: `Failed to process offer: ${error.message}` });
-    }
-  });
-
-  // Handle SDP answer from receiving peer
-  socket.on('answer', ({ roomId, answer }) => {
-    try {
-      if (!rooms.has(roomId)) {
-        console.log(`Invalid room for answer: ${roomId}`);
-        socket.emit('error', { message: 'Room not found for answer' });
-        return;
-      }
-      // Forward answer to the other peer in the room
-      socket.to(roomId).emit('answer', { peerId: socket.id, answer });
-    } catch (error) {
-      console.error(`Error processing answer for room ${roomId}:`, error);
-      socket.emit('error', { message: `Failed to process answer: ${error.message}` });
-    }
-  });
-
-  // Handle ICE candidates for NAT traversal
-  socket.on('ice-candidate', ({ roomId, candidate }) => {
-    try {
-      if (!rooms.has(roomId)) {
-        // Don't emit error for ICE candidates to avoid spamming the user
-        console.log(`Invalid room for ICE candidate: ${roomId}`);
-        return;
-      }
-      // Forward ICE candidate to the other peer in the room
-      socket.to(roomId).emit('ice-candidate', { peerId: socket.id, candidate });
-    } catch (error) {
-      console.error(`Error processing ICE candidate for room ${roomId}:`, error);
-      // Don't emit error for ICE candidates to avoid spamming the user with errors
-    }
-  });
-
-  // =============================================
-  // DISCONNECT AND CLEANUP
-  // =============================================
-
-  // Handle disconnect
-  socket.on('disconnect', () => {
-    try {
-      console.log('User disconnected:', socket.id);
-
-      // Find and clean up rooms
-      for (const [roomId, room] of rooms.entries()) {
-        if (room.participants.includes(socket.id)) {
-          // Notify other participants
-          socket.to(roomId).emit('peer-disconnected', { peerId: socket.id });
-
-          // Remove user from participants
-          room.participants = room.participants.filter(id => id !== socket.id);
-
-          // If room still has participants, keep it alive
-          // Otherwise, mark it for potential reconnection with a timeout
-          if (room.participants.length > 0) {
-            console.log(`Room ${roomId} still has ${room.participants.length} participant(s)`);
-          } else {
-            // Set a reconnection window of 60 seconds
-            room.reconnectionWindow = Date.now() + 60000;
-            console.log(`Room ${roomId} marked for reconnection until ${new Date(room.reconnectionWindow).toISOString()}`);
-            
-            // Schedule cleanup after reconnection window
-            setTimeout(() => {
-              const staleRoom = rooms.get(roomId);
-              if (staleRoom && staleRoom.participants.length === 0) {
-                rooms.delete(roomId);
-                console.log(`Room ${roomId} deleted (reconnection window expired)`);
-              }
-            }, 60000);
-          }
-        }
-      }
-    } catch (error) {
-      console.error(`Error handling disconnect for ${socket.id}:`, error);
-      // Can't emit to disconnected socket
-    }
-  });
-
-  // Handle manual call end ("burn")
-  socket.on('burn-room', ({ roomId }) => {
-    try {
-      const room = rooms.get(roomId);
-
-      if (room) {
-        // Notify all participants
-        io.to(roomId).emit('room-burned');
-
-        // Delete the room
-        rooms.delete(roomId);
-        console.log(`Room ${roomId} burned by ${socket.id}`);
-      } else {
-        console.log(`Attempted to burn non-existent room: ${roomId}`);
-        // Still notify the requester so they can clean up locally
-        socket.emit('room-burned');
-        // Also send the error for logging purposes
-        socket.emit('error', { message: 'Room not found for burning' });
-      }
-    } catch (error) {
-      console.error(`Error burning room ${roomId}:`, error);
-      // Send room-burned anyway to ensure client cleans up
-      socket.emit('room-burned');
-      socket.emit('error', { message: `Failed to end call: ${error.message}` });
-    }
-  });
-});
-
-// =============================================
-// SERVER STARTUP AND ROUTES
-// =============================================
-
-// Define port (use environment variable if available)
-const PORT = process.env.PORT || 3002;
-
-// Add a periodic room cleanup for stale rooms
-const cleanupStaleRooms = () => {
-  const now = Date.now();
-  let roomsCleaned = 0;
-  
-  for (const [roomId, room] of rooms.entries()) {
-    // Clean up rooms with expired reconnection windows
-    if (room.participants.length === 0 && room.reconnectionWindow && now > room.reconnectionWindow) {
-      rooms.delete(roomId);
-      roomsCleaned++;
-    }
-    
-    // Clean up very old rooms (over 2 hours old) regardless of state
-    if (room.created && now - room.created > 7200000) {
-      rooms.delete(roomId);
-      roomsCleaned++;
-    }
-  }
-  
-  if (roomsCleaned > 0) {
-    console.log(`Cleaned up ${roomsCleaned} stale room(s)`);
-  }
-};
-
-// Run cleanup every 5 minutes
-setInterval(cleanupStaleRooms, 300000);
-
-// =============================================
 // API ENDPOINTS
 // =============================================
 
@@ -778,49 +462,15 @@ app.post('/api/renew-token', (req, res) => {
   }
 });
 
-// Provide ICE server configuration for WebRTC NAT traversal
-app.get('/api/ice-servers', (req, res) => {
-  try {
-    // Send ICE server configuration with credentials from environment variables
-    const iceServers = [
-      {
-        urls: "stun:stun.relay.metered.ca:80"
-      },
-      {
-        urls: "turn:standard.relay.metered.ca:80",
-        username: process.env.TURN_USERNAME,
-        credential: process.env.TURN_CREDENTIAL
-      },
-      {
-        urls: "turn:standard.relay.metered.ca:80?transport=tcp",
-        username: process.env.TURN_USERNAME,
-        credential: process.env.TURN_CREDENTIAL
-      },
-      {
-        urls: "turn:standard.relay.metered.ca:443",
-        username: process.env.TURN_USERNAME,
-        credential: process.env.TURN_CREDENTIAL
-      },
-      {
-        urls: "turns:standard.relay.metered.ca:443?transport=tcp",
-        username: process.env.TURN_USERNAME,
-        credential: process.env.TURN_CREDENTIAL
-      }
-    ];
+// =============================================
+// SERVER STARTUP AND ROUTES
+// =============================================
 
-    res.json({ iceServers });
-  } catch (error) {
-    console.error('Error providing ICE servers:', error);
-    res.status(500).json({ error: 'Failed to provide ICE servers' });
-  }
-});
+// Define port (use environment variable if available)
+const PORT = process.env.PORT || 3002;
 
 // Start server
 server.listen(PORT, () => {
-  console.log(`Oblivn server running on port ${PORT}`);
+  console.log(`Sprockett server running on port ${PORT}`);
 });
 
-// Route all requests to index.html for client-side routing
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../client/index.html'));
-});
