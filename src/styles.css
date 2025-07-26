@@ -64,6 +64,8 @@
   margin: 0 auto;
   padding: var(--space-6);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: white;
+  min-height: 100vh;
 }
 
 .admin-header {
@@ -1875,6 +1877,9 @@ body {
 .session-analytics {
   max-width: 1200px;
   margin: 0 auto;
+  overflow-y: auto;
+  height: calc(100vh - 200px);
+  padding-right: var(--space-2);
 }
 
 .analytics-header {
