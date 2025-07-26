@@ -79,6 +79,7 @@ export default function AIConfiguration() {
             model: config.model,
             temperature: config.temperature,
             max_tokens: config.max_tokens,
+            frequency_ms: config.frequency_ms,
             system_prompt: config.system_prompt
           })
           .eq('id', config.id)
@@ -93,10 +94,12 @@ export default function AIConfiguration() {
           .from('ai_config')
           .insert({
             config_name: config.config_name,
+            config_type: config.config_type,
             ai_provider: config.ai_provider,
             model: config.model,
             temperature: config.temperature,
             max_tokens: config.max_tokens,
+            frequency_ms: config.frequency_ms,
             system_prompt: config.system_prompt,
             is_active: false
           })
@@ -201,14 +204,24 @@ export default function AIConfiguration() {
         </div>
       )}
 
-      {activeConfig && (
+      {activeCoachingConfig && (
         <div className="active-config-display">
-          <h3>🟢 Currently Active Configuration</h3>
+          <h3>🟢 Active Coaching Config</h3>
           <div className="config-summary">
-            <span><strong>{activeConfig.config_name}</strong></span>
-            <span>{AI_PROVIDERS[activeConfig.ai_provider].name} {activeConfig.model}</span>
-            <span>Temperature: {activeConfig.temperature}</span>
-            <span>Max Tokens: {activeConfig.max_tokens}</span>
+            <span><strong>{activeCoachingConfig.config_name}</strong></span>
+            <span>{AI_PROVIDERS[activeCoachingConfig.ai_provider].name} {activeCoachingConfig.model}</span>
+            <span>Every {activeCoachingConfig.frequency_ms / 1000}s</span>
+          </div>
+        </div>
+      )}
+
+      {activeMetricsConfig && (
+        <div className="active-config-display">
+          <h3>📊 Active Metrics Config</h3>
+          <div className="config-summary">
+            <span><strong>{activeMetricsConfig.config_name}</strong></span>
+            <span>{AI_PROVIDERS[activeMetricsConfig.ai_provider].name} {activeMetricsConfig.model}</span>
+            <span>Every {activeMetricsConfig.frequency_ms / 1000}s</span>
           </div>
         </div>
       )}
@@ -281,10 +294,12 @@ interface ConfigFormProps {
 function ConfigForm({ config, onSave, onCancel }: ConfigFormProps) {
   const [formData, setFormData] = useState({
     config_name: config?.config_name || '',
+    config_type: config?.config_type || 'coaching' as const,
     ai_provider: config?.ai_provider || 'openai' as const,
     model: config?.model || 'gpt-4-turbo-preview',
     temperature: config?.temperature || 0.7,
     max_tokens: config?.max_tokens || 60,
+    frequency_ms: config?.frequency_ms || 15000,
     system_prompt: config?.system_prompt || ''
   })
 
