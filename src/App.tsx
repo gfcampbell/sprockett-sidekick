@@ -5,6 +5,7 @@ import { DesktopAICoaching, CallConfig, CoachingSuggestion, ConversationTemperat
 import { transcriptionConfig, coachingConfig, surgicalFlags } from '@/lib/config'
 import { ConfigPanel } from '@/components/ConfigPanel'
 import AuthHeader from '@/components/AuthHeader'
+import AdminDashboard from '@/components/AdminDashboard'
 import { useAuthFunctions } from '@/lib/useAuth'
 import { useAuth } from '@/lib/authContext'
 import { startSession, endSession, formatSessionDuration, getSessionCostEstimate } from '@/lib/sessionBilling'
@@ -16,7 +17,10 @@ function App() {
 
   // Initialize auth system
   const { initializeAuth, userState, updateTokenBalance, fetchTokenBalance } = useAuthFunctions()
-  const { setUserState } = useAuth()
+  const { setUserState, isAdmin } = useAuth()
+  
+  // Admin dashboard state
+  const [showAdminDashboard, setShowAdminDashboard] = useState(false)
 
   // Session tracking state
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
@@ -359,6 +363,11 @@ function App() {
     setCallConfig(newConfig)
   }
 
+  // Show admin dashboard if admin is logged in and toggled
+  if (showAdminDashboard && isAdmin()) {
+    return <AdminDashboard />
+  }
+
   return (
     <>
       <div className="app">
@@ -375,6 +384,15 @@ function App() {
 
           <div className="title-bar-controls">
             <AuthHeader />
+            {isAdmin() && (
+              <button
+                onClick={() => setShowAdminDashboard(!showAdminDashboard)}
+                className={`btn ${showAdminDashboard ? 'btn-primary' : 'btn-ghost'}`}
+                title="Admin Dashboard"
+              >
+                👑 Admin
+              </button>
+            )}
             {isListening && sessionDuration > 0 && (
               <div className="session-timer">
                 🔴 Live: {formatSessionDuration(sessionDuration)} 

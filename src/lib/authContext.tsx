@@ -7,6 +7,7 @@ interface UserState {
   currentUserId: string | null; // Supabase user.id (UUID) when authenticated
   isAuthenticated: boolean;
   userEmail: string | null;
+  role: string; // 'user', 'admin', or 'super_admin'
   
   // Token/billing state
   tokensRemaining: number;
@@ -29,6 +30,7 @@ const initialUserState: UserState = {
   currentUserId: null,
   isAuthenticated: false,
   userEmail: null,
+  role: 'user',
   
   // Token/billing state
   tokensRemaining: 0,
@@ -48,6 +50,8 @@ const initialUserState: UserState = {
 interface AuthContextType {
   userState: UserState;
   setUserState: React.Dispatch<React.SetStateAction<UserState>>;
+  isAdmin: () => boolean;
+  isSuperAdmin: () => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -55,8 +59,16 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [userState, setUserState] = useState<UserState>(initialUserState);
 
+  const isAdmin = () => {
+    return userState.isAuthenticated && (userState.role === 'admin' || userState.role === 'super_admin');
+  };
+
+  const isSuperAdmin = () => {
+    return userState.isAuthenticated && userState.role === 'super_admin';
+  };
+
   return (
-    <AuthContext.Provider value={{ userState, setUserState }}>
+    <AuthContext.Provider value={{ userState, setUserState, isAdmin, isSuperAdmin }}>
       {children}
     </AuthContext.Provider>
   );

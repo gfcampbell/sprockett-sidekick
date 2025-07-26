@@ -40,7 +40,7 @@ export function useAuthFunctions() {
       // First check if user account already exists
       const { data: existingAccount } = await supabase
         .from('user_accounts')
-        .select('user_id, email, tokens_remaining')
+        .select('user_id, email, tokens_remaining, role')
         .eq('user_id', userId)
         .single();
 
@@ -134,7 +134,8 @@ export function useAuthFunctions() {
           isAuthenticated: true,
           userEmail: data.user!.email || null,
           tokensRemaining: 100,
-          subscriptionTier: 'free'
+          subscriptionTier: 'free',
+          role: 'user'
         }));
         
         // Create user account in database
@@ -183,7 +184,7 @@ export function useAuthFunctions() {
         // Fetch actual token balance from database
         const { data: userAccount } = await supabase
           .from('user_accounts')
-          .select('tokens_remaining, subscription_tier')
+          .select('tokens_remaining, subscription_tier, role')
           .eq('user_id', data.user.id)
           .single();
         
@@ -194,7 +195,8 @@ export function useAuthFunctions() {
           isAuthenticated: true,
           userEmail: data.user!.email || null,
           tokensRemaining: userAccount?.tokens_remaining || 0,
-          subscriptionTier: userAccount?.subscription_tier || 'free'
+          subscriptionTier: userAccount?.subscription_tier || 'free',
+          role: userAccount?.role || 'user'
         }));
         
         // Ensure user account exists (will not overwrite existing balance)
@@ -305,7 +307,7 @@ export function useAuthFunctions() {
         // Update global state and fetch token balance
         const { data: userAccount } = await supabase
           .from('user_accounts')
-          .select('tokens_remaining, subscription_tier')
+          .select('tokens_remaining, subscription_tier, role')
           .eq('user_id', user.id)
           .single();
         
@@ -315,7 +317,8 @@ export function useAuthFunctions() {
           isAuthenticated: true,
           userEmail: user.email,
           tokensRemaining: userAccount?.tokens_remaining || 0,
-          subscriptionTier: userAccount?.subscription_tier || 'free'
+          subscriptionTier: userAccount?.subscription_tier || 'free',
+          role: userAccount?.role || 'user'
         }));
 
         // Auto-create user_accounts row with starting tokens
@@ -356,7 +359,7 @@ export function useAuthFunctions() {
         // Fetch token balance and update state
         const { data: userAccount } = await supabase
           .from('user_accounts')
-          .select('tokens_remaining, subscription_tier')
+          .select('tokens_remaining, subscription_tier, role')
           .eq('user_id', session.user.id)
           .single();
         
@@ -366,7 +369,8 @@ export function useAuthFunctions() {
           isAuthenticated: true,
           userEmail: session.user.email || null,
           tokensRemaining: userAccount?.tokens_remaining || 0,
-          subscriptionTier: userAccount?.subscription_tier || 'free'
+          subscriptionTier: userAccount?.subscription_tier || 'free',
+          role: userAccount?.role || 'user'
         }));
         
         // Ensure user account exists in database (non-blocking)

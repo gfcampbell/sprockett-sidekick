@@ -1,220 +1,322 @@
-SPROCKETT SIDEKICK - COMPLETE HANDOFF DOCUMENTATION
+🎯 Sprockett Sidekick - Admin Interface Development Handoff
 
-  🎯 What The App Does
+  Current System State (Production Ready)
 
-  Sprockett Sidekick is an AI-powered real-time conversation
-  coaching application that listens to calls and provides
-  intelligent suggestions to improve communication. Think of it
-  as having a world-class communication coach whispering insights
-   in your ear during important conversations.
+  ✅ Fully Functional Features
 
-  Core Features:
+  - Authentication System: Persistent login, user management,
+  email confirmation
+  - Per-Minute Token Billing: 1 token/minute, real-time UI
+  countdown, database reconciliation
+  - AI Coaching: GPT-4 coaching suggestions every 15 seconds
+  during sessions
+  - Session Management: Complete session tracking with proper
+  UUID handling
+  - Database: Clean schema with proper constraints, indexes, and
+  RLS policies
 
-  1. Real-time Audio Transcription - Captures and transcribes
-  conversation audio using OpenAI Whisper
-  2. AI Coaching Suggestions - Provides contextual coaching
-  insights every 15 seconds using GPT-4
-  3. Conversation Analytics - Tracks warmth, energy,
-  agreeability, and goal progress in real-time
-  4. Speaker Identification - Uses physics-based audio routing
-  (mic vs system audio) for accurate speaker detection
-  5. User Authentication - Supabase-based auth system with
-  email/password login
-  6. Token System - Users start with 100 tokens (billing system
-  ready but not implemented)
+  🚀 Production Metrics
 
-  User Flow:
+  - Users: 11+ active accounts with token balances (92-1000
+  tokens)
+  - Sessions: Active session logging with billing data
+  - Database: All tables operational with real data
+  - Deployment: Live at sprockett.app (Vercel + Supabase)
 
-  1. User creates account or signs in
-  2. Selects conversation type (sales, interview, negotiation,
-  etc.)
-  3. Sets their goal for the conversation
-  4. Clicks "Go Live" to start recording
-  5. Receives real-time coaching suggestions based on
-  conversation dynamics
-  6. Views analytics dashboard showing conversation metrics
+  Admin Interface Requirements Analysis
 
-  🏗️ Architecture State
+  Core Admin Functions Needed
 
-  Tech Stack:
+  1. User Management
 
-  - Frontend: React + TypeScript + Vite
-  - Backend: Node.js + Express (local development server)
-  - Deployment: Vercel (serverless functions for production)
-  - Database: Supabase (PostgreSQL)
-  - AI Services: OpenAI (Whisper for transcription, GPT-4 for
-  coaching)
-  - Auth: Supabase Auth (email/password)
-  - Styling: Vanilla CSS with custom design system
+  -- Admin needs to see/manage these user operations
+  SELECT user_id, email, tokens_remaining, subscription_tier,
+  created_at
+  FROM user_accounts ORDER BY created_at DESC;
 
-  Project Structure:
+  -- Add tokens to user accounts
+  UPDATE user_accounts SET tokens_remaining = tokens_remaining +
+  X WHERE user_id = ?;
 
-  /sprockett-sidekick
-  ├── /src                    # React app source
-  │   ├── /components        # React components
-  │   │   ├── AuthHeader.tsx # Authentication UI in header
-  │   │   ├── AuthModal.tsx  # Sign in/up modal
-  │   │   └── ConfigPanel.tsx # Call configuration panel
-  │   ├── /lib              # Core business logic
-  │   │   ├── aiCoaching.ts     # AI coaching system
-  │   │   ├── audioCapture.ts   # Legacy audio capture
-  │   │   ├── dualAudioCapture.ts # Physics-based dual audio
-  │   │   ├── config.ts         # App configuration
-  │   │   ├── authContext.tsx   # Auth state management
-  │   │   ├── useAuth.ts        # Auth functions hook
-  │   │   └── supabaseClient.ts # Supabase initialization
-  │   ├── App.tsx           # Main app component
-  │   ├── main.tsx          # App entry point
-  │   └── styles.css        # All styling
-  ├── /api                  # Vercel serverless functions
-  │   ├── coach.js         # AI coaching endpoint
-  │   └── transcribe.js    # Audio transcription endpoint
-  ├── /server              # Local dev server
-  │   └── server.js        # Express server for local development
-  ├── /migrations          # Database schema
-  ├── /deprecated_client   # Old vanilla JS implementation
-  └── package.json         # Dependencies and scripts
+  -- Change subscription tiers
+  UPDATE user_accounts SET subscription_tier = 'pro' WHERE
+  user_id = ?;
 
-  Key Architectural Decisions:
+  2. Session Analytics
 
-  1. Dual Deployment Strategy:
-    - Production: Vercel with serverless functions
-    - Development: Local Express server on port 3002
-    - React app auto-detects environment and routes accordingly
-  2. Audio Architecture:
-    - Two audio capture systems (switchable via config flag):
-        - Legacy: Single microphone stream with AI speaker
-  detection
-      - Modern: Dual stream (mic + system audio) for
-  physics-based speaker ID
-    - Audio chunks: 8 seconds, with silence detection (< 1KB
-  chunks skipped)
-  3. AI Integration:
-    - All OpenAI calls proxied through server (API keys never
-  exposed)
-    - Coaching runs every 15 seconds with 60-second context
-  window
-    - Streaming responses for real-time UI updates
-  4. State Management:
-    - React Context for auth state
-    - Local component state for UI
-    - localStorage for persistence (call config, goals)
+  -- View all coaching sessions with billing data
+  SELECT s.id, s.user_id, u.email, s.start_time, s.end_time,
+         s.mode, s.credit_cost, tu.tokens_used
+  FROM call_sessions s
+  JOIN user_accounts u ON s.user_id = u.user_id
+  LEFT JOIN token_usage tu ON s.id = tu.session_id
+  ORDER BY s.start_time DESC;
 
-  📋 What I Accomplished
+  3. Financial Dashboard
 
-  1. Fixed Whisper Hallucinations
+  -- Revenue tracking, token usage patterns, billing analytics
+  SELECT DATE(timestamp) as date,
+         SUM(tokens_used) as tokens_consumed,
+         COUNT(DISTINCT user_id) as active_users
+  FROM token_usage
+  GROUP BY DATE(timestamp)
+  ORDER BY date DESC;
 
-  - Added silence detection to skip empty audio chunks
-  - Audio blobs < 1KB are now filtered out before transcription
-  - Prevents false transcriptions during quiet periods
+  4. System Health Monitoring
 
-  2. Complete Authentication System
+  - Active sessions count
+  - Error rate tracking
+  - API usage metrics
+  - Database performance
 
-  - Ported entire Supabase auth from deprecated client
-  - Created React components: AuthHeader, AuthModal
-  - Implemented auth context and hooks
-  - Added protection requiring login for AI features
-  - Preserved exact UI/UX from original (top-right auth links)
+  Recommended Admin Interface Architecture
 
-  3. Improved AI Coaching Prompt
+  Option A: Dedicated Admin App (Recommended)
 
-  - Upgraded to elite-level coaching prompt
-  - Better emotional intelligence and insight detection
-  - Maintained backward compatibility with analytics parsing
-  - Format: TEMP:X ENERGY:X AGREE:X GOAL:XX 🤖 [coaching text]
+  /admin-dashboard
+  ├── /src
+  │   ├── /components
+  │   │   ├── UserManagement.tsx
+  │   │   ├── SessionAnalytics.tsx
+  │   │   ├── FinancialDashboard.tsx
+  │   │   └── SystemHealth.tsx
+  │   ├── /lib
+  │   │   ├── adminAuth.ts          # Admin-only authentication
+  │   │   ├── adminQueries.ts       # Database queries for admin
+  data
+  │   │   └── supabaseAdmin.ts      # Service role client
+  │   └── App.tsx
+  ├── /api
+  │   ├── admin-users.js            # User management endpoints
+  │   ├── admin-analytics.js        # Analytics endpoints
+  │   └── admin-billing.js          # Financial data endpoints
 
-  4. Cost Analysis
+  Option B: Admin Section in Main App (Simpler)
 
-  - Calculated ~$0.22 per 30-minute call with gpt-4o-mini
-  - Currently using expensive gpt-4-turbo-preview (~$16/call)
-  - Ready to switch models with one-line change
+  // Add to existing app with role-based access
+  if (userState.role === 'admin') {
+    // Show admin interface
+  }
 
-  5. Code Organization
+  Database Admin Setup Required
 
-  - Clean separation of concerns
-  - Removed all WebRTC/video chat code
-  - Maintained physics-based speaker identification
-  - All "Oblivn" references removed
+  1. Admin Role System
 
-  🔌 Integration Points Ready
+  -- Add admin role to user_accounts
+  ALTER TABLE user_accounts ADD COLUMN role TEXT DEFAULT 'user'
+  CHECK (role IN ('user', 'admin', 'super_admin'));
 
-  Token/Billing System:
+  -- Set yourself as admin
+  UPDATE user_accounts SET role = 'super_admin'
+  WHERE email = 'your-email@domain.com';
 
-  - Database tables exist: user_accounts, token_transactions,
-  token_packages
-  - Users start with 100 tokens
-  - Deduction logic not implemented yet
-  - Token check endpoints ready to add
+  2. Admin-Specific Views (Already Created)
 
-  Supabase Database Schema:
+  -- Available in 000_clean_schema.sql:
+  user_token_summary       -- User overview with token usage
+  daily_billing_summary    -- Financial analytics  
+  daily_token_usage        -- Usage patterns
+  active_calls            -- Real-time session monitoring
 
-  -- user_accounts table
-  user_id TEXT PRIMARY KEY
-  email TEXT
-  tokens_remaining INTEGER (default: 100)
-  subscription_tier TEXT (default: 'free')
-  created_at TIMESTAMP
-  updated_at TIMESTAMP
+  3. Admin API Permissions
 
-  API Endpoints:
+  -- Create admin-only RLS policies
+  CREATE POLICY "Allow admin full access" ON user_accounts
+  FOR ALL TO authenticated
+  USING (
+    EXISTS (
+      SELECT 1 FROM user_accounts
+      WHERE user_id = auth.uid()::TEXT
+      AND role IN ('admin', 'super_admin')
+    )
+  );
 
-  - /api/transcribe - Audio → Text (Whisper)
-  - /api/coach - Transcript → Coaching (GPT-4)
-  - /api/renew-token - Token renewal (preserved for future)
+  Technical Implementation Approach
 
-  ⚠️ Important Notes
+  Phase 1: Admin Authentication (2-3 hours)
 
-  1. API Keys: Currently using Gerry's OpenAI API key in
-  production
-  2. Model Cost: Switch to gpt-4o-mini ASAP to reduce costs 74x
-  3. Token Deduction: Not implemented - users have unlimited
-  usage after signup
-  4. Rate Limiting: Basic rate limiting exists but no per-user
-  quotas
-  5. Dual Audio: Currently disabled by default (set
-  USE_DUAL_AUDIO_CAPTURE: true in config.ts to enable)
+  1. Add role column to user_accounts table
+  2. Set your admin role in database
+  3. Create admin auth middleware - check role on protected
+  routes
+  4. Admin login flow - redirect to admin dashboard after auth
 
-  🚀 Next Steps Recommendations
+  Phase 2: Core Admin Views (1 day)
 
-  1. Immediate:
-    - Switch AI model to gpt-4o-mini in /src/lib/aiCoaching.ts
-  line 309
-    - Implement token deduction after each coaching request
-    - Add token balance display in UI
-  2. Soon:
-    - Implement token package purchases
-    - Add usage analytics/tracking
-    - Create admin dashboard
-  3. Future:
-    - Enable dual audio by default (better speaker detection)
-    - Add conversation history/replay
-    - Implement team features
+  1. User Management Table - view/edit user accounts, add tokens
+  2. Session Analytics - real-time and historical session data
+  3. Financial Dashboard - revenue, usage trends, billing metrics
+  4. Basic system monitoring - active users, session counts
 
-  🔧 Development Commands
+  Phase 3: Advanced Features (2-3 days)
 
-  # Install dependencies
-  npm install
+  1. Bulk user operations - mass token grants, subscription
+  changes
+  2. Advanced analytics - cohort analysis, retention metrics
+  3. System configuration - pricing changes, feature flags
+  4. Audit logging - track all admin actions
 
-  # Run development server (includes API)
-  npm run dev
+  Key Database Queries for Admin Interface
 
-  # Build for production
-  npm run build
+  User Management Queries
 
-  # Deploy to Vercel
-  npm run deploy
+  -- Get all users with usage stats
+  SELECT
+    ua.user_id, ua.email, ua.tokens_remaining,
+  ua.subscription_tier,
+    COUNT(cs.id) as total_sessions,
+    COALESCE(SUM(tu.tokens_used), 0) as tokens_consumed,
+    ua.created_at
+  FROM user_accounts ua
+  LEFT JOIN call_sessions cs ON ua.user_id = cs.user_id
+  LEFT JOIN token_usage tu ON ua.user_id = tu.user_id
+  GROUP BY ua.user_id, ua.email, ua.tokens_remaining,
+  ua.subscription_tier, ua.created_at
+  ORDER BY ua.created_at DESC;
 
-  # Local API server only
-  npm start
+  -- Add tokens to user
+  UPDATE user_accounts
+  SET tokens_remaining = tokens_remaining + $1,
+      updated_at = NOW()
+  WHERE user_id = $2;
 
-  🌐 Deployment
+  Analytics Queries
 
-  - Production: https://sprockett.app (Vercel)
-  - API: Serverless functions at /api/*
-  - Environment Variables Required:
-    - OPENAI_API_KEY
-    - ENABLE_TRANSCRIPTION (default: true)
+  -- Daily revenue and usage
+  SELECT
+    DATE(tu.timestamp) as date,
+    COUNT(DISTINCT tu.user_id) as active_users,
+    COUNT(*) as total_sessions,
+    SUM(tu.tokens_used) as tokens_consumed,
+    SUM(tu.tokens_used * 0.10) as estimated_revenue  -- $0.10 per
+   token
+  FROM token_usage tu
+  WHERE tu.timestamp >= CURRENT_DATE - INTERVAL '30 days'
+  GROUP BY DATE(tu.timestamp)
+  ORDER BY date DESC;
 
-  The app is fully functional with authenticated users able to
-  use AI coaching. The foundation is solid and ready for
-  monetization features.
+  -- Top users by usage
+  SELECT
+    ua.email,
+    SUM(tu.tokens_used) as total_tokens,
+    COUNT(DISTINCT DATE(tu.timestamp)) as active_days,
+    MAX(tu.timestamp) as last_active
+  FROM user_accounts ua
+  JOIN token_usage tu ON ua.user_id = tu.user_id
+  WHERE tu.timestamp >= CURRENT_DATE - INTERVAL '30 days'
+  GROUP BY ua.user_id, ua.email
+  ORDER BY total_tokens DESC
+  LIMIT 10;
+
+  System Health Queries
+
+  -- Active sessions right now
+  SELECT COUNT(*) as active_sessions
+  FROM call_sessions
+  WHERE end_time IS NULL;
+
+  -- Error rate (sessions without proper end_time)
+  SELECT
+    COUNT(*) FILTER (WHERE end_time IS NULL) as
+  incomplete_sessions,
+    COUNT(*) as total_sessions,
+    ROUND(
+      100.0 * COUNT(*) FILTER (WHERE end_time IS NULL) /
+  COUNT(*),
+      2
+    ) as error_rate_percent
+  FROM call_sessions
+  WHERE start_time >= CURRENT_DATE - INTERVAL '7 days';
+
+  Security Considerations
+
+  Admin Access Control
+
+  // Middleware for admin routes
+  export async function requireAdmin(req: Request) {
+    const user = await getUser(req);
+    if (!user || user.role !== 'admin') {
+      throw new Error('Admin access required');
+    }
+    return user;
+  }
+
+  // Use service role for admin operations
+  const adminSupabase = createClient(
+    process.env.SUPABASE_URL,
+    process.env.SUPABASE_SERVICE_ROLE_KEY
+  );
+
+  Audit Logging
+
+  -- Track admin actions
+  CREATE TABLE admin_audit_log (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    admin_user_id TEXT NOT NULL,
+    action TEXT NOT NULL,
+    target_user_id TEXT,
+    details JSONB,
+    timestamp TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+  );
+
+  Recommended Development Approach
+
+  Quick Start (Same Day)
+
+  1. Set your admin role in database manually
+  2. Add admin check to existing app
+  3. Create basic admin page with user list
+  4. Test admin access control
+
+  Production Ready (1 Week)
+
+  1. Dedicated admin interface with proper design
+  2. Complete user management - view, edit, add tokens
+  3. Analytics dashboard with charts and metrics
+  4. Security audit - proper access controls and logging
+
+  Files You'll Need to Create
+
+  Database Changes
+
+  - migrations/004_add_admin_roles.sql - Add role column and
+  admin policies
+  - Update existing RLS policies for admin access
+
+  Admin Interface
+
+  - /admin/ directory with React admin app
+  - Admin-specific API endpoints
+  - Admin authentication middleware
+  - Analytics and reporting components
+
+  Configuration
+
+  - Environment variables for admin features
+  - Admin role seeding script
+  - Deployment configuration for admin routes
+
+  Current System Integration Points
+
+  Auth System
+
+  - ✅ Ready: Existing auth context can be extended for admin
+  roles
+  - ✅ Supabase Integration: User management already working
+
+  Database
+
+  - ✅ Ready: All tables exist with proper structure
+  - ✅ Analytics Views: Already created in clean schema
+  - ✅ Performance: Proper indexes for admin queries
+
+  API Structure
+
+  - ✅ Ready: Existing API pattern can be extended for admin
+  endpoints
+  - ✅ Service Role: Already configured for admin operations
+
+  This handoff gives you everything needed to build a
+  comprehensive admin interface on top of your solid,
+  production-ready foundation. The system is ready for admin
+  functionality - it just needs the interface layer built on top.
