@@ -683,6 +683,8 @@ body {
   border-bottom: none;
   -webkit-app-region: drag;
   user-select: none;
+  position: relative;
+  z-index: 100;
 }
 
 .brand-section {
@@ -1579,6 +1581,7 @@ body {
     display: flex;
     align-items: center;
     gap: 1rem;
+    position: static;
 }
 
 .auth-links {

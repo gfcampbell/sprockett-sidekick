@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import './UserDropdown.css';
 
 interface UserDropdownProps {
@@ -17,17 +18,29 @@ export function UserDropdown({
   onBuyTokens 
 }: UserDropdownProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
+  const triggerRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node) &&
+          triggerRef.current && !triggerRef.current.contains(event.target as Node)) {
         setIsOpen(false);
       }
     }
 
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      
+      // Calculate position
+      if (triggerRef.current) {
+        const rect = triggerRef.current.getBoundingClientRect();
+        setDropdownPosition({
+          top: rect.bottom + 4,
+          left: rect.right - 200 // 200px is the min-width of dropdown
+        });
+      }
     }
 
     return () => {
@@ -36,8 +49,9 @@ export function UserDropdown({
   }, [isOpen]);
 
   return (
-    <div className="user-dropdown" ref={dropdownRef}>
+    <div className="user-dropdown">
       <button 
+        ref={triggerRef}
         className="user-dropdown-trigger"
         onClick={() => setIsOpen(!isOpen)}
       >
@@ -45,8 +59,16 @@ export function UserDropdown({
         <span className="dropdown-arrow">{isOpen ? '▲' : '▼'}</span>
       </button>
 
-      {isOpen && (
-        <div className="user-dropdown-menu">
+      {isOpen && createPortal(
+        <div 
+          ref={dropdownRef}
+          className="user-dropdown-menu"
+          style={{
+            position: 'fixed',
+            top: `${dropdownPosition.top}px`,
+            left: `${dropdownPosition.left}px`
+          }}
+        >
           <div className="dropdown-header">
             {userEmail}
           </div>
@@ -78,7 +100,8 @@ export function UserDropdown({
           }}>
             Sign Out
           </button>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );
