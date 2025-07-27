@@ -7,6 +7,7 @@ import { transcriptionConfig, coachingConfig, metricsConfig, surgicalFlags } fro
 import { ConfigPanel } from '@/components/ConfigPanel'
 import AuthHeader from '@/components/AuthHeader'
 import AdminDashboard from '@/components/AdminDashboard'
+import { MobileMenu } from '@/components/MobileMenu'
 import { useAuthFunctions } from '@/lib/useAuth'
 import { useAuth } from '@/lib/authContext'
 import { startSession, endSession, formatSessionDuration, getSessionCostEstimate } from '@/lib/sessionBilling'
@@ -22,6 +23,9 @@ function App() {
   
   // Admin dashboard state
   const [showAdminDashboard, setShowAdminDashboard] = useState(false)
+  
+  // Mobile menu state
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   // Session tracking state
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null)
@@ -436,7 +440,8 @@ function App() {
             <span className="brand-name">sprockett.app</span>
           </div>
 
-          <div className="title-bar-controls">
+          {/* Desktop Controls */}
+          <div className="title-bar-controls desktop-only">
             <AuthHeader onNavigateToAdmin={() => setShowAdminDashboard(true)} />
             {isListening && sessionDuration > 0 && (
               <div className="session-timer">
@@ -467,6 +472,16 @@ function App() {
               ⚙
             </button>
           </div>
+          
+          {/* Mobile Hamburger */}
+          <button
+            className="mobile-menu-toggle mobile-only"
+            onClick={() => setIsMobileMenuOpen(true)}
+          >
+            <span className="hamburger-line"></span>
+            <span className="hamburger-line"></span>
+            <span className="hamburger-line"></span>
+          </button>
         </div>
 
 
@@ -722,6 +737,88 @@ function App() {
           </div>
         )}
       </div>
+      
+      {/* Mobile Menu */}
+      <MobileMenu isOpen={isMobileMenuOpen} onClose={() => setIsMobileMenuOpen(false)}>
+        {userState.isAuthenticated && (
+          <>
+            {/* Token Display */}
+            <div className="mobile-token-display">
+              <span>Token Balance</span>
+              <strong>{userState.tokensRemaining}</strong>
+            </div>
+            
+            {/* Session Timer (if live) */}
+            {isListening && sessionDuration > 0 && (
+              <div className="mobile-session-timer">
+                Live: {formatSessionDuration(sessionDuration)} ({getSessionCostEstimate(sessionDuration)} tokens)
+              </div>
+            )}
+            
+            {/* Go Live / Stop Button */}
+            <button
+              onClick={() => {
+                toggleListening();
+                setIsMobileMenuOpen(false);
+              }}
+              className={`mobile-menu-item ${isListening ? 'danger' : 'primary'}`}
+            >
+              {isListening ? 'Stop Session' : 'Go Live'}
+            </button>
+            
+            {/* Mute Button (if live) */}
+            {isListening && (
+              <button
+                onClick={() => setIsMuted(!isMuted)}
+                className="mobile-menu-item"
+              >
+                {isMuted ? 'Unmute Microphone' : 'Mute Microphone'}
+              </button>
+            )}
+            
+            {/* Settings */}
+            <button
+              onClick={() => {
+                setIsConfigPanelOpen(true);
+                setIsMobileMenuOpen(false);
+              }}
+              className="mobile-menu-item"
+            >
+              Conversation Settings
+            </button>
+            
+            <div className="mobile-menu-divider" />
+            
+            {/* User Account Section */}
+            <div className="mobile-user-section">
+              <div className="mobile-user-info">
+                {userState.userEmail}
+                {isAdmin() && <span className="admin-badge-mobile">Admin</span>}
+              </div>
+              {userState.tokensRemaining < 30 && (
+                <button className="mobile-menu-item">
+                  Buy Tokens
+                </button>
+              )}
+              {isAdmin() && (
+                <button
+                  onClick={() => {
+                    setShowAdminDashboard(true);
+                    setIsMobileMenuOpen(false);
+                  }}
+                  className="mobile-menu-item"
+                >
+                  Admin Dashboard
+                </button>
+              )}
+              <button className="mobile-menu-item" style={{ color: 'var(--color-danger)' }}>
+                Sign Out
+              </button>
+            </div>
+          </>
+        )}
+      </MobileMenu>
+      
       {/* 🏥 SURGICAL: Voice enrollment modal completely removed - physics-based audio routing doesn't need fake enrollment */}
     </>
   )

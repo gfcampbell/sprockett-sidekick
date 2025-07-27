@@ -2901,8 +2901,86 @@ body {
   resize: vertical;
 }
 
+/* Mobile Hamburger Menu */
+.mobile-menu-toggle {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 4px;
+  transition: background 0.2s ease;
+}
+
+.mobile-menu-toggle:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+.hamburger-line {
+  width: 24px;
+  height: 2px;
+  background: var(--color-text);
+  margin: 2px 0;
+  transition: 0.3s;
+  border-radius: 1px;
+}
+
+/* Show/Hide classes for responsive design */
+.desktop-only {
+  display: flex;
+}
+
+.mobile-only {
+  display: none;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
+  /* Hide desktop controls, show mobile menu */
+  .desktop-only {
+    display: none !important;
+  }
+  
+  .mobile-only {
+    display: flex !important;
+  }
+  
+  /* Smaller logo on mobile */
+  .brand-logo {
+    width: 32px !important;
+    height: 32px !important;
+  }
+  
+  .brand-name {
+    font-size: 0.875rem !important;
+  }
+  
+  /* Title bar adjustments */
+  .title-bar {
+    height: 60px !important;
+    padding: 40px var(--space-4) 15px var(--space-4) !important;
+  }
+  
+  /* Main content adjustments */
+  .suggestions-panel {
+    padding: var(--space-4) !important;
+  }
+  
+  /* Config panel full width on mobile */
+  .config-panel {
+    width: 100% !important;
+    height: 100vh !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 1000 !important;
+  }
+  
+  /* Other existing mobile styles */
   .agents-grid {
     grid-template-columns: 1fr;
   }
