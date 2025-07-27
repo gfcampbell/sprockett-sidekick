@@ -3012,23 +3012,26 @@ body {
   }
   
   .analytics-metric {
-    padding: 0 !important;
+    padding: 0 0.25rem !important;
     margin: 0 !important;
     min-height: auto !important;
     line-height: 1.1 !important;
     border: none !important;
     background: none !important;
+    height: auto !important;
+    display: block !important;
   }
   
   .conversation-metrics {
     gap: 0 !important;
-    padding: 0 !important;
+    padding: 0 0.25rem !important;
     margin: 0 !important;
     border: none !important;
+    display: block !important;
   }
   
   .analytics-dashboard {
-    padding: 0 !important;
+    padding: 0 0.25rem !important;
     margin: 0 !important;
     border: none !important;
   }
@@ -3073,13 +3076,29 @@ body {
   .metric-label {
     font-size: 0.625rem !important;
     margin: 0 !important;
+    padding: 0 !important;
     line-height: 1.1 !important;
+    display: block !important;
   }
   
   .metric-current {
     font-size: 0.75rem !important;
     margin: 0 !important;
+    padding: 0 !important;
     line-height: 1.1 !important;
+    display: block !important;
+  }
+  
+  /* Kill any default spacing on analytics elements */
+  .analytics-metric > * {
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  
+  .sparkline {
+    height: 16px !important;
+    margin: 0 !important;
+    padding: 0 !important;
   }
   
   .ready-state h3 {
