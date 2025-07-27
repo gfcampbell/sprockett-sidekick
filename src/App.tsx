@@ -17,7 +17,7 @@ function App() {
   // 🏥 SURGICAL: Voice enrollment state removed - now using physics-based audio routing
 
   // Initialize auth system
-  const { initializeAuth, userState, updateTokenBalance, fetchTokenBalance } = useAuthFunctions()
+  const { initializeAuth, userState, updateTokenBalance, fetchTokenBalance, signOut } = useAuthFunctions()
   const { setUserState, isAdmin } = useAuth()
   
   // Admin dashboard state
@@ -438,15 +438,6 @@ function App() {
 
           <div className="title-bar-controls">
             <AuthHeader />
-            {isAdmin() && (
-              <button
-                onClick={() => setShowAdminDashboard(!showAdminDashboard)}
-                className={`btn ${showAdminDashboard ? 'btn-primary' : 'btn-ghost'}`}
-                title="Admin Dashboard"
-              >
-                👑 Admin
-              </button>
-            )}
             {isListening && sessionDuration > 0 && (
               <div className="session-timer">
                 🔴 Live: {formatSessionDuration(sessionDuration)} 
@@ -488,6 +479,8 @@ function App() {
               onConfigChange={handleConfigChange}
               isCollapsed={false}
               onToggleCollapse={() => setIsConfigPanelOpen(false)}
+              onSignOut={signOut}
+              onNavigateToAdmin={() => setShowAdminDashboard(true)}
             />
           )}
 

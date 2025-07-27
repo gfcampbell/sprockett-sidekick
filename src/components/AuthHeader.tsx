@@ -8,18 +8,11 @@ import TokenPurchaseModal from './TokenPurchaseModal';
 
 export default function AuthHeader() {
   const { userState } = useAuth();
-  const { signOut, updateTokenBalance, fetchTokenBalance } = useAuthFunctions();
+  const { updateTokenBalance, fetchTokenBalance } = useAuthFunctions();
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState<'signin' | 'signup'>('signin');
   const [showTokenPurchase, setShowTokenPurchase] = useState(false);
 
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-    } catch (error) {
-      console.error('Sign out failed:', error);
-    }
-  };
 
   const showSignIn = () => {
     setModalMode('signin');
@@ -77,9 +70,6 @@ export default function AuthHeader() {
                 title="Buy more tokens"
               >
                 Buy Tokens
-              </button>
-              <button id="logout-button" className="logout-btn" onClick={handleSignOut}>
-                Sign Out
               </button>
             </div>
           </div>

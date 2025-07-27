@@ -1,17 +1,21 @@
 import { useState } from 'react';
 import { CONVERSATION_TYPES, CallConfig } from '@/lib/aiCoaching';
-import { getTokenRate } from '@/lib/sessionBilling';
+import { useAuth } from '@/lib/authContext';
 
 interface ConfigPanelProps {
   config: CallConfig;
   onConfigChange: (config: CallConfig) => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  onSignOut?: () => void;
+  onNavigateToAdmin?: () => void;
   // 🏥 SURGICAL: onResetVoice removed - no longer needed
 }
 
-export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleCollapse }: ConfigPanelProps) {
+export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleCollapse, onSignOut, onNavigateToAdmin }: ConfigPanelProps) {
   const [localConfig, setLocalConfig] = useState(config);
+  const { userState } = useAuth();
+  const isAdmin = userState.role === 'admin' || userState.role === 'super_admin';
 
   const handleConfigUpdate = (updates: Partial<CallConfig>) => {
     const newConfig = { ...localConfig, ...updates };
@@ -36,8 +40,25 @@ export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleColla
   return (
     <div className="config-panel">
       <div className="config-header">
-        <h3>Call Configuration</h3>
+        <h3>Settings</h3>
         <button onClick={onToggleCollapse} className="collapse-btn">Close</button>
+      </div>
+
+      {/* User Account Section */}
+      <div className="config-section user-account">
+        <label>Account</label>
+        <div className="account-info">
+          <span className="user-email">{userState.userEmail}</span>
+          {isAdmin && <span className="admin-badge">👑 Admin</span>}
+        </div>
+      </div>
+
+      {/* Token Balance Section */}
+      <div className="config-section token-balance">
+        <label>Token Balance</label>
+        <div className="token-info">
+          <strong>{userState.tokensRemaining} tokens</strong> available
+        </div>
       </div>
 
       <div className="config-section">
@@ -95,21 +116,24 @@ export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleColla
 
       {/* 🏥 SURGICAL: Voice reset removed - using physics-based audio routing */}
       
-      <div className="config-section pricing-info">
-        <label>💰 Session Pricing</label>
-        <div className="pricing-details">
-          <div className="rate-info">
-            <strong>{getTokenRate()} token per minute</strong>
-          </div>
-          <div className="cost-examples">
-            <div>10 min session: ~10 tokens</div>
-            <div>30 min session: ~30 tokens</div>
-            <div>60 min session: ~60 tokens</div>
-          </div>
-          <div className="value-info">
-            <small>Tokens cost 5¢-15¢ each depending on package size</small>
-          </div>
-        </div>
+      {/* Action Buttons */}
+      <div className="config-section config-actions">
+        {isAdmin && onNavigateToAdmin && (
+          <button 
+            className="btn btn-secondary admin-btn"
+            onClick={onNavigateToAdmin}
+          >
+            👑 Admin Dashboard
+          </button>
+        )}
+        {onSignOut && (
+          <button 
+            className="btn btn-danger sign-out-btn"
+            onClick={onSignOut}
+          >
+            Sign Out
+          </button>
+        )}
       </div>
     </div>
   );
