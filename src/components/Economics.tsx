@@ -165,13 +165,8 @@ export default function Economics() {
     }
   }
 
-  const calculateTokensConsumed = (sessions: any[], aiConfigs: any[]) => {
-    // Get actual AI configuration settings for token consumption calculation
-    const coachingConfig = aiConfigs.find(config => config.config_type === 'coaching')
-    const metricsConfig = aiConfigs.find(config => config.config_type === 'metrics')
-    
-    const coachingFrequencyMs = coachingConfig?.frequency_ms || 15000
-    const metricsFrequencyMs = metricsConfig?.frequency_ms || 60000
+  const calculateTokensConsumed = (sessions: any[], _aiConfigs: any[]) => {
+    // Token consumption = 1 token per minute of session time
     
     let totalTokens = 0
     

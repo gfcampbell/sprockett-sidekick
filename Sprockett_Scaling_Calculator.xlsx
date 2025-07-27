@@ -1,0 +1,141 @@
+[Binary Excel file will be created here with the following structure:]
+
+Sheet 1: User Metrics
+A1: Concurrent Users
+B1: [INPUT CELL]
+A2: Average Session Minutes/Hour
+B2: [INPUT CELL - Default: 30]
+A3: Sessions per User per Day
+B3: [INPUT CELL - Default: 2]
+A4: Coaching Frequency (seconds)
+B4: [INPUT CELL - Default: 15]
+A5: Metrics Frequency (seconds)
+B5: [INPUT CELL - Default: 60]
+A6: Transcription Chunk (seconds)
+B6: [INPUT CELL - Default: 8]
+
+Sheet 2: API Usage Calculations
+A1: API Usage per Hour
+B1: Formula
+A2: Whisper Requests/Hour
+B2: =Sheet1!B1*Sheet1!B2*(60/Sheet1!B6)
+A3: GPT-4o Coaching Calls/Hour
+B3: =Sheet1!B1*Sheet1!B2*(60/Sheet1!B4)
+A4: GPT-3.5 Metrics Calls/Hour
+B4: =Sheet1!B1*Sheet1!B2*(60/Sheet1!B5)
+A5: Total API Calls/Hour
+B5: =B2+B3+B4
+A6: Whisper RPM (Rate Per Minute)
+B6: =B2/60
+A7: GPT-4o RPM
+B7: =B3/60
+A8: GPT-3.5 RPM
+B8: =B4/60
+
+Sheet 3: Cost Analysis
+A1: OpenAI Pricing (per request)
+B1: Values
+A2: Whisper Cost per Minute
+B2: 0.006
+A3: GPT-4o Input (per 1M tokens)
+B3: 2.50
+A4: GPT-4o Output (per 1M tokens)
+B4: 10.00
+A5: GPT-3.5 Input (per 1M tokens)
+B5: 0.15
+A6: GPT-3.5 Output (per 1M tokens)
+B6: 0.60
+A8: Estimated Tokens per Call
+B8:
+A9: GPT-4o Tokens per Call
+B9: 150
+A10: GPT-3.5 Tokens per Call
+B10: 100
+A12: Hourly Costs
+B12:
+A13: Whisper Costs/Hour
+B13: =Sheet2!B2*(Sheet1!B2/60)*B2
+A14: GPT-4o Costs/Hour
+B14: =Sheet2!B3*B9*((B3+B4)/1000000)
+A15: GPT-3.5 Costs/Hour
+B15: =Sheet2!B4*B10*((B5+B6)/1000000)
+A16: Total API Costs/Hour
+B16: =B13+B14+B15
+
+Sheet 4: Revenue & Profit
+A1: Token Pricing Tiers
+B1: Price per Token
+C1: Purchase %
+A2: 100 Token Tier
+B2: 0.15
+C2: 0.50
+A3: 500 Token Tier
+B3: 0.11
+C3: 0.30
+A4: 1000 Token Tier
+B4: 0.07
+C4: 0.20
+A6: Blended Token Price
+B6: =B2*C2+B3*C3+B4*C4
+A8: Revenue Calculations
+B8:
+A9: Tokens Consumed/Hour
+B9: =Sheet1!B1*Sheet1!B2
+A10: Revenue/Hour
+B10: =B9*B6
+A11: Profit/Hour
+B11: =B10-Sheet3!B16
+A12: Profit Margin %
+B12: =B11/B10*100
+
+Sheet 5: Scaling Limits
+A1: API Rate Limits
+B1: Limit (RPM)
+C1: Current Usage
+D1: Utilization %
+E1: Max Users
+A2: Whisper API
+B2: 500
+C2: =Sheet2!B6
+D2: =C2/B2*100
+E2: =B2/Sheet2!B6*Sheet1!B1
+A3: GPT-4o API
+B3: 10000
+C3: =Sheet2!B7
+D3: =C3/B3*100
+E3: =B3/Sheet2!B7*Sheet1!B1
+A4: GPT-3.5 API
+B4: 10000
+C4: =Sheet2!B8
+D4: =C4/B4*100
+E4: =B4/Sheet2!B8*Sheet1!B1
+A6: Bottleneck Analysis
+B6: =MIN(E2,E3,E4)
+A7: Current Bottleneck
+B7: =IF(E2=B6,"Whisper",IF(E3=B6,"GPT-4o","GPT-3.5"))
+
+Sheet 6: Enterprise Pricing Scenarios
+A1: Scenario Analysis
+B1: Current
+C1: Enterprise Deal
+D1: Multi-Provider
+A2: Whisper Rate Limit (RPM)
+B2: 500
+C2: 5000
+D2: 5000
+A3: Whisper Cost per Minute
+B3: 0.006
+C3: 0.003
+D3: 0.004
+A4: Max Users (Whisper Limited)
+B4: =B2/(Sheet1!B2*(60/Sheet1!B6))
+C4: =C2/(Sheet1!B2*(60/Sheet1!B6))
+D4: =D2/(Sheet1!B2*(60/Sheet1!B6))
+A5: Monthly Revenue at Max
+B5: =B4*Sheet4!B10*24*30
+C5: =C4*Sheet4!B10*24*30
+D5: =D4*Sheet4!B10*24*30
+A6: Monthly Profit at Max
+B6: =B5*Sheet4!B12/100
+C6: =C5*Sheet4!B12/100
+D6: =D5*Sheet4!B12/100 
