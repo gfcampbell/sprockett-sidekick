@@ -65,7 +65,7 @@ export default function AuthHeader() {
                 🪙 {userState.tokensRemaining} tokens
               </span>
               <button 
-                className="buy-tokens-btn" 
+                className={`buy-tokens-btn ${userState.tokensRemaining < 30 ? 'low-tokens' : ''}`}
                 onClick={() => setShowTokenPurchase(true)}
                 title="Buy more tokens"
               >
