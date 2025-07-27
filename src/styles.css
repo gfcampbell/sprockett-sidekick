@@ -2974,7 +2974,8 @@ body {
   .controls-content {
     display: flex !important;
     flex-direction: column !important;
-    gap: var(--space-3) !important;
+    gap: 0.75rem !important;
+    padding: 0 !important;
   }
   
   /* Controls left (agent + goal) comes first */
@@ -2982,8 +2983,9 @@ body {
     order: 1 !important;
     display: flex !important;
     flex-direction: column !important;
-    gap: var(--space-2) !important;
-    margin-bottom: var(--space-3) !important;
+    gap: 0.5rem !important;
+    margin-bottom: 0.75rem !important;
+    width: 100% !important;
   }
   
   /* Analytics dashboard comes second */
@@ -2993,16 +2995,20 @@ body {
   
   /* Tighter spacing for mobile */
   .controls-section {
-    margin-bottom: var(--space-3) !important;
+    margin-bottom: 0.75rem !important;
+    padding: 0 !important;
   }
   
   .use-case-quick-select,
   .goal-quick-input {
     font-size: 0.875rem !important;
-    padding: 0.5rem !important;
-    margin-bottom: 0 !important;
+    padding: 0.375rem 0.5rem !important;
+    margin: 0 !important;
     width: 100% !important;
     box-sizing: border-box !important;
+    border-radius: 4px !important;
+    border: 1px solid var(--color-border) !important;
+    height: 40px !important;
   }
   
   .analytics-metric {
@@ -3023,8 +3029,9 @@ body {
   
   /* Tighter toggle button */
   .toggle-controls-btn {
-    padding: var(--space-2) !important;
-    margin-bottom: var(--space-2) !important;
+    padding: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+    height: 32px !important;
   }
   
   /* AI suggestions section tighter spacing */
