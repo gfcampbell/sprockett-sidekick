@@ -3012,21 +3012,25 @@ body {
   }
   
   .analytics-metric {
-    padding: 0.125rem 0.25rem !important;
+    padding: 0 !important;
     margin: 0 !important;
     min-height: auto !important;
-    line-height: 1.2 !important;
+    line-height: 1.1 !important;
+    border: none !important;
+    background: none !important;
   }
   
   .conversation-metrics {
-    gap: 0.125rem !important;
-    padding: 0.25rem !important;
+    gap: 0 !important;
+    padding: 0 !important;
     margin: 0 !important;
+    border: none !important;
   }
   
   .analytics-dashboard {
-    padding: 0.25rem !important;
+    padding: 0 !important;
     margin: 0 !important;
+    border: none !important;
   }
   
   /* Tighter toggle button */
@@ -3083,11 +3087,16 @@ body {
   }
   
   .ready-state p {
-    font-size: 0.75rem !important;
+    font-size: 0.625rem !important;
   }
   
   .waiting-state p {
-    font-size: 0.75rem !important;
+    font-size: 0.625rem !important;
+  }
+  
+  /* Footer and small text */
+  small, .footer-text {
+    font-size: 0.625rem !important;
   }
   
   /* Mobile menu items smaller */
@@ -3147,16 +3156,16 @@ body {
   }
   
   .analytics-metric {
-    padding: 0.0625rem 0.125rem !important;
+    padding: 0 !important;
     margin: 0 !important;
   }
   
   .conversation-metrics {
-    gap: 0.0625rem !important;
-    padding: 0.125rem !important;
+    gap: 0 !important;
+    padding: 0 !important;
   }
   
   .analytics-dashboard {
-    padding: 0.125rem !important;
+    padding: 0 !important;
   }
 }
