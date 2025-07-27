@@ -120,9 +120,15 @@ export default function Economics() {
         throw new Error(`Usage query failed: ${usageError.message}`)
       }
 
-      // Calculate revenue
-      const totalRevenue = revenueData?.reduce((sum, transaction) => 
-        sum + (transaction.amount_usd || 0), 0) || 0
+      // Calculate revenue based on actual token usage, not total purchases
+      // Use blended average pricing based on purchase tier proportions
+      const BLENDED_TOKEN_PRICE = (0.50 * 0.15) + (0.30 * 0.11) + (0.20 * 0.07) // $0.122 per token average
+      
+      // Calculate total tokens consumed from session data
+      const totalTokensConsumed = calculateTokensConsumed(sessionData || [], aiConfigData || [])
+      
+      // Revenue = tokens consumed × blended price per token
+      const totalRevenue = totalTokensConsumed * BLENDED_TOKEN_PRICE
       const transactionCount = revenueData?.length || 0
 
       // Calculate costs based on real AI configuration and session data
@@ -157,6 +163,28 @@ export default function Economics() {
     } finally {
       setLoading(false)
     }
+  }
+
+  const calculateTokensConsumed = (sessions: any[], aiConfigs: any[]) => {
+    // Get actual AI configuration settings for token consumption calculation
+    const coachingConfig = aiConfigs.find(config => config.config_type === 'coaching')
+    const metricsConfig = aiConfigs.find(config => config.config_type === 'metrics')
+    
+    const coachingFrequencyMs = coachingConfig?.frequency_ms || 15000
+    const metricsFrequencyMs = metricsConfig?.frequency_ms || 60000
+    
+    let totalTokens = 0
+    
+    sessions.forEach(session => {
+      if (session.start_time && session.end_time) {
+        const durationMinutes = (new Date(session.end_time).getTime() - new Date(session.start_time).getTime()) / (1000 * 60)
+        
+        // Calculate tokens consumed = 1 token per minute (your billing model)
+        totalTokens += Math.ceil(durationMinutes)
+      }
+    })
+    
+    return totalTokens
   }
 
   const calculateLLMCosts = (sessions: any[], _usage: any[], aiConfigs: any[]) => {
