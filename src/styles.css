@@ -3012,18 +3012,20 @@ body {
   }
   
   .analytics-metric {
-    padding: 0.25rem !important;
-    margin-bottom: 0.25rem !important;
+    padding: 0.125rem 0.25rem !important;
+    margin: 0 !important;
     min-height: auto !important;
+    line-height: 1.2 !important;
   }
   
   .conversation-metrics {
-    gap: 0.25rem !important;
-    padding: 0.5rem !important;
+    gap: 0.125rem !important;
+    padding: 0.25rem !important;
+    margin: 0 !important;
   }
   
   .analytics-dashboard {
-    padding: 0.5rem !important;
+    padding: 0.25rem !important;
     margin: 0 !important;
   }
   
@@ -3065,11 +3067,15 @@ body {
   }
   
   .metric-label {
-    font-size: 0.75rem !important;
+    font-size: 0.625rem !important;
+    margin: 0 !important;
+    line-height: 1.1 !important;
   }
   
   .metric-current {
-    font-size: 0.875rem !important;
+    font-size: 0.75rem !important;
+    margin: 0 !important;
+    line-height: 1.1 !important;
   }
   
   .ready-state h3 {
@@ -3141,16 +3147,16 @@ body {
   }
   
   .analytics-metric {
-    padding: 0.125rem !important;
-    margin-bottom: 0.125rem !important;
+    padding: 0.0625rem 0.125rem !important;
+    margin: 0 !important;
   }
   
   .conversation-metrics {
-    gap: 0.125rem !important;
-    padding: 0.25rem !important;
+    gap: 0.0625rem !important;
+    padding: 0.125rem !important;
   }
   
   .analytics-dashboard {
-    padding: 0.25rem !important;
+    padding: 0.125rem !important;
   }
 }
