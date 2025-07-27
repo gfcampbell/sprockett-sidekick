@@ -3001,15 +3001,24 @@ body {
     font-size: 0.875rem !important;
     padding: 0.5rem !important;
     margin-bottom: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
   
   .analytics-metric {
-    padding: var(--space-2) !important;
-    margin-bottom: var(--space-2) !important;
+    padding: 0.25rem !important;
+    margin-bottom: 0.25rem !important;
+    min-height: auto !important;
   }
   
   .conversation-metrics {
-    gap: var(--space-2) !important;
+    gap: 0.25rem !important;
+    padding: 0.5rem !important;
+  }
+  
+  .analytics-dashboard {
+    padding: 0.5rem !important;
+    margin: 0 !important;
   }
   
   /* Tighter toggle button */
@@ -3105,5 +3114,36 @@ body {
   .agent-header {
     flex-direction: column;
     gap: var(--space-2);
+  }
+}
+
+/* Extra small screens (360px and below) */
+@media (max-width: 360px) {
+  .title-bar {
+    padding: 40px var(--space-2) 15px var(--space-2) !important;
+  }
+  
+  .suggestions-panel {
+    padding: var(--space-2) !important;
+  }
+  
+  .use-case-quick-select,
+  .goal-quick-input {
+    padding: 0.375rem !important;
+    font-size: 0.8125rem !important;
+  }
+  
+  .analytics-metric {
+    padding: 0.125rem !important;
+    margin-bottom: 0.125rem !important;
+  }
+  
+  .conversation-metrics {
+    gap: 0.125rem !important;
+    padding: 0.25rem !important;
+  }
+  
+  .analytics-dashboard {
+    padding: 0.25rem !important;
   }
 }
