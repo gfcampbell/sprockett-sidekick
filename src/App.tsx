@@ -464,7 +464,7 @@ function App() {
               className={`btn btn-icon ${isConfigPanelOpen ? 'btn-primary' : 'btn-ghost'}`}
               title="Configuration"
             >
-              Settings
+              ⚙
             </button>
           </div>
         </div>
