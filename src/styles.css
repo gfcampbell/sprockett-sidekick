@@ -1623,6 +1623,19 @@ body {
     font-size: 0.875rem;
 }
 
+.token-balance {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    color: var(--color-secondary);
+    font-size: 0.875rem;
+}
+
+.token-icon {
+    font-size: 0.5rem;
+    opacity: 0.7;
+}
+
 .user-email {
     color: var(--success-color);
     font-weight: 500;

@@ -5,10 +5,15 @@ import { useAuth } from '../lib/authContext';
 import { useAuthFunctions } from '../lib/useAuth';
 import AuthModal from './AuthModal';
 import TokenPurchaseModal from './TokenPurchaseModal';
+import { UserDropdown } from './UserDropdown';
 
-export default function AuthHeader() {
-  const { userState } = useAuth();
-  const { updateTokenBalance, fetchTokenBalance } = useAuthFunctions();
+interface AuthHeaderProps {
+  onNavigateToAdmin?: () => void;
+}
+
+export default function AuthHeader({ onNavigateToAdmin }: AuthHeaderProps) {
+  const { userState, isAdmin } = useAuth();
+  const { updateTokenBalance, fetchTokenBalance, signOut } = useAuthFunctions();
   const [showModal, setShowModal] = useState(false);
   const [modalMode, setModalMode] = useState<'signin' | 'signup'>('signin');
   const [showTokenPurchase, setShowTokenPurchase] = useState(false);
@@ -60,17 +65,25 @@ export default function AuthHeader() {
         {userState.isAuthenticated && userState.userEmail && (
           <div id="auth-status" className="auth-status">
             <div className="auth-info">
-              <span className="user-email">{userState.userEmail}</span>
               <span className="token-balance">
-                🪙 {userState.tokensRemaining} tokens
+                <span className="token-icon">●</span> {userState.tokensRemaining}
               </span>
-              <button 
-                className={`buy-tokens-btn ${userState.tokensRemaining < 30 ? 'low-tokens' : ''}`}
-                onClick={() => setShowTokenPurchase(true)}
-                title="Buy more tokens"
-              >
-                Buy Tokens
-              </button>
+              {userState.tokensRemaining < 30 && (
+                <button 
+                  className="buy-tokens-btn low-tokens"
+                  onClick={() => setShowTokenPurchase(true)}
+                  title="Buy more tokens"
+                >
+                  Buy Tokens
+                </button>
+              )}
+              <UserDropdown
+                userEmail={userState.userEmail}
+                isAdmin={isAdmin()}
+                onSignOut={signOut}
+                onNavigateToAdmin={onNavigateToAdmin || (() => {})}
+                onBuyTokens={() => setShowTokenPurchase(true)}
+              />
             </div>
           </div>
         )}

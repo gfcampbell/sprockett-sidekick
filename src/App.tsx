@@ -17,7 +17,7 @@ function App() {
   // 🏥 SURGICAL: Voice enrollment state removed - now using physics-based audio routing
 
   // Initialize auth system
-  const { initializeAuth, userState, updateTokenBalance, fetchTokenBalance, signOut } = useAuthFunctions()
+  const { initializeAuth, userState, updateTokenBalance, fetchTokenBalance } = useAuthFunctions()
   const { setUserState, isAdmin } = useAuth()
   
   // Admin dashboard state
@@ -437,10 +437,10 @@ function App() {
           </div>
 
           <div className="title-bar-controls">
-            <AuthHeader />
+            <AuthHeader onNavigateToAdmin={() => setShowAdminDashboard(true)} />
             {isListening && sessionDuration > 0 && (
               <div className="session-timer">
-                🔴 Live: {formatSessionDuration(sessionDuration)} 
+                Live: {formatSessionDuration(sessionDuration)} 
                 <span className="token-cost">({getSessionCostEstimate(sessionDuration)} tokens)</span>
               </div>
             )}
@@ -456,7 +456,7 @@ function App() {
                 className={`btn ${isMuted ? 'btn-warning' : 'btn-ghost'}`}
                 title={isMuted ? 'Unmute Microphone' : 'Mute Microphone'}
               >
-                {isMuted ? '🔇' : '🎤'}
+                {isMuted ? 'Muted' : 'Mute'}
               </button>
             )}
             <button
@@ -464,7 +464,7 @@ function App() {
               className={`btn btn-icon ${isConfigPanelOpen ? 'btn-primary' : 'btn-ghost'}`}
               title="Configuration"
             >
-              ⚙
+              Settings
             </button>
           </div>
         </div>
@@ -479,8 +479,6 @@ function App() {
               onConfigChange={handleConfigChange}
               isCollapsed={false}
               onToggleCollapse={() => setIsConfigPanelOpen(false)}
-              onSignOut={signOut}
-              onNavigateToAdmin={() => setShowAdminDashboard(true)}
             />
           )}
 

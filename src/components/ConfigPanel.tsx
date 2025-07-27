@@ -1,21 +1,15 @@
 import { useState } from 'react';
 import { CONVERSATION_TYPES, CallConfig } from '@/lib/aiCoaching';
-import { useAuth } from '@/lib/authContext';
 
 interface ConfigPanelProps {
   config: CallConfig;
   onConfigChange: (config: CallConfig) => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
-  onSignOut?: () => void;
-  onNavigateToAdmin?: () => void;
-  // 🏥 SURGICAL: onResetVoice removed - no longer needed
 }
 
-export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleCollapse, onSignOut, onNavigateToAdmin }: ConfigPanelProps) {
+export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleCollapse }: ConfigPanelProps) {
   const [localConfig, setLocalConfig] = useState(config);
-  const { userState } = useAuth();
-  const isAdmin = userState.role === 'admin' || userState.role === 'super_admin';
 
   const handleConfigUpdate = (updates: Partial<CallConfig>) => {
     const newConfig = { ...localConfig, ...updates };
@@ -40,25 +34,8 @@ export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleColla
   return (
     <div className="config-panel">
       <div className="config-header">
-        <h3>Settings</h3>
+        <h3>Conversation Settings</h3>
         <button onClick={onToggleCollapse} className="collapse-btn">Close</button>
-      </div>
-
-      {/* User Account Section */}
-      <div className="config-section user-account">
-        <label>Account</label>
-        <div className="account-info">
-          <span className="user-email">{userState.userEmail}</span>
-          {isAdmin && <span className="admin-badge">👑 Admin</span>}
-        </div>
-      </div>
-
-      {/* Token Balance Section */}
-      <div className="config-section token-balance">
-        <label>Token Balance</label>
-        <div className="token-info">
-          <strong>{userState.tokensRemaining} tokens</strong> available
-        </div>
       </div>
 
       <div className="config-section">
@@ -98,27 +75,6 @@ export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleColla
       </div>
 
 
-      {/* 🏥 SURGICAL: Voice reset removed - using physics-based audio routing */}
-      
-      {/* Action Buttons */}
-      <div className="config-section config-actions">
-        {isAdmin && onNavigateToAdmin && (
-          <button 
-            className="btn btn-secondary admin-btn"
-            onClick={onNavigateToAdmin}
-          >
-            👑 Admin Dashboard
-          </button>
-        )}
-        {onSignOut && (
-          <button 
-            className="btn btn-danger sign-out-btn"
-            onClick={onSignOut}
-          >
-            Sign Out
-          </button>
-        )}
-      </div>
     </div>
   );
 }
