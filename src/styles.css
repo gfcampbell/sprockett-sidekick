@@ -3035,8 +3035,51 @@ body {
   
   /* Compact suggestion text */
   .suggestion-text {
+    font-size: 0.75rem !important;
+    line-height: 1.3 !important;
+  }
+  
+  /* Smaller mobile type across the board */
+  body {
     font-size: 0.875rem !important;
-    line-height: 1.4 !important;
+  }
+  
+  h1, h2, h3 {
+    font-size: 1rem !important;
+  }
+  
+  .metric-label {
+    font-size: 0.75rem !important;
+  }
+  
+  .metric-current {
+    font-size: 0.875rem !important;
+  }
+  
+  .ready-state h3 {
+    font-size: 1rem !important;
+  }
+  
+  .ready-state p {
+    font-size: 0.75rem !important;
+  }
+  
+  .waiting-state p {
+    font-size: 0.75rem !important;
+  }
+  
+  /* Mobile menu items smaller */
+  .mobile-menu-item {
+    font-size: 0.875rem !important;
+    padding: 0.625rem 1rem !important;
+  }
+  
+  .mobile-token-display {
+    font-size: 0.75rem !important;
+  }
+  
+  .mobile-user-info {
+    font-size: 0.75rem !important;
   }
   
   /* Config panel full width on mobile */
