@@ -97,22 +97,6 @@ export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleColla
         />
       </div>
 
-      <div className="config-section">
-        <label>📎 Documents</label>
-        <div className="document-upload">
-          <input 
-            type="file" 
-            id="document-upload" 
-            accept=".pdf,.doc,.docx,.txt"
-            multiple
-            className="file-input"
-          />
-          <label htmlFor="document-upload" className="upload-btn">
-            Choose Files
-          </label>
-          <p className="upload-help">Upload relevant documents, notes, or prep materials</p>
-        </div>
-      </div>
 
       {/* 🏥 SURGICAL: Voice reset removed - using physics-based audio routing */}
       
