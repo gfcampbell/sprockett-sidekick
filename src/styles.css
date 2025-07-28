@@ -3389,3 +3389,20 @@ input:focus + .slider {
   margin: 0;
   line-height: 1.4;
 }
+
+/* Mobile Audio Toggle */
+.mobile-audio-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  background-color: var(--color-gray-50);
+  margin: var(--space-2) var(--space-4);
+  border-radius: 8px;
+}
+
+.mobile-menu-item-label {
+  font-size: var(--font-size-base);
+  color: var(--color-text);
+  font-weight: 500;
+}

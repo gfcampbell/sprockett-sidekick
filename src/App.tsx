@@ -809,6 +809,19 @@ function App() {
             
             <div className="mobile-menu-divider" />
             
+            {/* Audio Mode Toggle */}
+            <div className="mobile-audio-toggle">
+              <div className="mobile-menu-item-label">🎧 Headphone Mode</div>
+              <label className="switch">
+                <input
+                  type="checkbox"
+                  checked={audioMode === 'headphones'}
+                  onChange={(e) => setAudioMode(e.target.checked ? 'headphones' : 'speakers')}
+                />
+                <span className="slider"></span>
+              </label>
+            </div>
+            
             {/* User Account Section */}
             <div className="mobile-user-section">
               <div className="mobile-user-info">

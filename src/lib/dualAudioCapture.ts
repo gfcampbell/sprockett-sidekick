@@ -131,14 +131,25 @@ export class DualAudioCapture {
       }
 
       // Request tab audio via getDisplayMedia
+      if (surgicalFlags.ENABLE_AUDIO_DEBUG_LOGS) {
+        console.log('📱 Requesting tab audio permission...');
+      }
+      
       const displayStream = await navigator.mediaDevices.getDisplayMedia({
         video: false,
         audio: true
       });
 
+      if (surgicalFlags.ENABLE_AUDIO_DEBUG_LOGS) {
+        console.log('📱 Tab permission granted, checking audio tracks...');
+      }
+
       // Verify audio track exists
       const audioTracks = displayStream.getAudioTracks();
       if (audioTracks.length === 0) {
+        if (surgicalFlags.ENABLE_AUDIO_DEBUG_LOGS) {
+          console.warn('⚠️ User granted screen sharing but did not enable audio');
+        }
         throw new Error('No audio selected. Please share a tab with audio enabled.');
       }
 
@@ -152,11 +163,20 @@ export class DualAudioCapture {
     } catch (error) {
       if (surgicalFlags.ENABLE_AUDIO_DEBUG_LOGS) {
         console.warn('⚠️ System audio initialization failed:', error);
+        if (error instanceof Error) {
+          console.warn('⚠️ Error details:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack?.split('\n')[0]
+          });
+        }
       }
       
       // This is expected in many scenarios
       if (surgicalFlags.ALLOW_FALLBACK_TO_SINGLE_STREAM) {
-        console.log('🔄 Falling back to microphone-only mode');
+        if (surgicalFlags.ENABLE_AUDIO_DEBUG_LOGS) {
+          console.log('🔄 Falling back to microphone-only mode');
+        }
         return false; // Not fatal
       } else {
         this.handleError(`System audio required but failed: ${error instanceof Error ? error.message : String(error)}`);
