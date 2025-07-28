@@ -113,6 +113,7 @@ function App() {
 
           const updated = [...prev.slice(-50), enhancedMessage]; // Keep last 50 messages
           // Make transcript available to AI coaching system
+          console.log('🎯 DEBUG DUAL: Setting window.__transcriptMessages with', updated.length, 'messages:', updated.map(m => `${m.speaker}: ${m.text.substring(0, 30)}...`));
           (window as any).__transcriptMessages = updated;
           return updated;
         })
@@ -142,6 +143,7 @@ function App() {
 
           const updated = [...prev.slice(-50), enhancedMessage]; // Keep last 50 messages
           // Make transcript available to AI coaching system
+          console.log('🎯 DEBUG LEGACY: Setting window.__transcriptMessages with', updated.length, 'messages:', updated.map(m => `${m.speaker}: ${m.text.substring(0, 30)}...`));
           (window as any).__transcriptMessages = updated;
           return updated;
         })
