@@ -1578,382 +1578,385 @@ body {
 
 /* Header Auth Links */
 .auth-header {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    position: static;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  position: static;
 }
 
 .auth-links {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
 .auth-link {
-    color: var(--text-color);
-    text-decoration: none;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    cursor: pointer;
+  color: var(--text-color);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
 
 .auth-link:hover {
-    color: var(--primary-color);
-    text-decoration: underline;
+  color: var(--primary-color);
+  text-decoration: underline;
 }
 
 /* Make Sign Up link more prominent */
 .auth-link:last-child {
-    color: var(--primary-color);
-    font-weight: 600;
+  color: var(--primary-color);
+  font-weight: 600;
 }
 
 .auth-link:last-child:hover {
-    color: var(--accent-hover);
-    text-decoration: underline;
+  color: var(--accent-hover);
+  text-decoration: underline;
 }
 
 /* Auth Status (when signed in) */
 .auth-status {
-    display: flex;
-    align-items: center;
-    position: relative;
+  display: flex;
+  align-items: center;
+  position: relative;
 }
 
 .auth-info {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: 0.875rem;
-    position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  position: relative;
 }
 
 .token-balance {
-    display: flex;
-    align-items: center;
-    gap: 0.25rem;
-    color: var(--color-secondary);
-    font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: var(--color-secondary);
+  font-size: 0.875rem;
 }
 
 .token-icon {
-    font-size: 0.5rem;
-    opacity: 0.7;
+  font-size: 0.5rem;
+  opacity: 0.7;
 }
 
 .user-email {
-    color: var(--success-color);
-    font-weight: 500;
+  color: var(--success-color);
+  font-weight: 500;
 }
 
 .logout-btn {
-    background: var(--muted-color);
-    color: var(--muted-foreground);
-    border: 1px solid var(--border-color);
-    padding: 0.35rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
+  background: var(--muted-color);
+  color: var(--muted-foreground);
+  border: 1px solid var(--border-color);
+  padding: 0.35rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .logout-btn:hover {
-    background: var(--error-color);
-    color: white;
-    border-color: var(--error-color);
+  background: var(--error-color);
+  color: white;
+  border-color: var(--error-color);
 }
 
 .buy-tokens-btn {
-    background: transparent;
-    color: var(--color-secondary);
-    border: 1px solid var(--color-border);
-    padding: 0.25rem 0.5rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: 400;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    margin-right: 0.5rem;
-    opacity: 0.7;
+  background: transparent;
+  color: var(--color-secondary);
+  border: 1px solid var(--color-border);
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 400;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-right: 0.5rem;
+  opacity: 0.7;
 }
 
 .buy-tokens-btn:hover {
-    background: rgba(0, 0, 0, 0.05);
-    border-color: var(--color-secondary);
-    opacity: 1;
+  background: rgba(0, 0, 0, 0.05);
+  border-color: var(--color-secondary);
+  opacity: 1;
 }
 
 .buy-tokens-btn.low-tokens {
-    color: var(--color-danger);
-    border-color: var(--color-danger);
-    opacity: 1;
-    animation: pulse-red 2s ease-in-out infinite;
+  color: var(--color-danger);
+  border-color: var(--color-danger);
+  opacity: 1;
+  animation: pulse-red 2s ease-in-out infinite;
 }
 
 .buy-tokens-btn.low-tokens:hover {
-    background: rgba(220, 38, 38, 0.1);
-    border-color: var(--color-danger);
+  background: rgba(220, 38, 38, 0.1);
+  border-color: var(--color-danger);
 }
 
 @keyframes pulse-red {
-    0%, 100% {
-        opacity: 0.8;
-    }
-    50% {
-        opacity: 1;
-    }
+
+  0%,
+  100% {
+    opacity: 0.8;
+  }
+
+  50% {
+    opacity: 1;
+  }
 }
 
 /* Authentication Modal */
 .auth-modal {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-    backdrop-filter: blur(4px);
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
 }
 
 .auth-modal-content {
-    background: var(--card-bg);
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-md);
-    width: 90%;
-    max-width: 400px;
-    max-height: 90vh;
-    overflow-y: auto;
+  background: var(--card-bg);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-md);
+  width: 90%;
+  max-width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
 }
 
 .auth-modal-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 1.5rem 1.5rem 1rem 1.5rem;
-    border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem 1.5rem 1rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .auth-modal-header h3 {
-    margin: 0;
-    color: var(--text-color);
-    font-size: 1.25rem;
-    font-weight: 600;
+  margin: 0;
+  color: var(--text-color);
+  font-size: 1.25rem;
+  font-weight: 600;
 }
 
 .auth-modal-close {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: var(--muted-foreground);
-    cursor: pointer;
-    border-radius: 4px;
-    padding: 0.25rem;
-    transition: all 0.2s ease;
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  border-radius: 4px;
+  padding: 0.25rem;
+  transition: all 0.2s ease;
 }
 
 .auth-modal-close:hover {
-    background: var(--muted-color);
-    color: var(--text-color);
+  background: var(--muted-color);
+  color: var(--text-color);
 }
 
 .auth-modal-body {
-    padding: 1.5rem;
+  padding: 1.5rem;
 }
 
 /* Auth Form Styles */
 .auth-form {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .auth-input {
-    padding: 0.75rem;
-    border: 1px solid var(--border-color);
-    border-radius: var(--control-border-radius);
-    font-size: 0.875rem;
-    background: var(--background-color);
-    color: var(--text-color);
-    transition: all 0.2s ease;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--control-border-radius);
+  font-size: 0.875rem;
+  background: var(--background-color);
+  color: var(--text-color);
+  transition: all 0.2s ease;
 }
 
 .auth-input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px var(--ring-color);
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px var(--ring-color);
 }
 
 .auth-input::placeholder {
-    color: var(--muted-foreground);
+  color: var(--muted-foreground);
 }
 
 .auth-btn {
-    padding: 0.75rem 1rem;
-    border: none;
-    border-radius: var(--control-border-radius);
-    font-size: 0.875rem;
-    font-weight: 600;
-    background: var(--primary-color);
-    color: var(--primary-foreground);
-    cursor: pointer;
-    transition: all 0.2s ease;
+  padding: 0.75rem 1rem;
+  border: none;
+  border-radius: var(--control-border-radius);
+  font-size: 0.875rem;
+  font-weight: 600;
+  background: var(--primary-color);
+  color: var(--primary-foreground);
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
 .auth-btn:hover {
-    opacity: 0.9;
-    transform: translateY(-1px);
-    box-shadow: var(--shadow);
+  opacity: 0.9;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow);
 }
 
 .auth-btn:focus-visible {
-    outline: none;
-    box-shadow: 0 0 0 3px var(--ring-color);
+  outline: none;
+  box-shadow: 0 0 0 3px var(--ring-color);
 }
 
 .auth-btn:active {
-    transform: translateY(0);
+  transform: translateY(0);
 }
 
 .auth-btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* Auth Toggle Links */
 .auth-toggle {
-    text-align: center;
-    font-size: 0.875rem;
-    color: var(--muted-foreground);
+  text-align: center;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
 }
 
 .auth-toggle a {
-    color: var(--primary-color);
-    text-decoration: none;
-    font-weight: 500;
-    margin-left: 0.25rem;
-    cursor: pointer;
+  color: var(--primary-color);
+  text-decoration: none;
+  font-weight: 500;
+  margin-left: 0.25rem;
+  cursor: pointer;
 }
 
 .auth-toggle a:hover {
-    text-decoration: underline;
+  text-decoration: underline;
 }
 
 /* Auth Message Styles */
 .auth-message {
-    margin: 1rem 1.5rem;
-    padding: 0.75rem;
-    border-radius: var(--control-border-radius);
-    font-size: 0.875rem;
-    font-weight: 500;
-    text-align: center;
-    border: 1px solid transparent;
-    transition: all 0.2s ease;
+  margin: 1rem 1.5rem;
+  padding: 0.75rem;
+  border-radius: var(--control-border-radius);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-align: center;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
 }
 
 .auth-message.success {
-    background: var(--success-color);
-    color: var(--success-foreground);
-    border-color: var(--success-color);
-    opacity: 1;
-    transform: translateY(0);
+  background: var(--success-color);
+  color: var(--success-foreground);
+  border-color: var(--success-color);
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .auth-message.error {
-    background: var(--error-color);
-    color: var(--error-foreground);
-    border-color: var(--error-color);
-    opacity: 1;
-    transform: translateY(0);
+  background: var(--error-color);
+  color: var(--error-foreground);
+  border-color: var(--error-color);
+  opacity: 1;
+  transform: translateY(0);
 }
 
 .auth-message.info {
-    background: var(--primary-color);
-    color: var(--primary-foreground);
-    border-color: var(--primary-color);
-    opacity: 1;
-    transform: translateY(0);
+  background: var(--primary-color);
+  color: var(--primary-foreground);
+  border-color: var(--primary-color);
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* Auth Required State */
 .auth-required-state {
-    text-align: center;
-    padding: 2rem;
+  text-align: center;
+  padding: 2rem;
 }
 
 .auth-required-state h3 {
-    color: var(--text-color);
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
+  color: var(--text-color);
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
 }
 
 .auth-required-state p {
-    color: var(--muted-foreground);
-    font-size: 1rem;
-    margin-bottom: 1.5rem;
+  color: var(--muted-foreground);
+  font-size: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .auth-benefits {
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-    align-items: center;
-    margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  align-items: center;
+  margin-top: 1.5rem;
 }
 
-.auth-benefits > div {
-    color: var(--success-color);
-    font-weight: 500;
-    font-size: 0.875rem;
+.auth-benefits>div {
+  color: var(--success-color);
+  font-weight: 500;
+  font-size: 0.875rem;
 }
 
 /* Responsive Auth Styles */
 @media (max-width: 768px) {
-    .auth-modal-content {
-        width: 95%;
-        margin: 1rem;
-    }
-    
-    .auth-modal-header,
-    .auth-modal-body {
-        padding: 1rem;
-    }
-    
-    .auth-message {
-        margin: 1rem;
-    }
-    
-    .auth-links {
-        gap: 0.5rem;
-    }
-    
-    .auth-link {
-        padding: 0.4rem 0.8rem;
-        font-size: 0.8rem;
-    }
-    
-    .auth-header {
-        width: 100%;
-        justify-content: center;
-    }
+  .auth-modal-content {
+    width: 95%;
+    margin: 1rem;
+  }
+
+  .auth-modal-header,
+  .auth-modal-body {
+    padding: 1rem;
+  }
+
+  .auth-message {
+    margin: 1rem;
+  }
+
+  .auth-links {
+    gap: 0.5rem;
+  }
+
+  .auth-link {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+
+  .auth-header {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 @media (max-width: 480px) {
-    .auth-modal-content {
-        width: 100%;
-        height: 100%;
-        border-radius: 0;
-        max-height: none;
-    }
+  .auth-modal-content {
+    width: 100%;
+    height: 100%;
+    border-radius: 0;
+    max-height: none;
+  }
 }
 
 /* =============================================
@@ -2415,8 +2418,13 @@ body {
 }
 
 @keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+  0% {
+    transform: rotate(0deg);
+  }
+
+  100% {
+    transform: rotate(360deg);
+  }
 }
 
 .economics-error h3,
@@ -2453,15 +2461,15 @@ body {
     gap: var(--space-4);
     align-items: stretch;
   }
-  
+
   .time-range-selector {
     justify-content: center;
   }
-  
+
   .economics-cards {
     grid-template-columns: 1fr;
   }
-  
+
   .economics-breakdown {
     grid-template-columns: 1fr;
   }
@@ -2672,7 +2680,8 @@ body {
   font-size: var(--font-size-xs);
 }
 
-.session-duration, .session-tokens {
+.session-duration,
+.session-tokens {
   color: var(--color-gray-700);
   font-weight: 500;
 }
@@ -2687,33 +2696,57 @@ body {
   .stats-grid {
     grid-template-columns: repeat(2, 1fr);
   }
-  
+
   .daily-chart {
     height: 150px;
   }
-  
+
   .sessions-table .table-header,
   .sessions-table .table-row {
     grid-template-columns: 1fr;
     gap: var(--space-2);
   }
-  
+
   .sessions-table .table-header {
     display: none;
   }
-  
+
   .sessions-table .table-row {
     padding: var(--space-4);
     border-radius: 8px;
     margin-bottom: var(--space-2);
     border: 1px solid var(--color-gray-200);
   }
-  
-  .session-user::before { content: "User: "; font-weight: 400; color: var(--color-gray-500); }
-  .session-time::before { content: "Started: "; font-weight: 400; color: var(--color-gray-500); }
-  .session-duration::before { content: "Duration: "; font-weight: 400; color: var(--color-gray-500); }
-  .session-tokens::before { content: "Tokens: "; font-weight: 400; color: var(--color-gray-500); }
-  .session-mode::before { content: "Mode: "; font-weight: 400; color: var(--color-gray-500); }
+
+  .session-user::before {
+    content: "User: ";
+    font-weight: 400;
+    color: var(--color-gray-500);
+  }
+
+  .session-time::before {
+    content: "Started: ";
+    font-weight: 400;
+    color: var(--color-gray-500);
+  }
+
+  .session-duration::before {
+    content: "Duration: ";
+    font-weight: 400;
+    color: var(--color-gray-500);
+  }
+
+  .session-tokens::before {
+    content: "Tokens: ";
+    font-weight: 400;
+    color: var(--color-gray-500);
+  }
+
+  .session-mode::before {
+    content: "Mode: ";
+    font-weight: 400;
+    color: var(--color-gray-500);
+  }
 }
 
 /* =============================================
@@ -2940,36 +2973,37 @@ body {
 
 /* Responsive Design */
 @media (max-width: 768px) {
+
   /* Hide desktop controls, show mobile menu */
   .desktop-only {
     display: none !important;
   }
-  
+
   .mobile-only {
     display: flex !important;
   }
-  
+
   /* Smaller logo on mobile */
   .brand-logo {
     width: 32px !important;
     height: 32px !important;
   }
-  
+
   .brand-name {
     font-size: 0.875rem !important;
   }
-  
+
   /* Title bar adjustments */
   .title-bar {
     height: 60px !important;
     padding: 40px var(--space-4) 15px var(--space-4) !important;
   }
-  
+
   /* Main content adjustments */
   .suggestions-panel {
     padding: var(--space-3) !important;
   }
-  
+
   /* Reorder controls on mobile - agent selector and goal above analytics */
   .controls-content {
     display: flex !important;
@@ -2977,7 +3011,7 @@ body {
     gap: 0.75rem !important;
     padding: 0 !important;
   }
-  
+
   /* Controls left (agent + goal) comes first */
   .controls-left {
     order: 1 !important;
@@ -2987,18 +3021,18 @@ body {
     margin-bottom: 0.75rem !important;
     width: 100% !important;
   }
-  
+
   /* Analytics dashboard comes second */
   .analytics-dashboard {
     order: 2 !important;
   }
-  
+
   /* Tighter spacing for mobile */
   .controls-section {
     margin-bottom: 0.75rem !important;
     padding: 0 !important;
   }
-  
+
   .use-case-quick-select,
   .goal-quick-input {
     font-size: 0.875rem !important;
@@ -3010,98 +3044,101 @@ body {
     border: 1px solid var(--color-border) !important;
     height: 40px !important;
   }
-  
+
   .analytics-metric {
     padding: 0.25rem !important;
     margin-bottom: 0.125rem !important;
   }
-  
+
   .conversation-metrics {
     gap: 0.25rem !important;
     padding: 0.5rem !important;
   }
-  
+
   .analytics-dashboard {
     padding: 0.5rem !important;
     margin-bottom: 0.5rem !important;
   }
-  
+
   /* Tighter toggle button */
   .toggle-controls-btn {
     padding: 0.5rem !important;
     margin-bottom: 0.5rem !important;
     height: 32px !important;
   }
-  
+
   /* AI suggestions section tighter spacing */
   .suggestions-container {
     padding: var(--space-3) !important;
   }
-  
+
   .suggestion-item {
     padding: var(--space-3) !important;
     margin-bottom: var(--space-2) !important;
   }
-  
+
   .ready-state,
   .waiting-state {
     padding: var(--space-4) var(--space-3) !important;
   }
-  
+
   /* Compact suggestion text */
   .suggestion-text {
     font-size: 0.75rem !important;
     line-height: 1.3 !important;
   }
-  
+
   /* Smaller mobile type across the board */
   body {
     font-size: 0.875rem !important;
   }
-  
-  h1, h2, h3 {
+
+  h1,
+  h2,
+  h3 {
     font-size: 1rem !important;
   }
-  
+
   .metric-label {
     font-size: 0.75rem !important;
   }
-  
+
   .metric-current {
     font-size: 0.875rem !important;
   }
-  
+
   .ready-state h3 {
     font-size: 1rem !important;
   }
-  
+
   .ready-state p {
     font-size: 0.625rem !important;
   }
-  
+
   .waiting-state p {
     font-size: 0.625rem !important;
   }
-  
+
   /* Footer and small text */
-  small, .footer-text {
+  small,
+  .footer-text {
     font-size: 0.625rem !important;
   }
-  
+
   /* Mobile menu items smaller */
   .mobile-menu-item {
     font-size: 0.875rem !important;
     padding: 0.625rem 1rem !important;
   }
-  
+
   .mobile-token-display {
     font-size: 0.75rem !important;
   }
-  
+
   .mobile-user-info {
     font-size: 0.75rem !important;
   }
-  
+
   /* Config panel full width on mobile */
   .config-panel {
     width: 100% !important;
@@ -3111,17 +3148,17 @@ body {
     left: 0 !important;
     z-index: 1000 !important;
   }
-  
+
   /* Other existing mobile styles */
   .agents-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .agent-editor {
     margin: var(--space-4);
     padding: var(--space-4);
   }
-  
+
   .agent-header {
     flex-direction: column;
     gap: var(--space-2);
@@ -3133,28 +3170,51 @@ body {
   .title-bar {
     padding: 40px var(--space-2) 15px var(--space-2) !important;
   }
-  
+
   .suggestions-panel {
     padding: var(--space-2) !important;
   }
-  
+
   .use-case-quick-select,
   .goal-quick-input {
     padding: 0.375rem !important;
     font-size: 0.8125rem !important;
   }
-  
+
   .analytics-metric {
     padding: 0.125rem !important;
     margin-bottom: 0.0625rem !important;
   }
-  
+
   .conversation-metrics {
     gap: 0.125rem !important;
     padding: 0.25rem !important;
   }
-  
+
   .analytics-dashboard {
     padding: 0.25rem !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .goal-progress {
+    padding: var(--space-1);
+    height: 90px;
+    min-height: 0;
+  }
+
+  .goal-percentage {
+    font-size: var(--font-size-xl);
+    margin-bottom: var(--space-0_5);
+  }
+
+  .goal-label {
+    font-size: var(--font-size-xs);
+    margin-bottom: 0;
+  }
+
+  .goal-bar {
+    margin: var(--space-1) 0 var(--space-1);
+    height: 4px;
   }
 }
