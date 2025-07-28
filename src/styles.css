@@ -3218,3 +3218,18 @@ body {
     height: 4px;
   }
 }
+
+@media (max-width: 768px) {
+  .bottom-bar {
+    padding: 8px 8px;
+  }
+
+  .status-info {
+    gap: var(--space-2);
+  }
+
+  .status-item {
+    font-size: var(--font-size-xs);
+    white-space: nowrap;
+  }
+}
