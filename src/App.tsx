@@ -36,6 +36,7 @@ function App() {
   // Core state
   const [isListening, setIsListening] = useState(false)
   const [isMuted, setIsMuted] = useState(false)
+  const [audioMode, setAudioMode] = useState<'headphones' | 'speakers'>('headphones')
   const [transcriptMessages, setTranscriptMessages] = useState<TranscriptMessage[]>([])
   const [coachingSuggestions, setCoachingSuggestions] = useState<CoachingSuggestion[]>([])
   // Conversation analytics state (now from separate metrics system)
@@ -91,7 +92,8 @@ function App() {
         chunkDuration: transcriptionConfig.chunkDuration,
         minInterval: transcriptionConfig.minInterval,
         transcriptionApiUrl: transcriptionConfig.transcriptionApiUrl,
-        transcriptionModel: transcriptionConfig.transcriptionModel
+        transcriptionModel: transcriptionConfig.transcriptionModel,
+        audioMode: audioMode
       };
       
       const dualAudioCapture = new DualAudioCapture(dualConfig);
@@ -449,6 +451,22 @@ function App() {
                 <span className="token-cost">({getSessionCostEstimate(sessionDuration)} tokens)</span>
               </div>
             )}
+            
+            {/* Headphone Mode Toggle - Subtle and Visible */}
+            {!isListening && (
+              <div className="headphone-toggle">
+                <span className="toggle-label">🎧</span>
+                <label className="switch">
+                  <input
+                    type="checkbox"
+                    checked={audioMode === 'headphones'}
+                    onChange={(e) => setAudioMode(e.target.checked ? 'headphones' : 'speakers')}
+                  />
+                  <span className="slider"></span>
+                </label>
+              </div>
+            )}
+            
             <button
               onClick={toggleListening}
               className={`btn ${isListening ? 'btn-danger' : 'btn-primary'}`}
@@ -494,6 +512,8 @@ function App() {
               onConfigChange={handleConfigChange}
               isCollapsed={false}
               onToggleCollapse={() => setIsConfigPanelOpen(false)}
+              audioMode={audioMode}
+              onAudioModeChange={setAudioMode}
             />
           )}
 

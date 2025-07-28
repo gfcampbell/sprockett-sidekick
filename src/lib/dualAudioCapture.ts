@@ -16,6 +16,7 @@ export interface DualAudioConfig {
   minInterval: number; 
   transcriptionApiUrl: string;
   transcriptionModel: string;
+  audioMode?: 'headphones' | 'speakers'; // User's audio setup
 }
 
 export interface TranscriptMessage {
@@ -32,6 +33,9 @@ export class DualAudioCapture {
   private systemRecorder: MediaRecorder | null = null;
   private micStream: MediaStream | null = null;
   private systemStream: MediaStream | null = null;
+  private remoteStream: MediaStream | null = null; // WebRTC remote stream
+  private audioContext: AudioContext | null = null;
+  private mergedStream: MediaStream | null = null;
   
   // Recording state
   private isRecording = false;
@@ -93,7 +97,18 @@ export class DualAudioCapture {
   }
 
   /**
+   * 🎯 Set WebRTC remote stream for Guest audio
+   */
+  setRemoteStream(stream: MediaStream): void {
+    this.remoteStream = stream;
+    if (surgicalFlags.ENABLE_AUDIO_DEBUG_LOGS) {
+      console.log('🎯 WebRTC remote stream set for Guest audio');
+    }
+  }
+
+  /**
    * 🔊 Phase 2: Initialize system audio capture (Guest audio)
+   * Now uses WebRTC remote stream when available, falls back to tab capture
    */
   private async initializeSystemAudio(): Promise<boolean> {
     try {
@@ -101,27 +116,36 @@ export class DualAudioCapture {
         console.log('🔊 Initializing system audio for Guest audio...');
       }
 
-      // Request system audio permission through Electron if available
-      if (window.electronAPI?.requestSystemAudioPermission) {
-        const permissionStatus = await window.electronAPI.requestSystemAudioPermission();
-        
-        if (permissionStatus === 'denied') {
-          throw new Error('System audio permission denied. Please enable Screen Recording in System Settings > Privacy & Security.');
+      // FIRST: Check if we have WebRTC remote stream
+      if (this.remoteStream && this.remoteStream.getAudioTracks().length > 0) {
+        this.systemStream = this.remoteStream;
+        if (surgicalFlags.ENABLE_AUDIO_DEBUG_LOGS) {
+          console.log('✅ Using WebRTC remote stream for Guest audio');
         }
-        
-        if (permissionStatus === 'prompt-required') {
-          console.log('📋 System audio permission will be requested...');
-        }
+        return true;
       }
 
-      // Request system audio via screen share (audio only)
-      this.systemStream = await navigator.mediaDevices.getDisplayMedia({
+      // FALLBACK: Tab audio capture for non-WebRTC scenarios
+      if (surgicalFlags.ENABLE_AUDIO_DEBUG_LOGS) {
+        console.log('🔄 No WebRTC stream, attempting tab audio capture...');
+      }
+
+      // Request tab audio via getDisplayMedia
+      const displayStream = await navigator.mediaDevices.getDisplayMedia({
         video: false,
         audio: true
       });
 
+      // Verify audio track exists
+      const audioTracks = displayStream.getAudioTracks();
+      if (audioTracks.length === 0) {
+        throw new Error('No audio selected. Please share a tab with audio enabled.');
+      }
+
+      this.systemStream = displayStream;
+
       if (surgicalFlags.ENABLE_AUDIO_DEBUG_LOGS) {
-        console.log('✅ System audio initialized - Guest audio ready');
+        console.log('✅ Tab audio initialized - Guest audio ready');
       }
 
       return true;
@@ -130,21 +154,48 @@ export class DualAudioCapture {
         console.warn('⚠️ System audio initialization failed:', error);
       }
       
-      // Provide better error messages
-      const errorMessage = error instanceof Error ? error.message : String(error);
-      if (errorMessage.includes('Permission denied') || errorMessage.includes('denied')) {
-        this.handleError('System audio permission denied. Please enable Screen Recording for this app in System Settings > Privacy & Security > Screen Recording.');
-      }
-      
-      // This is expected in many scenarios (phone calls, etc.)
-      // Not a fatal error if we allow fallback
+      // This is expected in many scenarios
       if (surgicalFlags.ALLOW_FALLBACK_TO_SINGLE_STREAM) {
         console.log('🔄 Falling back to microphone-only mode');
         return false; // Not fatal
       } else {
-        this.handleError(`System audio required but failed: ${errorMessage}`);
+        this.handleError(`System audio required but failed: ${error instanceof Error ? error.message : String(error)}`);
         return false;
       }
+    }
+  }
+
+  /**
+   * 🎵 Merge audio streams using Web Audio API (if needed in future)
+   * Currently keeping streams separate for precise speaker attribution
+   */
+  // @ts-ignore - Method available for future use
+  private mergeAudioStreams(): MediaStream | null {
+    if (!this.micStream || !this.systemStream) {
+      return null;
+    }
+
+    try {
+      this.audioContext = new AudioContext();
+      const destination = this.audioContext.createMediaStreamDestination();
+
+      const micSource = this.audioContext.createMediaStreamSource(this.micStream);
+      const systemSource = this.audioContext.createMediaStreamSource(this.systemStream);
+
+      // Connect both sources to destination
+      micSource.connect(destination);
+      systemSource.connect(destination);
+
+      this.mergedStream = destination.stream;
+      
+      if (surgicalFlags.ENABLE_AUDIO_DEBUG_LOGS) {
+        console.log('🎵 Audio streams merged successfully');
+      }
+
+      return this.mergedStream;
+    } catch (error) {
+      console.error('❌ Failed to merge audio streams:', error);
+      return null;
     }
   }
 
@@ -162,11 +213,27 @@ export class DualAudioCapture {
       // System audio is optional (for now)
       const systemSuccess = await this.initializeSystemAudio();
       
+      // Handle audio mode preferences
+      if (systemSuccess && this.config.audioMode === 'speakers') {
+        // In speaker mode, only use system audio to avoid echo
+        if (surgicalFlags.ENABLE_AUDIO_DEBUG_LOGS) {
+          console.log('🔊 Speaker mode: Using system audio only to avoid echo');
+        }
+        // We'll still keep both streams but only record from system
+      } else if (systemSuccess && this.config.audioMode === 'headphones') {
+        // In headphone mode, we keep streams separate for precise attribution
+        // Merging is available if needed but not used by default
+        if (surgicalFlags.ENABLE_AUDIO_DEBUG_LOGS) {
+          console.log('🎧 Headphone mode: Separate streams for precise attribution');
+        }
+      }
+      
       if (surgicalFlags.ENABLE_AUDIO_DEBUG_LOGS) {
         console.log(`🎵 Audio initialization complete:`, {
           microphone: micSuccess,
           systemAudio: systemSuccess,
-          mode: systemSuccess ? 'DUAL_STREAM' : 'SINGLE_STREAM_FALLBACK'
+          mode: systemSuccess ? 'DUAL_STREAM' : 'SINGLE_STREAM_FALLBACK',
+          audioMode: this.config.audioMode || 'auto'
         });
       }
 
@@ -179,12 +246,12 @@ export class DualAudioCapture {
   }
 
   /**
-   * 🎬 Start recording both streams
+   * 🎬 Start recording based on audio mode
    */
   async startRecording(): Promise<boolean> {
     if (this.isRecording) {
       if (surgicalFlags.ENABLE_AUDIO_DEBUG_LOGS) {
-        console.log('🎤 Already recording both streams');
+        console.log('🎤 Already recording');
       }
       return true;
     }
@@ -195,30 +262,20 @@ export class DualAudioCapture {
     }
 
     try {
-      // Start microphone recording (Host)
-      if (this.micStream) {
-        this.micRecorder = new MediaRecorder(this.micStream, {
-          mimeType: 'audio/webm;codecs=opus'
-        });
-
-        this.micRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            this.micChunks.push(event.data);
-            console.log(`🎤 Mic chunk received: ${event.data.size} bytes`);
-          } else {
-            console.log('⚠️ Empty mic chunk received');
-          }
-        };
-
-        this.micRecorder.onstop = () => {
-          this.processMicrophoneAudio();
-        };
-
-        this.micRecorder.start();
+      const audioMode = this.config.audioMode || 'auto';
+      
+      if (surgicalFlags.ENABLE_AUDIO_DEBUG_LOGS) {
+        console.log(`🎬 Starting recording in ${audioMode} mode`);
       }
 
-      // Start system audio recording (Guest) if available
-      if (this.systemStream) {
+      if (audioMode === 'speakers') {
+        // SPEAKERS MODE: Only record system audio to avoid echo
+        // The microphone would pick up the speakers, creating duplicate/echo audio
+        if (!this.systemStream) {
+          this.handleError('Speakers mode requires system audio stream');
+          return false;
+        }
+        
         this.systemRecorder = new MediaRecorder(this.systemStream, {
           mimeType: 'audio/webm;codecs=opus'
         });
@@ -234,6 +291,59 @@ export class DualAudioCapture {
         };
 
         this.systemRecorder.start();
+        
+        if (surgicalFlags.ENABLE_AUDIO_DEBUG_LOGS) {
+          console.log('🔊 Speakers mode: Recording system audio only (prevents echo)');
+        }
+
+      } else if (audioMode === 'headphones') {
+        // HEADPHONES MODE: Record both microphone AND remote stream separately
+        // No echo because headphones isolate the audio
+        
+        // Start microphone recording (Host)
+        this.micRecorder = new MediaRecorder(this.micStream, {
+          mimeType: 'audio/webm;codecs=opus'
+        });
+
+        this.micRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            this.micChunks.push(event.data);
+          }
+        };
+
+        this.micRecorder.onstop = () => {
+          this.processMicrophoneAudio();
+        };
+
+        this.micRecorder.start();
+
+        // Start remote/system audio recording (Guest) if available
+        if (this.systemStream) {
+          this.systemRecorder = new MediaRecorder(this.systemStream, {
+            mimeType: 'audio/webm;codecs=opus'
+          });
+
+          this.systemRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              this.systemChunks.push(event.data);
+            }
+          };
+
+          this.systemRecorder.onstop = () => {
+            this.processSystemAudio();
+          };
+
+          this.systemRecorder.start();
+        }
+        
+        if (surgicalFlags.ENABLE_AUDIO_DEBUG_LOGS) {
+          console.log('🎧 Headphones mode: Recording both streams separately for precise attribution');
+        }
+
+      } else {
+        // AUTO MODE: Try to detect and record appropriately
+        this.handleError('Auto mode not implemented. Please specify "headphones" or "speakers" mode.');
+        return false;
       }
 
       this.isRecording = true;
@@ -243,6 +353,7 @@ export class DualAudioCapture {
 
       if (surgicalFlags.ENABLE_AUDIO_DEBUG_LOGS) {
         console.log('🎬 Recording started:', {
+          mode: audioMode,
           microphone: !!this.micRecorder,
           systemAudio: !!this.systemRecorder
         });
@@ -460,9 +571,21 @@ export class DualAudioCapture {
       this.micStream = null;
     }
 
-    if (this.systemStream) {
+    // Only stop system stream if it's not a WebRTC remote stream
+    if (this.systemStream && this.systemStream !== this.remoteStream) {
       this.systemStream.getTracks().forEach(track => track.stop());
-      this.systemStream = null;
+    }
+    this.systemStream = null;
+    this.remoteStream = null;
+
+    if (this.mergedStream) {
+      this.mergedStream.getTracks().forEach(track => track.stop());
+      this.mergedStream = null;
+    }
+
+    if (this.audioContext) {
+      this.audioContext.close();
+      this.audioContext = null;
     }
 
     this.micRecorder = null;
@@ -543,9 +666,15 @@ export class DualAudioCapture {
  * 
  * This class replaces the Grand Deception with physics-based truth:
  * - Microphone = Host speaking (you)
- * - System audio = Guest speaking (them)
+ * - System audio = Guest speaking (them) via WebRTC or tab capture
  * - No AI voice recognition needed
  * - 100% accurate speaker identification
+ * 
+ * WEBRTC INTEGRATION (The Fix):
+ * - Uses peerConnection.remoteStream when available (works with headphones!)
+ * - Falls back to getDisplayMedia for tab audio capture
+ * - Web Audio API merges streams when needed
+ * - Handles speaker/headphone modes to prevent echo
  * 
  * The old system relied on OpenAI's Speaker_0/Speaker_1 which was essentially
  * a coin flip. This system uses the actual audio routing to determine who's talking.

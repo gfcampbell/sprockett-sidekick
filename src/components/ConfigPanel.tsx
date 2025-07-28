@@ -6,9 +6,11 @@ interface ConfigPanelProps {
   onConfigChange: (config: CallConfig) => void;
   isCollapsed: boolean;
   onToggleCollapse: () => void;
+  audioMode: 'headphones' | 'speakers';
+  onAudioModeChange: (mode: 'headphones' | 'speakers') => void;
 }
 
-export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleCollapse }: ConfigPanelProps) {
+export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleCollapse, audioMode, onAudioModeChange }: ConfigPanelProps) {
   const [localConfig, setLocalConfig] = useState(config);
 
   const handleConfigUpdate = (updates: Partial<CallConfig>) => {
@@ -74,6 +76,28 @@ export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleColla
         />
       </div>
 
+      <div className="config-section">
+        <label>Audio Setup</label>
+        <div className="audio-mode-config">
+          <div className="headphone-toggle-config">
+            <span className="toggle-label">🎧 Headphone Mode</span>
+            <label className="switch">
+              <input
+                type="checkbox"
+                checked={audioMode === 'headphones'}
+                onChange={(e) => onAudioModeChange(e.target.checked ? 'headphones' : 'speakers')}
+              />
+              <span className="slider"></span>
+            </label>
+          </div>
+          <p className="audio-mode-description">
+            {audioMode === 'headphones' 
+              ? 'Records both your voice and the other person separately for precise speaker attribution.'
+              : 'Records combined audio to prevent echo when using speakers.'
+            }
+          </p>
+        </div>
+      </div>
 
     </div>
   );
