@@ -10,20 +10,28 @@ interface MobileMenuProps {
 
 export function MobileMenu({ isOpen, onClose, children }: MobileMenuProps) {
   useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+    const menuRootId = 'mobile-menu-root';
+    let menuRoot = document.getElementById(menuRootId);
+    if (!menuRoot) {
+      menuRoot = document.createElement('div');
+      menuRoot.id = menuRootId;
+      document.body.appendChild(menuRoot);
     }
-
+    if (isOpen) {
+      document.body.classList.add('menu_open');
+    } else {
+      document.body.classList.remove('menu_open');
+    }
     return () => {
-      document.body.style.overflow = '';
+      document.body.classList.remove('menu_open');
     };
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  return createPortal(
+  const menuRoot = document.getElementById('mobile-menu-root');
+
+  return menuRoot ? createPortal(
     <>
       <div className="mobile-menu-backdrop" onClick={onClose} />
       <div className="mobile-menu-panel">
@@ -37,6 +45,6 @@ export function MobileMenu({ isOpen, onClose, children }: MobileMenuProps) {
         </div>
       </div>
     </>,
-    document.body
-  );
+    menuRoot
+  ) : null;
 }

@@ -125,6 +125,7 @@
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -160,7 +161,15 @@
   from {
     transform: translateX(100%);
   }
+
   to {
     transform: translateX(0);
   }
+}
+
+body.menu_open {
+  position: fixed;
+  overflow: hidden;
+  width: 100%;
+  height: 100%;
 }
