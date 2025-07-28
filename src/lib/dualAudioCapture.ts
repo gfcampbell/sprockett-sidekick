@@ -9,7 +9,7 @@
  */
 
 import { surgicalFlags } from './config';
-import { SourceComparison, PendingTranscript } from './sourceComparison';
+// Removed SourceComparison - not needed with discrete audio streams
 
 export interface DualAudioConfig {
   chunkDuration: number;
@@ -49,8 +49,7 @@ export class DualAudioCapture {
   private onErrorCallback?: (error: string) => void;
   private config: DualAudioConfig;
   
-  // 🎯 SOURCE COMPARISON: The physics solution
-  private sourceComparison = new SourceComparison();
+  // 🎯 REMOVED: SourceComparison - discrete streams don't need comparison
 
   constructor(config: DualAudioConfig) {
     this.config = config;
@@ -527,9 +526,8 @@ export class DualAudioCapture {
           audioSource: audioSource
         };
 
-        // TEMP FIX: Bypass SourceComparison filtering for single audio source
-        // const resolvedTranscripts = this.sourceComparison.addTranscript(pending);
-        const resolvedTranscripts = [pending]; // Process immediately without filtering
+        // Process transcript immediately - no source comparison needed
+        const resolvedTranscripts = [pending];
         
         console.log('🔍 DEBUG: resolvedTranscripts count:', resolvedTranscripts.length, 'pending:', pending);
         
