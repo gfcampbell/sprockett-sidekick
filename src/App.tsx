@@ -102,7 +102,9 @@ function App() {
       dualAudioCaptureRef.current = dualAudioCapture;
       
       // Set up transcript callback for dual system
+      console.log('🔧 DEBUG: Registering onTranscript callback for DualAudioCapture');
       dualAudioCapture.onTranscript((message: DualTranscriptMessage) => {
+        console.log('🔔 DEBUG: onTranscript callback triggered with:', message);
         setTranscriptMessages(prev => {
           // 🎯 PHYSICS-BASED TRUTH: Speaker is guaranteed accurate
           const enhancedMessage = {
