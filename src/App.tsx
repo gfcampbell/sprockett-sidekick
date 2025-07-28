@@ -584,9 +584,6 @@ function App() {
                         {/* Conversation Tone - FLAT PANCAKE */}
                         <div className="analytics-metric">
                           <span className="metric-label">Trust</span>
-                          <div className={`metric-current ${conversationTemp.level >= 4 ? 'good' : conversationTemp.level >= 3 ? 'okay' : 'poor'}`}>
-                            {conversationTemp.level}/5
-                          </div>
                           <svg className="sparkline" viewBox="0 0 200 24">
                             {tempHistory.length > 1 && (
                               <polyline
@@ -610,9 +607,6 @@ function App() {
                         {/* Engagement Level */}
                         <div className="analytics-metric">
                           <span className="metric-label">Energy</span>
-                          <div className={`metric-current ${analytics.energy.level >= 4 ? 'good' : analytics.energy.level >= 3 ? 'okay' : 'poor'}`}>
-                            {analytics.energy.level}/5
-                          </div>
                           <svg className="sparkline" viewBox="0 0 200 24">
                             {energyHistory.length > 1 && (
                               <polyline
@@ -636,9 +630,6 @@ function App() {
                         {/* Alignment */}
                         <div className="analytics-metric">
                           <span className="metric-label">Vibe</span>
-                          <div className={`metric-current ${analytics.agreeability.level >= 4 ? 'good' : analytics.agreeability.level >= 3 ? 'okay' : 'poor'}`}>
-                            {analytics.agreeability.level}/5
-                          </div>
                           <svg className="sparkline" viewBox="0 0 200 24">
                             {agreeabilityHistory.length > 1 && (
                               <polyline
