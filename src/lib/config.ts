@@ -47,8 +47,8 @@ export const appConfig = {
 
 // 🏥 SURGICAL FLAG: Audio Source Truth Operation
 export const surgicalFlags = {
-  // Phase 3: HEART TRANSPLANT - Keep dual audio system available but default to single stream
-  USE_DUAL_AUDIO_CAPTURE: false, // Default to single stream for easier UX
+  // Phase 3: HEART TRANSPLANT - Enable dual audio system with WebRTC integration
+  USE_DUAL_AUDIO_CAPTURE: true, // Enable WebRTC dual audio capture for headphone mode
   
   // Development helpers
   ENABLE_AUDIO_DEBUG_LOGS: isDevelopment,
