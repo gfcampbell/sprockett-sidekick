@@ -529,6 +529,8 @@ export class DualAudioCapture {
 
         const resolvedTranscripts = this.sourceComparison.addTranscript(pending);
         
+        console.log('🔍 DEBUG: resolvedTranscripts count:', resolvedTranscripts.length, 'pending:', pending);
+        
         // Process resolved transcripts
         for (const resolved of resolvedTranscripts) {
           const message: TranscriptMessage = {
