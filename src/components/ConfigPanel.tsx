@@ -76,6 +76,7 @@ export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleColla
         />
       </div>
 
+      {/* Audio Setup - Temporarily disabled
       <div className="config-section">
         <label>Audio Setup</label>
         <div className="audio-mode-config">
@@ -98,6 +99,7 @@ export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleColla
           </p>
         </div>
       </div>
+      */}
 
     </div>
   );

@@ -477,6 +477,7 @@ function App() {
             
             {/* Headphone Mode Toggle - Subtle and Visible */}
             {!isListening && (
+              {/* Headphone mode temporarily disabled
               <div className="headphone-toggle">
                 <span className="toggle-label">🎧</span>
                 <label className="switch">
@@ -488,6 +489,7 @@ function App() {
                   <span className="slider"></span>
                 </label>
               </div>
+              */}
             )}
             
             <button
@@ -847,7 +849,7 @@ function App() {
             
             <div className="mobile-menu-divider" />
             
-            {/* Audio Mode Toggle */}
+            {/* Audio Mode Toggle - Temporarily disabled
             <div className="mobile-audio-toggle">
               <div className="mobile-menu-item-label">🎧 Headphone Mode</div>
               <label className="switch">
@@ -859,6 +861,7 @@ function App() {
                 <span className="slider"></span>
               </label>
             </div>
+            */}
             
             {/* User Account Section */}
             <div className="mobile-user-section">
