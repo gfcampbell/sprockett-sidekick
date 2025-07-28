@@ -54,6 +54,8 @@ function App() {
   // Legacy analytics interfaces (for UI compatibility)
   const [conversationTemp, setConversationTemp] = useState<ConversationTemperature>({ level: 3, trend: 'stable', indicators: [] })
   const [tempHistory, setTempHistory] = useState<number[]>([])
+  const [goalCelebrated, setGoalCelebrated] = useState(false)
+  const [showConfetti, setShowConfetti] = useState(false)
   const [analytics, setAnalytics] = useState<ConversationAnalytics>({
     energy: { level: 3, trend: 'stable', indicators: [] },
     agreeability: { level: 3, trend: 'stable', indicators: [] },
@@ -258,6 +260,22 @@ function App() {
     }
     saveCallConfig(callConfig)
   }, [callConfig])
+
+  // Goal celebration effect
+  useEffect(() => {
+    if (analytics.goalProgress.percentage >= 100 && !goalCelebrated) {
+      setGoalCelebrated(true)
+      setShowConfetti(true)
+      
+      // Remove confetti after animation completes
+      setTimeout(() => {
+        setShowConfetti(false)
+      }, 3000)
+    } else if (analytics.goalProgress.percentage < 100 && goalCelebrated) {
+      // Reset if goal drops below 100%
+      setGoalCelebrated(false)
+    }
+  }, [analytics.goalProgress.percentage, goalCelebrated])
 
   // Session timer - updates every second when listening
   useEffect(() => {
@@ -642,16 +660,31 @@ function App() {
                       </div>
 
                       {/* Goal Progress - Hero Element */}
-                      <div className="goal-progress">
+                      <div className={`goal-progress ${analytics.goalProgress.percentage >= 100 ? 'goal-completed' : ''}`}>
                         <span className="goal-label">Goal Progress</span>
                         <div className="goal-percentage">{Math.round(analytics.goalProgress.percentage)}%</div>
                         <div className="goal-bar">
                           <div
-                            className="goal-bar-fill"
-                            style={{ width: `${analytics.goalProgress.percentage}%` }}
+                            className={`goal-bar-fill ${analytics.goalProgress.percentage >= 100 ? 'elastic-snap' : ''}`}
+                            style={{ width: `${Math.min(analytics.goalProgress.percentage, 100)}%` }}
                           />
                         </div>
                         <div className="goal-label">{analytics.goalProgress.trend}</div>
+                        {showConfetti && (
+                          <div className="confetti-container">
+                            {[...Array(20)].map((_, i) => (
+                              <div
+                                key={i}
+                                className="confetti-piece"
+                                style={{
+                                  '--confetti-delay': `${i * 0.05}s`,
+                                  '--confetti-angle': `${Math.random() * 360}deg`,
+                                  '--confetti-distance': `${50 + Math.random() * 100}px`
+                                } as React.CSSProperties}
+                              />
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
