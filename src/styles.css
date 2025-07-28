@@ -3258,3 +3258,35 @@ body {
     font-size: var(--font-size-xs) !important;
   }
 }
+
+@media (max-width: 768px) {
+  .conversation-metrics {
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: space-between !important;
+    height: 90px !important;
+    /* match goal box height */
+    gap: 0 !important;
+    padding: 0.5rem !important;
+  }
+
+  .analytics-metric {
+    flex: 1 1 0 !important;
+    height: unset !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    line-height: 1.1 !important;
+    font-size: var(--font-size-xs) !important;
+    display: flex !important;
+    align-items: center !important;
+  }
+
+  .metric-label,
+  .metric-current {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1.1 !important;
+    font-size: var(--font-size-xs) !important;
+  }
+}
