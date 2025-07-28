@@ -3236,15 +3236,24 @@ body {
 
 @media (max-width: 768px) {
   .analytics-metric {
-    padding-top: 2px !important;
-    padding-bottom: 2px !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
     margin-top: 0 !important;
     margin-bottom: 0 !important;
-    min-height: unset !important;
-    line-height: 1.05 !important;
+    min-height: 0 !important;
+    line-height: 1 !important;
+    font-size: var(--font-size-xs) !important;
   }
 
   .conversation-metrics {
-    gap: 2px !important;
+    gap: 0 !important;
+  }
+
+  .metric-label,
+  .metric-current {
+    margin: 0 !important;
+    padding: 0 !important;
+    line-height: 1 !important;
+    font-size: var(--font-size-xs) !important;
   }
 }
