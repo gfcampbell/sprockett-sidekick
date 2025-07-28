@@ -3233,3 +3233,18 @@ body {
     white-space: nowrap;
   }
 }
+
+@media (max-width: 768px) {
+  .analytics-metric {
+    padding-top: 2px !important;
+    padding-bottom: 2px !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    min-height: unset !important;
+    line-height: 1.05 !important;
+  }
+
+  .conversation-metrics {
+    gap: 2px !important;
+  }
+}
