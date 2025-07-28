@@ -518,8 +518,8 @@ export class DualAudioCapture {
       const transcriptText = result.text || (result.segments && result.segments[0]?.text) || '';
       
       if (transcriptText && transcriptText.trim()) {
-        // 🎯 SOURCE COMPARISON: Add to pending transcripts
-        const pending: PendingTranscript = {
+        // Create transcript object for immediate processing
+        const pending = {
           speaker: speaker,
           text: transcriptText.trim(),
           timestamp: new Date(),
