@@ -123,8 +123,6 @@ function App() {
         setError(errorMessage)
         setStatus('Error')
       })
-
-      dualAudioCaptureRef.current = dualAudioCapture;
       
     } else {
       console.log('🔄 FALLBACK: Using legacy DesktopAudioCapture (single stream)');
