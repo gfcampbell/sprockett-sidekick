@@ -527,7 +527,9 @@ export class DualAudioCapture {
           audioSource: audioSource
         };
 
-        const resolvedTranscripts = this.sourceComparison.addTranscript(pending);
+        // TEMP FIX: Bypass SourceComparison filtering for single audio source
+        // const resolvedTranscripts = this.sourceComparison.addTranscript(pending);
+        const resolvedTranscripts = [pending]; // Process immediately without filtering
         
         console.log('🔍 DEBUG: resolvedTranscripts count:', resolvedTranscripts.length, 'pending:', pending);
         
