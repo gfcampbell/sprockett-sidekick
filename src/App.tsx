@@ -83,6 +83,8 @@ function App() {
 
   // Initialize audio capture and AI coaching systems
   useEffect(() => {
+    console.log('🔍 DEBUG: useEffect running, surgicalFlags.USE_DUAL_AUDIO_CAPTURE =', surgicalFlags.USE_DUAL_AUDIO_CAPTURE);
+    
     // 🫀 HEART TRANSPLANT: Choose audio system based on surgical flag
     if (surgicalFlags.USE_DUAL_AUDIO_CAPTURE) {
       console.log('🫀 HEART TRANSPLANT: Initializing DualAudioCapture (physics-based)');
@@ -97,6 +99,7 @@ function App() {
       };
       
       const dualAudioCapture = new DualAudioCapture(dualConfig);
+      dualAudioCaptureRef.current = dualAudioCapture;
       
       // Set up transcript callback for dual system
       dualAudioCapture.onTranscript((message: DualTranscriptMessage) => {
