@@ -930,9 +930,11 @@ body {
 }
 
 .sparkline {
-  height: 18px;
+  height: 24px;
   display: block;
   width: 100%;
+  flex: 1;
+  min-width: 180px;
 }
 
 .metric-trend {

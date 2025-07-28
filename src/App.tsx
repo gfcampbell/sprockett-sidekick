@@ -584,11 +584,11 @@ function App() {
                         {/* Conversation Tone - FLAT PANCAKE */}
                         <div className="analytics-metric">
                           <span className="metric-label">Trust</span>
-                          <svg className="sparkline" viewBox="0 0 200 24">
+                          <svg className="sparkline" viewBox="0 0 300 24">
                             {tempHistory.length > 1 && (
                               <polyline
                                 points={tempHistory.map((temp, i) =>
-                                  `${(i / Math.max(tempHistory.length - 1, 1)) * 200},${24 - (temp / 5) * 20}`
+                                  `${(i / Math.max(tempHistory.length - 1, 1)) * 300},${24 - (temp / 5) * 20}`
                                 ).join(' ')}
                                 fill="none"
                                 stroke="var(--color-primary)"
@@ -607,11 +607,11 @@ function App() {
                         {/* Engagement Level */}
                         <div className="analytics-metric">
                           <span className="metric-label">Energy</span>
-                          <svg className="sparkline" viewBox="0 0 200 24">
+                          <svg className="sparkline" viewBox="0 0 300 24">
                             {energyHistory.length > 1 && (
                               <polyline
                                 points={energyHistory.map((energy, i) =>
-                                  `${(i / Math.max(energyHistory.length - 1, 1)) * 200},${24 - (energy / 5) * 20}`
+                                  `${(i / Math.max(energyHistory.length - 1, 1)) * 300},${24 - (energy / 5) * 20}`
                                 ).join(' ')}
                                 fill="none"
                                 stroke="var(--color-success)"
@@ -630,11 +630,11 @@ function App() {
                         {/* Alignment */}
                         <div className="analytics-metric">
                           <span className="metric-label">Vibe</span>
-                          <svg className="sparkline" viewBox="0 0 200 24">
+                          <svg className="sparkline" viewBox="0 0 300 24">
                             {agreeabilityHistory.length > 1 && (
                               <polyline
                                 points={agreeabilityHistory.map((agree, i) =>
-                                  `${(i / Math.max(agreeabilityHistory.length - 1, 1)) * 200},${24 - (agree / 5) * 20}`
+                                  `${(i / Math.max(agreeabilityHistory.length - 1, 1)) * 300},${24 - (agree / 5) * 20}`
                                 ).join(' ')}
                                 fill="none"
                                 stroke="var(--color-warning)"
