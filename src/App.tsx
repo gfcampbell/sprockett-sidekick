@@ -475,9 +475,8 @@ function App() {
               </div>
             )}
             
-            {/* Headphone Mode Toggle - Subtle and Visible */}
+            {/* Headphone Mode Toggle - Temporarily disabled
             {!isListening && (
-              {/* Headphone mode temporarily disabled
               <div className="headphone-toggle">
                 <span className="toggle-label">🎧</span>
                 <label className="switch">
@@ -489,8 +488,8 @@ function App() {
                   <span className="slider"></span>
                 </label>
               </div>
-              */}
             )}
+            */}
             
             <button
               onClick={toggleListening}

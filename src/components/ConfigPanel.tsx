@@ -10,7 +10,7 @@ interface ConfigPanelProps {
   onAudioModeChange: (mode: 'headphones' | 'speakers') => void;
 }
 
-export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleCollapse, audioMode, onAudioModeChange }: ConfigPanelProps) {
+export function ConfigPanel({ config, onConfigChange, isCollapsed, onToggleCollapse }: ConfigPanelProps) {
   const [localConfig, setLocalConfig] = useState(config);
 
   const handleConfigUpdate = (updates: Partial<CallConfig>) => {
