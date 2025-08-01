@@ -9,6 +9,7 @@ const crypto = require('node:crypto');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const multer = require('multer');
+const { AssemblyAI } = require('assemblyai');
 
 // =============================================
 // SERVER INITIALIZATION
@@ -22,9 +23,14 @@ const server = http.createServer(app);
 // TRANSCRIPTION API CONFIGURATION
 // =============================================
 
-// OpenAI Whisper API configuration
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+// AssemblyAI API configuration
+const ASSEMBLYAI_API_KEY = process.env.ASSEMBLYAI_API_KEY;
 const ENABLE_TRANSCRIPTION = process.env.ENABLE_TRANSCRIPTION === 'true' || false;
+
+// Initialize AssemblyAI client
+const client = new AssemblyAI({
+  apiKey: ASSEMBLYAI_API_KEY
+});
 
 // Multer configuration for handling audio file uploads
 const upload = multer({
@@ -186,10 +192,10 @@ function verifyRoomToken(token) {
  * Health check endpoint for transcription service
  */
 app.get('/api/transcribe/health', (req, res) => {
-  if (ENABLE_TRANSCRIPTION && OPENAI_API_KEY) {
+  if (ENABLE_TRANSCRIPTION && ASSEMBLYAI_API_KEY) {
     res.json({ 
       status: 'available', 
-      service: 'openai-whisper',
+      service: 'assemblyai',
       timestamp: new Date().toISOString()
     });
   } else {
