@@ -25,7 +25,7 @@ const server = http.createServer(app);
 
 // AssemblyAI API configuration
 const ASSEMBLYAI_API_KEY = process.env.ASSEMBLYAI_API_KEY;
-const ENABLE_TRANSCRIPTION = process.env.ENABLE_TRANSCRIPTION === 'true' || false;
+const ENABLE_TRANSCRIPTION = process.env.ENABLE_TRANSCRIPTION === 'true';
 
 // Initialize AssemblyAI client
 const client = new AssemblyAI({
@@ -220,10 +220,10 @@ app.post('/api/transcribe', transcriptionLimiter, upload.single('audio'), async 
       });
     }
 
-    // Check if OpenAI API key is configured
-    if (!OPENAI_API_KEY) {
+    // Check if AssemblyAI API key is configured
+    if (!ASSEMBLYAI_API_KEY) {
       return res.status(503).json({ 
-        error: 'OpenAI API key not configured',
+        error: 'AssemblyAI API key not configured',
         fallback: true
       });
     }
