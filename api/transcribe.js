@@ -110,29 +110,36 @@ module.exports = async (req, res) => {
 
     console.log(`🎤 Transcribing audio with AssemblyAI (${enableSpeakerDetection ? 'with speaker diarization' : 'single speaker'}): ${audioBuffer.length} bytes`);
 
+    // First, upload the audio buffer to AssemblyAI
+    const uploadUrl = await client.files.upload(audioBuffer);
+    console.log('📤 Audio uploaded to:', uploadUrl);
+
     // Configure transcription parameters
     const config = {
-      audio: audioBuffer,
+      audio_url: uploadUrl,
       speaker_labels: enableSpeakerDetection
     };
 
     // Call AssemblyAI transcription
     const transcript = await client.transcripts.transcribe(config);
+    
+    // Wait for transcription to complete
+    const completedTranscript = await client.transcripts.waitForCompletion(transcript.id);
 
-    if (transcript.status === 'error') {
-      console.error(`❌ AssemblyAI error:`, transcript.error);
+    if (completedTranscript.status === 'error') {
+      console.error(`❌ AssemblyAI error:`, completedTranscript.error);
       return res.status(500).json({ 
-        error: `Transcription error: ${transcript.error}`,
+        error: `Transcription error: ${completedTranscript.error}`,
         fallback: true
       });
     }
     
-    if (enableSpeakerDetection && transcript.utterances) {
+    if (enableSpeakerDetection && completedTranscript.utterances) {
       // Process speaker-labeled utterances
       const speakerMap = new Map();
       const segments = [];
       
-      for (const utterance of transcript.utterances) {
+      for (const utterance of completedTranscript.utterances) {
         const speakerId = utterance.speaker;
         
         if (!speakerMap.has(speakerId)) {
@@ -161,7 +168,7 @@ module.exports = async (req, res) => {
       
       console.log(`✅ Speaker detection transcription: ${segments.length} segments from ${speakerMap.size} speakers`);
       
-      const filteredFullText = filterEnglishText(transcript.text);
+      const filteredFullText = filterEnglishText(completedTranscript.text);
       
       res.json({
         segments: segments,
@@ -173,7 +180,7 @@ module.exports = async (req, res) => {
       
     } else {
       // Standard single-speaker response
-      const filteredText = filterEnglishText(transcript.text);
+      const filteredText = filterEnglishText(completedTranscript.text);
       console.log(`✅ Transcription for ${speaker}: "${filteredText}"`);
       
       if (filteredText) {
