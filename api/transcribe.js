@@ -1,6 +1,7 @@
 // Use multer for multipart parsing like the original server
 const multer = require('multer');
 const upload = multer();
+const { AssemblyAI } = require('assemblyai');
 
 // Filter out non-English text (Korean, Chinese, etc.)
 function isEnglishText(text) {
@@ -71,7 +72,7 @@ module.exports = async (req, res) => {
 
   try {
     const ENABLE_TRANSCRIPTION = process.env.ENABLE_TRANSCRIPTION !== 'false';
-    const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+    const ASSEMBLYAI_API_KEY = process.env.ASSEMBLYAI_API_KEY;
 
     if (!ENABLE_TRANSCRIPTION) {
       return res.status(503).json({ 
@@ -80,12 +81,17 @@ module.exports = async (req, res) => {
       });
     }
 
-    if (!OPENAI_API_KEY) {
+    if (!ASSEMBLYAI_API_KEY) {
       return res.status(503).json({ 
-        error: 'OpenAI API key not configured',
+        error: 'AssemblyAI API key not configured',
         fallback: true
       });
     }
+    
+    // Initialize AssemblyAI client
+    const client = new AssemblyAI({
+      apiKey: ASSEMBLYAI_API_KEY
+    });
 
     // Use multer to parse multipart data
     await runMiddleware(req, res, upload.single('audio'));
@@ -95,63 +101,39 @@ module.exports = async (req, res) => {
     }
 
     const { 
-      model = 'whisper-1', 
       speaker = 'Unknown',
-      enable_speaker_detection = 'false',
-      max_speakers = '5'
+      enable_speaker_detection = 'true'
     } = req.body;
     
     const audioBuffer = req.file.buffer;
-    
     const enableSpeakerDetection = enable_speaker_detection === 'true';
 
-    console.log(`🎤 Transcribing audio (${enableSpeakerDetection ? 'with speaker detection' : 'single speaker'}): ${audioBuffer.length} bytes`);
+    console.log(`🎤 Transcribing audio with AssemblyAI (${enableSpeakerDetection ? 'with speaker diarization' : 'single speaker'}): ${audioBuffer.length} bytes`);
 
-    // Prepare FormData for OpenAI API using built-in FormData
-    const formData = new FormData();
-    
-    // Convert buffer to blob for FormData
-    const audioBlob = new Blob([audioBuffer], { type: req.file.mimetype || 'audio/webm' });
-    formData.append('file', audioBlob, req.file.originalname || 'audio.webm');
-    formData.append('model', model);
-    formData.append('language', 'en'); // Force English-only transcription
-    
-    if (enableSpeakerDetection) {
-      formData.append('response_format', 'verbose_json');
-      formData.append('timestamp_granularities', 'segment');
-    } else {
-      formData.append('response_format', 'json');
-    }
+    // Configure transcription parameters
+    const config = {
+      audio: audioBuffer,
+      speaker_labels: enableSpeakerDetection
+    };
 
-    // Call OpenAI Whisper API
-    const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      },
-      body: formData
-    });
+    // Call AssemblyAI transcription
+    const transcript = await client.transcripts.transcribe(config);
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`❌ OpenAI API error (${response.status}):`, errorText);
-      
-      return res.status(response.status).json({ 
-        error: `Transcription API error: ${response.status}`,
-        details: errorText,
+    if (transcript.status === 'error') {
+      console.error(`❌ AssemblyAI error:`, transcript.error);
+      return res.status(500).json({ 
+        error: `Transcription error: ${transcript.error}`,
         fallback: true
       });
     }
-
-    const result = await response.json();
     
-    if (enableSpeakerDetection && result.segments) {
-      // Process speaker-detected segments
+    if (enableSpeakerDetection && transcript.utterances) {
+      // Process speaker-labeled utterances
       const speakerMap = new Map();
       const segments = [];
       
-      for (const segment of result.segments) {
-        const speakerId = `Speaker_${segment.id % parseInt(max_speakers)}`;
+      for (const utterance of transcript.utterances) {
+        const speakerId = utterance.speaker;
         
         if (!speakerMap.has(speakerId)) {
           speakerMap.set(speakerId, {
@@ -161,36 +143,37 @@ module.exports = async (req, res) => {
         }
         
         const speakerInfo = speakerMap.get(speakerId);
-        speakerInfo.totalDuration += (segment.end - segment.start);
+        speakerInfo.totalDuration += (utterance.end - utterance.start);
         speakerInfo.segments += 1;
         speakerMap.set(speakerId, speakerInfo);
         
-        const filteredText = filterEnglishText(segment.text.trim());
+        const filteredText = filterEnglishText(utterance.text.trim());
         if (filteredText) { // Only add segments with English text
           segments.push({
             speaker: speakerId,
             text: filteredText,
-            start: segment.start,
-            end: segment.end
+            start: utterance.start / 1000, // Convert to seconds
+            end: utterance.end / 1000,
+            confidence: utterance.confidence
           });
         }
       }
       
       console.log(`✅ Speaker detection transcription: ${segments.length} segments from ${speakerMap.size} speakers`);
       
-      const filteredFullText = filterEnglishText(result.text);
+      const filteredFullText = filterEnglishText(transcript.text);
       
       res.json({
         segments: segments,
         speakers: Object.fromEntries(speakerMap),
         text: filteredFullText,
         timestamp: new Date().toISOString(),
-        model: model
+        model: 'assemblyai'
       });
       
     } else {
       // Standard single-speaker response
-      const filteredText = filterEnglishText(result.text);
+      const filteredText = filterEnglishText(transcript.text);
       console.log(`✅ Transcription for ${speaker}: "${filteredText}"`);
       
       if (filteredText) {
@@ -202,7 +185,7 @@ module.exports = async (req, res) => {
           text: filteredText,
           speaker: speaker,
           timestamp: new Date().toISOString(),
-          model: model
+          model: 'assemblyai'
         });
       } else {
         // No English text found, return empty result
@@ -211,7 +194,7 @@ module.exports = async (req, res) => {
           text: '',
           speaker: speaker,
           timestamp: new Date().toISOString(),
-          model: model
+          model: 'assemblyai'
         });
       }
     }
