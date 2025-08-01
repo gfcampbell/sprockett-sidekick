@@ -124,7 +124,7 @@ module.exports = async (req, res) => {
     const transcript = await client.transcripts.transcribe(config);
     
     // Wait for transcription to complete
-    const completedTranscript = await client.transcripts.waitForCompletion(transcript.id);
+    const completedTranscript = await client.transcripts.wait(transcript.id);
 
     if (completedTranscript.status === 'error') {
       console.error(`❌ AssemblyAI error:`, completedTranscript.error);
