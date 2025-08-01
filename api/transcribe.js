@@ -120,11 +120,8 @@ module.exports = async (req, res) => {
       speaker_labels: enableSpeakerDetection
     };
 
-    // Call AssemblyAI transcription
-    const transcript = await client.transcripts.transcribe(config);
-    
-    // Wait for transcription to complete
-    const completedTranscript = await client.transcripts.wait(transcript.id);
+    // Call AssemblyAI transcription (this creates and waits for completion)
+    const completedTranscript = await client.transcripts.transcribe(config);
 
     if (completedTranscript.status === 'error') {
       console.error(`❌ AssemblyAI error:`, completedTranscript.error);
