@@ -5,6 +5,7 @@ import AIConfiguration from './AIConfiguration'
 import SessionAnalytics from './SessionAnalytics'
 import ConversationAgents from './ConversationAgents'
 import Economics from './Economics'
+import LandingPageConfig from './LandingPageConfig'
 
 interface UserAccount {
   user_id: string
@@ -20,7 +21,7 @@ export default function AdminDashboard() {
   const [users, setUsers] = useState<UserAccount[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<'users' | 'ai' | 'analytics' | 'agents' | 'economics'>('users')
+  const [activeTab, setActiveTab] = useState<'users' | 'ai' | 'analytics' | 'agents' | 'economics' | 'landing'>('users')
 
   useEffect(() => {
     fetchUsers()
@@ -136,6 +137,12 @@ export default function AdminDashboard() {
         >
           💰 Economics
         </button>
+        <button 
+          className={`admin-tab ${activeTab === 'landing' ? 'active' : ''}`}
+          onClick={() => setActiveTab('landing')}
+        >
+          🚀 Landing Page
+        </button>
       </div>
 
       {error && (
@@ -201,6 +208,7 @@ export default function AdminDashboard() {
       
       {activeTab === 'agents' && <ConversationAgents />}
       {activeTab === 'economics' && <Economics />}
+      {activeTab === 'landing' && <LandingPageConfig />}
     </div>
   )
 }

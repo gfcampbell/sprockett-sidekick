@@ -52,6 +52,7 @@ export default function AuthHeader({ onNavigateToAdmin }: AuthHeaderProps) {
         {/* Auth Links (shown when not authenticated) */}
         {!userState.isAuthenticated && (
           <div id="auth-links" className="auth-links">
+            <a href="/landing/about" className="auth-link">About</a>
             <a href="#" id="show-signin" className="auth-link" onClick={(e) => { e.preventDefault(); showSignIn(); }}>
               Sign In
             </a>

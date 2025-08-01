@@ -11,6 +11,7 @@ import { MobileMenu } from '@/components/MobileMenu'
 import { useAuthFunctions } from '@/lib/useAuth'
 import { useAuth } from '@/lib/authContext'
 import { startSession, endSession, formatSessionDuration, getSessionCostEstimate } from '@/lib/sessionBilling'
+import { useLandingLogic } from '@/lib/useLandingLogic'
 // 🏥 SURGICAL: Voice enrollment theater removed
 import sprockettLogo from './assets/sprockett_logo.png'
 
@@ -20,6 +21,9 @@ function App() {
   // Initialize auth system
   const { initializeAuth, userState, updateTokenBalance, fetchTokenBalance } = useAuthFunctions()
   const { setUserState, isAdmin } = useAuth()
+  
+  // Landing page logic
+  const { shouldRedirectToLanding, redirectToLanding } = useLandingLogic()
   
   // Admin dashboard state
   const [showAdminDashboard, setShowAdminDashboard] = useState(false)
@@ -82,6 +86,13 @@ function App() {
   useEffect(() => {
     initializeAuth()
   }, [initializeAuth])
+
+  // Landing page redirect check
+  useEffect(() => {
+    if (shouldRedirectToLanding(isAdmin())) {
+      redirectToLanding()
+    }
+  }, [shouldRedirectToLanding, redirectToLanding, isAdmin])
 
   // Initialize audio capture and AI coaching systems
   useEffect(() => {
