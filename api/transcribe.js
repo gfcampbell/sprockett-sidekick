@@ -117,11 +117,16 @@ module.exports = async (req, res) => {
     // Configure transcription parameters
     const config = {
       audio_url: uploadUrl,
-      speaker_labels: enableSpeakerDetection
+      speaker_labels: enableSpeakerDetection,
+      speakers_expected: 2 // Optimize for 2 speakers
     };
 
     // Call AssemblyAI transcription (this creates and waits for completion)
     const completedTranscript = await client.transcripts.transcribe(config);
+    
+    console.log('🔍 AssemblyAI response status:', completedTranscript.status);
+    console.log('🔍 Has utterances?', !!completedTranscript.utterances);
+    console.log('🔍 Speaker labels enabled?', enableSpeakerDetection);
 
     if (completedTranscript.status === 'error') {
       console.error(`❌ AssemblyAI error:`, completedTranscript.error);
