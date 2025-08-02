@@ -499,6 +499,7 @@ export class DualAudioCapture {
       formData.append('model', this.config.transcriptionModel);
       formData.append('speaker', speaker); // 🎯 GUARANTEED SPEAKER ID
       formData.append('audioSource', audioSource); // Track the physics
+      formData.append('enable_speaker_detection', 'true'); // 🎯 Enable AssemblyAI speaker diarization
 
       console.log(`📡 Sending to: ${this.config.transcriptionApiUrl}`);
       
